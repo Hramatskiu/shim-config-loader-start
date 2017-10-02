@@ -53,7 +53,11 @@ public class SpringTaskApp {
         System.out.println(start - date.getTime());
         HttpDownloadService httpDownloadService = applicationContext.getBean(HttpDownloadService.class);
 
-        httpDownloadService.loadConfigsFromUri("http://svqxbdcn6hdp26secn1.pentahoqa.com:8080/api/v1/clusters/HDP26Secure/services/HDFS/components/HDFS_CLIENT?format=client_config_tar");
+        httpDownloadService.loadConfigsFromUri(
+                "http://svqxbdcn6hdp26secn1.pentahoqa.com:8080/api/v1/clusters/HDP26Secure/services/HDFS/components/HDFS_CLIENT?format=client_config_tar", "test.tar");
+
+        httpDownloadService.loadConfigsFromUri(
+                "http://svqxbdcn6hdp26secn1.pentahoqa.com:8080/api/v1/clusters/HDP26Secure/services/YARN/components/YARN_CLIENT?format=client_config_tar", "test.tar");
 
         date = new Date();
         System.out.println(start - date.getTime());
