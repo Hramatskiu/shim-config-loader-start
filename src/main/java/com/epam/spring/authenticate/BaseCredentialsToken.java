@@ -13,7 +13,6 @@ public abstract class BaseCredentialsToken implements Authentication {
 
     public BaseCredentialsToken() {
         authorities = AuthorityUtils.NO_AUTHORITIES;
-
     }
 
     @Override

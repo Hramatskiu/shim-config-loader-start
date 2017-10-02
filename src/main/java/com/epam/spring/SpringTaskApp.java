@@ -1,19 +1,23 @@
 package com.epam.spring;
 
-import com.epam.spring.authenticate.impl.TestConfigLoadCredentials;
+import com.epam.kerberos.HadoopKerberosUtil;
+import com.epam.spring.authenticate.impl.BaseConfigLoadAuthentication;
 import com.epam.spring.component.SpringComponent;
 import com.epam.spring.component.SpringComponent2;
 import com.epam.spring.component.SpringComponent3;
 import com.epam.spring.component.SpringComponent4;
+import com.epam.spring.config.HttpCredentials;
+import com.epam.spring.config.Krb5Credentials;
 import com.epam.spring.config.SpringAppConfig;
+import com.epam.spring.config.SshCredentials;
 import com.epam.spring.security.AutheticationManagerImpl;
+import com.epam.spring.util.HttpCommonUtil;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.security.authentication.TestingAuthenticationToken;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.kerberos.client.KerberosRestTemplate;
 
+import javax.security.auth.login.LoginException;
+import java.io.IOException;
 import java.util.Date;
 
 public class SpringTaskApp {
@@ -25,11 +29,27 @@ public class SpringTaskApp {
         long start = date.getTime();
         System.out.println(date.getTime());
 
+        Krb5Credentials krb5Credentials = new Krb5Credentials("devuser", "password", "PENTAHOQA.COM");
+        Thread thread = new Thread(() -> {
+            try {
+                //Thread.sleep(10000);
+                HadoopKerberosUtil.doLogin(krb5Credentials.getUsername(), krb5Credentials.getPassword()).getSubject();
+            } catch (LoginException | IOException e) {
+                e.printStackTrace();
+            }
+        });
+
+        thread.start();
         ApplicationContext applicationContext = new AnnotationConfigApplicationContext(SpringAppConfig.class);
+        date = new Date();
+        System.out.println("tt- " + String.valueOf(start - date.getTime()));
+
         SecurityContextHolder.getContext()
                 .setAuthentication(applicationContext.getBean(AutheticationManagerImpl.class)
-                        .authenticate(new TestConfigLoadCredentials()));
-        //TestAspect testAspect = applicationContext.getBean(TestAspect.class);
+                        .authenticate(new BaseConfigLoadAuthentication(new HttpCredentials("admin", "admin"),
+                                new Krb5Credentials("devuser", "password", "PENTAHOQA.COM"), new SshCredentials())));
+        thread.join();
+
         date = new Date();
         System.out.println(start - date.getTime());
         SpringComponent springComponent = applicationContext.getBean(SpringComponent.class);
@@ -40,22 +60,13 @@ public class SpringTaskApp {
         SpringComponent4 springComponent4 = applicationContext.getBean(SpringComponent4.class);
         date = new Date();
         System.out.println(start - date.getTime());
-        /*springComponent = applicationContext.getBean(SpringComponent.class);
-        springComponent = applicationContext.getBean(SpringComponent.class);
-        springComponent = applicationContext.getBean(SpringComponent.class);
-        springComponent = applicationContext.getBean(SpringComponent.class);
-        springComponent = applicationContext.getBean(SpringComponent.class);*/
 
         springComponent.sendMessage("haha", true);
-        springComponent.testing("gg");
 
         springComponent.sendMessage("haha", true);
-        springComponent.testing("gg");
 
         springComponent.sendMessage("haha", true);
-        springComponent.testing("gg");
 
-        //dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         date = new Date();
         System.out.println(start - date.getTime());
     }

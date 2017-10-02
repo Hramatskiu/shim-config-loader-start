@@ -20,6 +20,6 @@ public class BasicModule extends AbstractModule {
         bindInterceptor(annotatedWith(TestAnnotation.class),
                 annotatedWith(TestAnnotation.class),
                 new TestMethodInterceptor());
-        //Aspects.aspectOf(TestAspect.class);
+        //Aspects.aspectOf(Krb5SecurityAspect.class);
     }
 }
