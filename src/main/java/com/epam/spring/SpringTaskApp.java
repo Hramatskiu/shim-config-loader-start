@@ -2,7 +2,7 @@ package com.epam.spring;
 
 import com.epam.kerberos.HadoopKerberosUtil;
 import com.epam.spring.authenticate.impl.BaseConfigLoadAuthentication;
-import com.epam.spring.component.SpringComponent;
+import com.epam.spring.component.HttpDownloadService;
 import com.epam.spring.component.SpringComponent2;
 import com.epam.spring.component.SpringComponent3;
 import com.epam.spring.component.SpringComponent4;
@@ -11,7 +11,6 @@ import com.epam.spring.config.Krb5Credentials;
 import com.epam.spring.config.SpringAppConfig;
 import com.epam.spring.config.SshCredentials;
 import com.epam.spring.security.AutheticationManagerImpl;
-import com.epam.spring.util.HttpCommonUtil;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -52,20 +51,9 @@ public class SpringTaskApp {
 
         date = new Date();
         System.out.println(start - date.getTime());
-        SpringComponent springComponent = applicationContext.getBean(SpringComponent.class);
-        SpringComponent2 springComponent2 = applicationContext.getBean(SpringComponent2.class);
-        date = new Date();
-        System.out.println(start - date.getTime());
-        SpringComponent3 springComponent3 = applicationContext.getBean(SpringComponent3.class);
-        SpringComponent4 springComponent4 = applicationContext.getBean(SpringComponent4.class);
-        date = new Date();
-        System.out.println(start - date.getTime());
+        HttpDownloadService httpDownloadService = applicationContext.getBean(HttpDownloadService.class);
 
-        springComponent.sendMessage("haha", true);
-
-        springComponent.sendMessage("haha", true);
-
-        springComponent.sendMessage("haha", true);
+        httpDownloadService.loadConfigsFromUri("http://svqxbdcn6hdp26secn1.pentahoqa.com:8080/api/v1/clusters/HDP26Secure/services/HDFS/components/HDFS_CLIENT?format=client_config_tar");
 
         date = new Date();
         System.out.println(start - date.getTime());
