@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 
 import javax.security.auth.Subject;
 import java.security.PrivilegedExceptionAction;
+import java.util.concurrent.CompletableFuture;
 
 @Aspect
 @Component
@@ -22,9 +23,10 @@ public class Krb5SecurityAspect {
     @Pointcut("@annotation(com.epam.spring.annotation.SecurityAnnotation)")
     public void test(){ }
 
+    @SuppressWarnings({"unchecked", "ConstantConditions"})
     @Around("test()")
-    public boolean aroundTest(ProceedingJoinPoint joinPoint) throws Exception {
-        return (Boolean) UserGroupInformation.getLoginUser().doAs((PrivilegedExceptionAction<Object>) () -> {
+    public CompletableFuture<Boolean> aroundTest(ProceedingJoinPoint joinPoint) throws Exception {
+        return (CompletableFuture<Boolean>) UserGroupInformation.getLoginUser().doAs((PrivilegedExceptionAction<Object>) () -> {
             try {
                 return joinPoint.proceed();
             } catch (Throwable throwable) {

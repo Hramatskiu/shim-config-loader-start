@@ -18,6 +18,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import javax.security.auth.login.LoginException;
 import java.io.IOException;
 import java.util.Date;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class SpringTaskApp {
     public static void main(String[] args) throws Exception{
@@ -43,6 +47,7 @@ public class SpringTaskApp {
         date = new Date();
         System.out.println("tt- " + String.valueOf(start - date.getTime()));
 
+        SecurityContextHolder.setStrategyName(SecurityContextHolder.MODE_GLOBAL);
         SecurityContextHolder.getContext()
                 .setAuthentication(applicationContext.getBean(AutheticationManagerImpl.class)
                         .authenticate(new BaseConfigLoadAuthentication(new HttpCredentials("admin", "admin"),
@@ -53,11 +58,33 @@ public class SpringTaskApp {
         System.out.println(start - date.getTime());
         HttpDownloadService httpDownloadService = applicationContext.getBean(HttpDownloadService.class);
 
-        httpDownloadService.loadConfigsFromUri(
-                "http://svqxbdcn6hdp26secn1.pentahoqa.com:8080/api/v1/clusters/HDP26Secure/services/HDFS/components/HDFS_CLIENT?format=client_config_tar", "test.tar");
+        CompletableFuture<Boolean> hdfsTask = httpDownloadService.loadConfigsFromUri(
+                "http://svqxbdcn6hdp26secn1.pentahoqa.com:8080/api/v1/clusters/HDP26Secure/services/HDFS/components/HDFS_CLIENT?format=client_config_zip", "hdfs.zip");
 
-        httpDownloadService.loadConfigsFromUri(
-                "http://svqxbdcn6hdp26secn1.pentahoqa.com:8080/api/v1/clusters/HDP26Secure/services/YARN/components/YARN_CLIENT?format=client_config_tar", "test.tar");
+        CompletableFuture<Boolean> yarnTask = httpDownloadService.loadConfigsFromUri(
+                "http://svqxbdcn6hdp26secn1.pentahoqa.com:8080/api/v1/clusters/HDP26Secure/services/YARN/components/YARN_CLIENT?format=client_config_tar", "yarn.tar");
+
+        CompletableFuture<Boolean> hbaseTask = httpDownloadService.loadConfigsFromUri(
+                "http://svqxbdcn6hdp26secn1.pentahoqa.com:8080/api/v1/clusters/HDP26Secure/services/HBASE/components/HBASE_CLIENT?format=client_config_tar", "hbase.tar");
+
+        CompletableFuture<Boolean> hiveTask = httpDownloadService.loadConfigsFromUri(
+                "http://svqxbdcn6hdp26secn1.pentahoqa.com:8080/api/v1/clusters/HDP26Secure/services/HIVE/components/HIVE_CLIENT?format=client_config_tar", "hive.tar");
+
+        List<Boolean> results = Stream.of(hdfsTask, yarnTask, hbaseTask, hiveTask).map(CompletableFuture::join).collect(Collectors.toList());
+        results.forEach(System.out::println);
+//        CompletableFuture<Void> combinedFuture
+//                = CompletableFuture.allOf(hdfsTask, yarnTask, hbaseTask, hiveTask);
+//
+//        combinedFuture.get();
+
+//        httpDownloadService.loadConfigsFromUri(
+//                "http://svqxbdcn6hdp26secn1.pentahoqa.com:8080/api/v1/clusters/HDP26Secure/services/HDFS/components/HDFS_CLIENT?format=client_config_tar", "hdfs.tar").get();
+//        httpDownloadService.loadConfigsFromUri(
+//                "http://svqxbdcn6hdp26secn1.pentahoqa.com:8080/api/v1/clusters/HDP26Secure/services/YARN/components/YARN_CLIENT?format=client_config_tar", "yarn.tar").get();
+//        httpDownloadService.loadConfigsFromUri(
+//                "http://svqxbdcn6hdp26secn1.pentahoqa.com:8080/api/v1/clusters/HDP26Secure/services/HBASE/components/HBASE_CLIENT?format=client_config_tar", "hbase.tar").get();
+//        httpDownloadService.loadConfigsFromUri(
+//                "http://svqxbdcn6hdp26secn1.pentahoqa.com:8080/api/v1/clusters/HDP26Secure/services/HIVE/components/HIVE_CLIENT?format=client_config_tar", "hive.tar").get();
 
         date = new Date();
         System.out.println(start - date.getTime());

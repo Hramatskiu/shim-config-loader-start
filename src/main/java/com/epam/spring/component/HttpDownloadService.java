@@ -15,21 +15,29 @@ import java.util.concurrent.CompletableFuture;
 //@Scope("singleton")
 public class HttpDownloadService {
     @SecurityAnnotation
-    public boolean loadConfigsFromUri(String uri, String dest) throws Exception{
-        CompletableFuture.supplyAsync(() -> {
-            CloseableHttpClient httpClient = null;
+    public CompletableFuture<Boolean> loadConfigsFromUri(String uri, String dest) throws Exception{
+        return CompletableFuture.supplyAsync(() -> {
             try {
-                httpClient = CommonUtilHolder.httpCommonUtilInstance().createHttpClient();
-                return IOUtils.toByteArray(httpClient.execute(CommonUtilHolder.httpCommonUtilInstance()
-                        .createHttpUriRequest(uri) ).getEntity().getContent());
+                HttpResponse clientConfigsResponse = askForClientsConfigs(uri);
+
+                return clientConfigsResponse.getStatusLine().getStatusCode() == 200 &&
+                        saveClientsConfigs(IOUtils.toByteArray(clientConfigsResponse.getEntity().getContent()), dest);
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
             return null;
-        }).thenAccept((array) -> FileCommonUtil.writeByteArrayToFile(dest, array)).join();
+        });
+    }
 
-        //System.out.println("Status: " + httpResponse.getStatusLine().getStatusCode());
+    private HttpResponse askForClientsConfigs(String uri) throws Exception{
+        return CommonUtilHolder.httpCommonUtilInstance().createHttpClient()
+                .execute(CommonUtilHolder.httpCommonUtilInstance().createHttpUriRequest(uri));
+    }
+
+    //Think about
+    private boolean saveClientsConfigs(byte[] configsArray, String dest) {
+        FileCommonUtil.writeByteArrayToFile(dest, configsArray);
 
         return true;
     }
