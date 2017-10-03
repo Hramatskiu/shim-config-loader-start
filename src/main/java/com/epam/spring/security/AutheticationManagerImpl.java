@@ -24,6 +24,7 @@ import org.springframework.stereotype.Component;
 import javax.security.auth.Subject;
 import javax.security.auth.login.LoginException;
 import java.io.IOException;
+import java.security.AccessController;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -85,11 +86,7 @@ public class AutheticationManagerImpl implements AuthenticationManager {
     }
 
     private Subject createKrb5Subject(Krb5Credentials krb5Credentials) throws AuthenticationException {
-        try {
-            return HadoopKerberosUtil.doLogin(krb5Credentials.getUsername(), krb5Credentials.getPassword()).getSubject();
-        } catch (LoginException | IOException e) {
-            throw new BadCredentialsException("Krb5 exception", e);
-        }
+        return Subject.getSubject(AccessController.getContext());
     }
 
     //Think about

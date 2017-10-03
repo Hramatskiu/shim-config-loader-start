@@ -1,21 +1,20 @@
-package com.epam.spring.component;
+package com.epam.spring.service.download;
 
 import com.epam.spring.annotation.SecurityAnnotation;
 import com.epam.spring.util.CommonUtilHolder;
 import com.epam.spring.util.FileCommonUtil;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
-import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 @Component
 //@Scope("singleton")
 public class HttpDownloadService {
     @SecurityAnnotation
-    public CompletableFuture<Boolean> loadConfigsFromUri(String uri, String dest) throws Exception{
+    public CompletableFuture<Boolean> loadConfigsFromUri(String uri, List<String> dest) throws Exception{
         return CompletableFuture.supplyAsync(() -> {
             try {
                 HttpResponse clientConfigsResponse = askForClientsConfigs(uri);
@@ -35,9 +34,8 @@ public class HttpDownloadService {
                 .execute(CommonUtilHolder.httpCommonUtilInstance().createHttpUriRequest(uri));
     }
 
-    //Think about
-    private boolean saveClientsConfigs(byte[] configsArray, String dest) {
-        FileCommonUtil.writeByteArrayToFile(dest, configsArray);
+    private boolean saveClientsConfigs(byte[] configsArray, List<String> dest) throws Exception{
+        FileCommonUtil.extractFilesFromTarArchiveByteArray(configsArray, dest);
 
         return true;
     }
