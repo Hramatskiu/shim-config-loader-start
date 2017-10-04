@@ -10,8 +10,8 @@ import org.springframework.stereotype.Component;
 import java.util.Collections;
 import java.util.List;
 
-@Component("HDP")
-public class HdpSearchStrategyCommand implements SearchStrategy {
+@Component("CDH")
+public class CdhSearchStrategyCommand implements SearchStrategy {
     @Override
     public String getStrategyCommand() {
         return "clusters/";
@@ -21,8 +21,8 @@ public class HdpSearchStrategyCommand implements SearchStrategy {
     public List<DownloadableFile> resolveCommandResult(String commandResult, List<DownloadableFile> searchableServiceNames) {
         String clusterName = extractclusterNameFromCommandResult(commandResult);
         if (!clusterName.isEmpty()) {
-            searchableServiceNames.forEach(service -> service.setDownloadPath("clusters/" + extractclusterNameFromCommandResult(commandResult) + "/services/" + service.getServiceName().toUpperCase()
-                    + "/components/" + service.getServiceName().toUpperCase() + "_CLIENT?format=client_config_tar"));
+            searchableServiceNames.forEach(service -> service.setDownloadPath("clusters/" + extractclusterNameFromCommandResult(commandResult)
+                    + "/services/" + service.getServiceName() + "/clientConfig"));
 
             return searchableServiceNames;
         }
@@ -33,7 +33,7 @@ public class HdpSearchStrategyCommand implements SearchStrategy {
     //Think about
     private String extractclusterNameFromCommandResult(String commandResult) {
         try {
-            return new JSONObject( commandResult ).getJSONArray( "items" ).getJSONObject( 0 ).getJSONObject( "Clusters" ).getString( "cluster_name" );
+            return new JSONObject( commandResult ).getJSONArray( "items" ).getJSONObject( 0 ).getString( "name" );
         } catch (JSONException e) {
             e.printStackTrace();
         }

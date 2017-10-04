@@ -55,11 +55,14 @@ public class SpringTaskApp {
 
         date = new Date();
         System.out.println(start - date.getTime());
-        FileCommonUtil.writeByteArrayToFile("test.json", IOUtils.toByteArray(CommonUtilHolder.httpCommonUtilInstance().createHttpClient()
-                .execute(CommonUtilHolder.httpCommonUtilInstance()
-                        .createHttpUriRequest("http://svqxbdcn6hdp26secn1.pentahoqa.com:6080/service/public/api/policy?repositoryType=hdfs")).getEntity().getContent()));
+//        FileCommonUtil.writeByteArrayToFile("test.json", IOUtils.toByteArray(CommonUtilHolder.httpCommonUtilInstance().createHttpClient()
+//                .execute(CommonUtilHolder.httpCommonUtilInstance()
+//                        .createHttpUriRequest("http://svqxbdcn6hdp26secn1.pentahoqa.com:6080/service/public/api/policy?repositoryType=hdfs")).getEntity().getContent()));
 //        HttpDownloadFunction httpDownloadFunction = applicationContext.getBean(HttpDownloadFunction.class);
-//        httpDownloadFunction.downloadConfigs("svqxbdcn6hdp26secn1.pentahoqa.com:8080/api/v1/", new DownloadConfigsCondition());
+//        httpDownloadFunction.downloadConfigs("svqxbdcn6hdp26secn1.pentahoqa.com:8080/api/v1/", new DownloadConfigsCondition(), "TAR");
+
+        HttpDownloadFunction httpDownloadFunction = applicationContext.getBean(HttpDownloadFunction.class);
+        httpDownloadFunction.downloadConfigs("svqxbdcn6cdh512secn1.pentahoqa.com:7180/api/v10/", new DownloadConfigsCondition(), "ZIP");
 //        HttpDownloadService httpDownloadService = applicationContext.getBean(HttpDownloadService.class);
 //
 //        CompletableFuture<Boolean> hdfsTask = httpDownloadService.loadConfigsFromUri(

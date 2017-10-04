@@ -1,8 +1,10 @@
 package com.epam.spring.search;
 
+import com.epam.spring.condition.DownloadableFile;
+
 import java.util.List;
 
 public interface SearchStrategy {
     String getStrategyCommand();
-    List<String> resolveCommandResult(String commandResult, List<String> searchableServiceNames);
+    List<DownloadableFile> resolveCommandResult(String commandResult, List<DownloadableFile> searchableServiceNames);
 }
