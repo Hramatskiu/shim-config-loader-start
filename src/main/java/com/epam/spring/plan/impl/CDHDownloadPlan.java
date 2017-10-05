@@ -12,20 +12,20 @@ import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
 
 @Component
-public class HDPDownloadPlan extends DownloadPlan {
+public class CDHDownloadPlan extends DownloadPlan {
     @Autowired
     private DownloadFunction downloadFunction;
     @Autowired
-    @Qualifier("HDP")
+    @Qualifier("CDH")
     private SearchStrategy searchStrategy;
 
-    public boolean downloadConfigs(String hostName, String destPrefix) throws Exception{
+    @Override
+    public boolean downloadConfigs(String hostName, String destPrefix) throws Exception {
         DownloadConfigsCondition downloadConfigsCondition = createDownloadConfigsCondition();
         downloadFunction.downloadConfigs(downloadConfigsCondition, searchStrategy,
-                new LoadPathConfig(hostName + ":8080/api/v1/", destPrefix, FileExtractingService.ExtractFormats.TAR));
+                new LoadPathConfig(hostName + ":7180/api/v10/", destPrefix, FileExtractingService.ExtractFormats.ZIP));
 
         return downloadConfigsCondition.getUnloadedConfigsList().isEmpty();
     }
@@ -34,10 +34,9 @@ public class HDPDownloadPlan extends DownloadPlan {
         DownloadConfigsCondition downloadConfigsCondition = new DownloadConfigsCondition();
 
         downloadConfigsCondition.addConfigFilesToMap(new DownloadableFile("hdfs", Arrays.asList("hdfs-site.xml", "core-site.xml")));
-        downloadConfigsCondition.addConfigFilesToMap(new DownloadableFile("yarn", Collections.singletonList("yarn-site.xml")));
+        downloadConfigsCondition.addConfigFilesToMap(new DownloadableFile("yarn", Arrays.asList("yarn-site.xml", "mapred-site.xml")));
         downloadConfigsCondition.addConfigFilesToMap(new DownloadableFile("hbase", Collections.singletonList("hbase-site.xml")));
         downloadConfigsCondition.addConfigFilesToMap(new DownloadableFile("hive", Collections.singletonList("hive-site.xml")));
-        downloadConfigsCondition.addConfigFilesToMap(new DownloadableFile("mapreduce2", Collections.singletonList("mapred-site.xml")));
 
         return downloadConfigsCondition;
     }

@@ -6,5 +6,5 @@ import java.util.List;
 
 public interface SearchStrategy {
     String getStrategyCommand();
-    List<DownloadableFile> resolveCommandResult(String commandResult, List<DownloadableFile> searchableServiceNames);
+    List<DownloadableFile> resolveCommandResult(String commandResult, List<DownloadableFile> searchableServiceNames) throws Exception;
 }

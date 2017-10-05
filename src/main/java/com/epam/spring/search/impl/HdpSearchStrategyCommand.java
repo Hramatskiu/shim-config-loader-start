@@ -18,10 +18,10 @@ public class HdpSearchStrategyCommand implements SearchStrategy {
     }
 
     @Override
-    public List<DownloadableFile> resolveCommandResult(String commandResult, List<DownloadableFile> searchableServiceNames) {
-        String clusterName = extractclusterNameFromCommandResult(commandResult);
+    public List<DownloadableFile> resolveCommandResult(String commandResult, List<DownloadableFile> searchableServiceNames) throws Exception{
+        String clusterName = extractClusterNameFromCommandResult(commandResult);
         if (!clusterName.isEmpty()) {
-            searchableServiceNames.forEach(service -> service.setDownloadPath("clusters/" + extractclusterNameFromCommandResult(commandResult) + "/services/" + service.getServiceName().toUpperCase()
+            searchableServiceNames.forEach(service -> service.setDownloadPath("clusters/" + clusterName + "/services/" + service.getServiceName().toUpperCase()
                     + "/components/" + service.getServiceName().toUpperCase() + "_CLIENT?format=client_config_tar"));
 
             return searchableServiceNames;
@@ -30,14 +30,7 @@ public class HdpSearchStrategyCommand implements SearchStrategy {
         return Collections.emptyList();
     }
 
-    //Think about
-    private String extractclusterNameFromCommandResult(String commandResult) {
-        try {
-            return new JSONObject( commandResult ).getJSONArray( "items" ).getJSONObject( 0 ).getJSONObject( "Clusters" ).getString( "cluster_name" );
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        return StringUtils.EMPTY;
+    private String extractClusterNameFromCommandResult(String commandResult) throws Exception{
+        return new JSONObject( commandResult ).getJSONArray( "items" ).getJSONObject( 0 ).getJSONObject( "Clusters" ).getString( "cluster_name" );
     }
 }

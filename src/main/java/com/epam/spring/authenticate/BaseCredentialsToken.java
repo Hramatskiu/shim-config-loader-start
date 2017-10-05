@@ -8,7 +8,6 @@ import java.util.Collection;
 
 public abstract class BaseCredentialsToken implements Authentication {
     private final Collection<GrantedAuthority> authorities;
-    private Object details;
     private boolean authenticated = false;
 
     public BaseCredentialsToken() {

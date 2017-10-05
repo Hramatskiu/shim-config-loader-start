@@ -1,5 +1,6 @@
 package com.epam.spring.service;
 
+import com.epam.spring.plan.DownloadPlan;
 import com.epam.spring.util.FileCommonUtil;
 import org.springframework.stereotype.Component;
 
@@ -10,28 +11,29 @@ import java.util.function.BiConsumer;
 
 @Component
 public class FileExtractingService {
-    private Map<ExtractFormats, BiConsumer<byte[], List<String>>> extractingFunctionsMap;
+    private Map<ExtractFormats, BiConsumer<byte[], DownloadPlan.LoadPathConfig>> extractingFunctionsMap;
 
+    //Exception handling
     public FileExtractingService() {
         extractingFunctionsMap = new HashMap<>();
-        extractingFunctionsMap.put(ExtractFormats.ZIP, (bytes, strings) -> {
+        extractingFunctionsMap.put(ExtractFormats.ZIP, (bytes, loadPathConfig) -> {
             try {
-                FileCommonUtil.extractFilesFromZipArchiveByteArray(bytes, strings);
+                FileCommonUtil.extractFilesFromZipArchiveByteArray(bytes, loadPathConfig.getLoadedFiles(), loadPathConfig.getDestPrefix());
             } catch (Exception e) {
                 e.printStackTrace();
             }
         });
-        extractingFunctionsMap.put(ExtractFormats.TAR, (bytes, strings) -> {
+        extractingFunctionsMap.put(ExtractFormats.TAR, (bytes, loadPathConfig) -> {
             try {
-                FileCommonUtil.extractFilesFromTarArchiveByteArray(bytes, strings);
+                FileCommonUtil.extractFilesFromTarArchiveByteArray(bytes, loadPathConfig.getLoadedFiles(), loadPathConfig.getDestPrefix());
             } catch (Exception e) {
                 e.printStackTrace();
             }
         });
     }
 
-    public BiConsumer<byte[], List<String>> getExtractFunction(ExtractFormats extractFormat) {
-        return extractingFunctionsMap.getOrDefault(extractFormat, (bytes, strings) -> {
+    public BiConsumer<byte[], DownloadPlan.LoadPathConfig> getExtractFunction(ExtractFormats extractFormat) {
+        return extractingFunctionsMap.getOrDefault(extractFormat, (bytes, loadPathConfig) -> {
             //empty
         });
     }

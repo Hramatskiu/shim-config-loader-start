@@ -27,18 +27,19 @@ public class FileCommonUtil {
     public static void writeStringToFile(String dest, String input) {
         try {
             FileUtils.writeStringToFile(new File(dest), input);
+            System.out.println("Save - " + dest);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public static void extractFilesFromTarArchiveByteArray(byte[] source, List<String> unpackingFileNames) throws Exception{
+    public static void extractFilesFromTarArchiveByteArray(byte[] source, List<String> unpackingFileNames, String destPrefix) throws Exception{
         try(TarArchiveInputStream debInputStream =
                     new TarArchiveInputStream( new GzipCompressorInputStream(
                             new ByteArrayInputStream(source)))) {
             TarArchiveEntry entry = null;
             while ((entry = debInputStream.getNextTarEntry()) != null) {
-                saveEntry(entry, debInputStream, unpackingFileNames);
+                saveEntry(entry, debInputStream, unpackingFileNames, destPrefix);
             }
         }
         catch (IOException ex) {
@@ -46,13 +47,13 @@ public class FileCommonUtil {
         }
     }
 
-    public static void extractFilesFromZipArchiveByteArray(byte[] source, List<String> unpackingFileNames) throws Exception{
+    public static void extractFilesFromZipArchiveByteArray(byte[] source, List<String> unpackingFileNames, String destPrefix) throws Exception{
         try(ZipArchiveInputStream debInputStream =
                     new ZipArchiveInputStream(
                             new ByteArrayInputStream(source))) {
             ZipArchiveEntry entry = null;
             while ((entry = debInputStream.getNextZipEntry()) != null) {
-                saveEntry(entry, debInputStream, unpackingFileNames);
+                saveEntry(entry, debInputStream, unpackingFileNames, destPrefix);
             }
         }
         catch (IOException ex) {
@@ -60,7 +61,7 @@ public class FileCommonUtil {
         }
     }
 
-    private static void saveEntry(ArchiveEntry entry, ArchiveInputStream archiveInputStream, List<String> unpackingFileNames) {
+    private static void saveEntry(ArchiveEntry entry, ArchiveInputStream archiveInputStream, List<String> unpackingFileNames, String destPrefix) {
         try(ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             if (!entry.isDirectory()) {
                 List<String> matchingFileNames = unpackingFileNames.stream().filter(fileName -> entry.getName().contains(fileName)).collect(Collectors.toList());
@@ -70,7 +71,7 @@ public class FileCommonUtil {
                     while ((len = archiveInputStream.read(buffer)) != -1) {
                         out.write(buffer, 0, len);
                     }
-                    writeStringToFile(matchingFileNames.get(0), out.toString());
+                    writeStringToFile(destPrefix + "\\" + matchingFileNames.get(0), out.toString());
                 }
             }
         }

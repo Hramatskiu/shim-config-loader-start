@@ -15,16 +15,16 @@ import java.util.List;
 public class HttpSearchService {
 
     public List<DownloadableFile> searchForConfigsLocation(String remoteUrl, List<DownloadableFile> searchableServiceNames, SearchStrategy searchStrategy) throws Exception {
-        HttpResponse response = askForClientsConfigs("http://" + remoteUrl + searchStrategy.getStrategyCommand());
-
-        List<DownloadableFile> files = searchStrategy.resolveCommandResult(new String(IOUtils.toByteArray(response.getEntity().getContent())), searchableServiceNames);
+        List<DownloadableFile> files = searchStrategy.resolveCommandResult(
+                askForClientsConfigs("http://" + remoteUrl + searchStrategy.getStrategyCommand()), searchableServiceNames);
         files.forEach(service -> service.setDownloadPath("http://" + remoteUrl + service.getDownloadPath()));
 
         return files;
     }
 
-    private HttpResponse askForClientsConfigs(String uri) throws Exception {
-        return CommonUtilHolder.httpCommonUtilInstance().createHttpClient()
-                .execute(CommonUtilHolder.httpCommonUtilInstance().createHttpUriRequest(uri));
+    private String askForClientsConfigs(String uri) throws Exception {
+        return new String(IOUtils.toByteArray(CommonUtilHolder.httpCommonUtilInstance().createHttpClient()
+                .execute(CommonUtilHolder.httpCommonUtilInstance().createHttpUriRequest(uri))
+                .getEntity().getContent()));
     }
 }

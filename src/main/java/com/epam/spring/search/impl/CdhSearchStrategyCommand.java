@@ -18,11 +18,10 @@ public class CdhSearchStrategyCommand implements SearchStrategy {
     }
 
     @Override
-    public List<DownloadableFile> resolveCommandResult(String commandResult, List<DownloadableFile> searchableServiceNames) {
-        String clusterName = extractclusterNameFromCommandResult(commandResult);
+    public List<DownloadableFile> resolveCommandResult(String commandResult, List<DownloadableFile> searchableServiceNames) throws Exception{
+        String clusterName = extractClusterNameFromCommandResult(commandResult);
         if (!clusterName.isEmpty()) {
-            searchableServiceNames.forEach(service -> service.setDownloadPath("clusters/" + extractclusterNameFromCommandResult(commandResult)
-                    + "/services/" + service.getServiceName() + "/clientConfig"));
+            searchableServiceNames.forEach(service -> service.setDownloadPath("clusters/" + clusterName + "/services/" + service.getServiceName() + "/clientConfig"));
 
             return searchableServiceNames;
         }
@@ -30,14 +29,7 @@ public class CdhSearchStrategyCommand implements SearchStrategy {
         return Collections.emptyList();
     }
 
-    //Think about
-    private String extractclusterNameFromCommandResult(String commandResult) {
-        try {
-            return new JSONObject( commandResult ).getJSONArray( "items" ).getJSONObject( 0 ).getString( "name" );
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        return StringUtils.EMPTY;
+    private String extractClusterNameFromCommandResult(String commandResult) throws Exception{
+        return new JSONObject( commandResult ).getJSONArray( "items" ).getJSONObject( 0 ).getString( "name" );
     }
 }

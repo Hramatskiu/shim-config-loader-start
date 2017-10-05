@@ -32,8 +32,6 @@ import java.util.List;
 
 @Component
 public class AutheticationManagerImpl implements AuthenticationManager {
-    private static final Collection<GrantedAuthority> AUTHORITIES = AuthorityUtils.NO_AUTHORITIES;
-
     public Authentication authenticate(Authentication auth) throws AuthenticationException {
         if (auth instanceof TestConfigLoadCredentials && auth.isAuthenticated()) {
             return auth;

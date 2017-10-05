@@ -1,6 +1,7 @@
 package com.epam.spring.service.download;
 
 import com.epam.spring.annotation.SecurityAnnotation;
+import com.epam.spring.plan.DownloadPlan;
 import com.epam.spring.service.FileExtractingService;
 import com.epam.spring.util.CommonUtilHolder;
 import com.epam.spring.util.FileCommonUtil;
@@ -12,26 +13,24 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 @Component
-//@Scope("singleton")
 public class HttpDownloadService {
     @Autowired
     private FileExtractingService fileExtractingService;
 
     @SecurityAnnotation
-    public CompletableFuture<Boolean> loadConfigsFromUri(String uri, List<String> dest, String format) throws Exception{
+    public CompletableFuture<Boolean> loadConfigsFromUri(String uri, DownloadPlan.LoadPathConfig loadPathConfig) throws Exception{
         return CompletableFuture.supplyAsync(() -> {
             try {
                 HttpResponse clientConfigsResponse = askForClientsConfigs(uri);
 
                 return clientConfigsResponse.getStatusLine().getStatusCode() == 200 &&
-                        saveClientsConfigs(IOUtils.toByteArray(clientConfigsResponse.getEntity().getContent()), dest, format);
+                        saveClientsConfigs(IOUtils.toByteArray(clientConfigsResponse.getEntity().getContent()), loadPathConfig);
             } catch (Exception e) {
-                e.printStackTrace();
+                throw new CompletionException(e);
             }
-
-            return null;
         });
     }
 
@@ -40,8 +39,9 @@ public class HttpDownloadService {
                 .execute(CommonUtilHolder.httpCommonUtilInstance().createHttpUriRequest(uri));
     }
 
-    private boolean saveClientsConfigs(byte[] configsArray, List<String> dest, String format) throws Exception{
-        fileExtractingService.getExtractFunction(FileExtractingService.ExtractFormats.valueOf(format)).accept(configsArray, dest);
+    //Think about
+    private boolean saveClientsConfigs(byte[] configsArray, DownloadPlan.LoadPathConfig loadPathConfig) throws Exception{
+        fileExtractingService.getExtractFunction(loadPathConfig.getExtractFormat()).accept(configsArray, loadPathConfig);
 
         return true;
     }
