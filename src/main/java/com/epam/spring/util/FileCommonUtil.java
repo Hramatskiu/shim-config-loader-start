@@ -11,6 +11,10 @@ import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.io.FileUtils;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,6 +31,7 @@ public class FileCommonUtil {
     public static void writeStringToFile(String dest, String input) {
         try {
             FileUtils.writeStringToFile(new File(dest), input);
+            //Files.write(Paths.get(dest), Collections.singletonList(input));
             System.out.println("Save - " + dest);
         } catch (IOException e) {
             e.printStackTrace();

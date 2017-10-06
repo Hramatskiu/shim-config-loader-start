@@ -7,10 +7,10 @@ public class DownloadConfigsCondition {
     private Map<DownloadableFile, Boolean> downloadedConfigsMap = new HashMap<>();
 
     public void addConfigFilesToMap(DownloadableFile downloadableFile) {
-        if (!downloadableFile.getServiceName().isEmpty() &&
+        if (!downloadableFile.getServiceName().isEmpty() /*&&
                 //putIfAbsent => add equals to DownloadableFile || allow override
                 downloadedConfigsMap.entrySet().stream().filter(entry -> entry.getKey().getServiceName().equals(downloadableFile.getServiceName()))
-                        .collect(Collectors.toList()).isEmpty()) {
+                        .collect(Collectors.toList()).isEmpty()*/) {
             downloadedConfigsMap.put(downloadableFile, false);
         }
     }
@@ -22,5 +22,9 @@ public class DownloadConfigsCondition {
     public void setDownloadCondition(List<Boolean> updatedConditions) {
         Iterator<Boolean> conditionsIterator = updatedConditions.iterator();
         downloadedConfigsMap.replaceAll((k, v) -> conditionsIterator.hasNext() & !v ? conditionsIterator.next() : v);
+    }
+
+    public void setDownloadConditionForFile(DownloadableFile keyFile, Boolean value) {
+        downloadedConfigsMap.put(keyFile, value);
     }
 }

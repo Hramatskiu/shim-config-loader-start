@@ -1,14 +1,35 @@
 package com.epam.spring.config;
 
-public class LoadCredentials {
+public class LoadConfigs {
     private HttpCredentials httpCredentials;
     private Krb5Credentials krb5Credentials;
     private SshCredentials sshCredentials;
+    private String host;
+    private String saveDir;
 
-    public LoadCredentials(HttpCredentials httpCredentials, Krb5Credentials krb5Credentials, SshCredentials sshCredentials) {
+    public LoadConfigs(HttpCredentials httpCredentials, Krb5Credentials krb5Credentials, SshCredentials sshCredentials,
+                       String host, String saveDir) {
+        this.saveDir = saveDir;
+        this.host = host;
         this.httpCredentials = httpCredentials;
         this.krb5Credentials = krb5Credentials;
         this.sshCredentials = sshCredentials;
+    }
+
+    public String getSaveDir() {
+        return saveDir;
+    }
+
+    public void setSaveDir(String saveDir) {
+        this.saveDir = saveDir;
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public void setHost(String host) {
+        this.host = host;
     }
 
     public HttpCredentials getHttpCredentials() {

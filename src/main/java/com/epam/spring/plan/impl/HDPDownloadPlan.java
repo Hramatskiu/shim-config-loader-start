@@ -14,7 +14,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 
-@Component
+@Component("hdp-plan")
 public class HDPDownloadPlan extends DownloadPlan {
     @Autowired
     private DownloadFunction downloadFunction;

@@ -42,15 +42,15 @@ public class Krb5SecurityAspect {
         });*/
     }
 
-    private Subject getKrb5Subject() throws Exception {
-        Authentication loggedAuthentication = SecurityContextHolder.getContext().getAuthentication();
-        if (loggedAuthentication instanceof TestConfigLoadCredentials){
-            TestConfigLoadCredentials authentication = (TestConfigLoadCredentials) loggedAuthentication;
-            if (authentication.getKrb5Subject() != null){
-                return authentication.getKrb5Subject();
-            }
-        }
-
-        throw new Exception("tt");
-    }
+//    private Subject getKrb5Subject() throws Exception {
+//        Authentication loggedAuthentication = SecurityContextHolder.getContext().getAuthentication();
+//        if (loggedAuthentication instanceof TestConfigLoadCredentials){
+//            TestConfigLoadCredentials authentication = (TestConfigLoadCredentials) loggedAuthentication;
+//            if (authentication.getKrb5Subject() != null){
+//                return authentication.getKrb5Subject();
+//            }
+//        }
+//
+//        throw new Exception("tt");
+//    }
 }

@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutorService;
 
 @Component
 public class HttpDownloadService {
@@ -21,7 +22,7 @@ public class HttpDownloadService {
     private FileExtractingService fileExtractingService;
 
     @SecurityAnnotation
-    public CompletableFuture<Boolean> loadConfigsFromUri(String uri, DownloadPlan.LoadPathConfig loadPathConfig) throws Exception{
+    public CompletableFuture<Boolean> loadConfigsFromUri(String uri, DownloadPlan.LoadPathConfig loadPathConfig, ExecutorService executorService) throws Exception{
         return CompletableFuture.supplyAsync(() -> {
             try {
                 HttpResponse clientConfigsResponse = askForClientsConfigs(uri);
@@ -31,7 +32,7 @@ public class HttpDownloadService {
             } catch (Exception e) {
                 throw new CompletionException(e);
             }
-        });
+        }, executorService);
     }
 
     private HttpResponse askForClientsConfigs(String uri) throws Exception{

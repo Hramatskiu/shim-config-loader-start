@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 import java.util.Arrays;
 import java.util.Collections;
 
-@Component
+@Component("cdh-plan")
 public class CDHDownloadPlan extends DownloadPlan {
     @Autowired
     private DownloadFunction downloadFunction;

@@ -17,8 +17,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.stereotype.Component;
 
 import javax.security.auth.Subject;
@@ -27,7 +25,6 @@ import java.io.IOException;
 import java.security.AccessController;
 import java.security.Principal;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 @Component
@@ -47,6 +44,8 @@ public class AutheticationManagerImpl implements AuthenticationManager {
 
     private Authentication makeAuthentication(BaseConfigLoadAuthentication authentication) throws AuthenticationException {
         TestConfigLoadCredentials testConfigLoadCredentials = new TestConfigLoadCredentials();
+
+        loginWithKerberos(authentication.getKrb5Credentials());
 
         testConfigLoadCredentials.setCredentialsProvider(createHttpCredentialsProvider(authentication.getHttpCredentials()));
         testConfigLoadCredentials.setAuthShemes(createAuthShemesList());
@@ -83,8 +82,18 @@ public class AutheticationManagerImpl implements AuthenticationManager {
         return authShemes;
     }
 
-    private Subject createKrb5Subject(Krb5Credentials krb5Credentials) throws AuthenticationException {
-        return Subject.getSubject(AccessController.getContext());
+    private void loginWithKerberos(Krb5Credentials krb5Credentials) throws AuthenticationException {
+        try {
+            if (krb5Credentials.getKeytabLocation() != null && !krb5Credentials.getKeytabLocation().isEmpty()) {
+                HadoopKerberosUtil.doLoginWithKeytab(krb5Credentials.getUsername(), krb5Credentials.getKeytabLocation());
+            }
+            else {
+                HadoopKerberosUtil.doLoginWithPrincipalAndPassword(krb5Credentials.getUsername(), krb5Credentials.getPassword());
+            }
+        }
+        catch (IOException | LoginException ex) {
+            throw new BadCredentialsException("Bad kerberos credentials", ex);
+        }
     }
 
     //Think about

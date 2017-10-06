@@ -38,4 +38,19 @@ public class DownloadableFile {
     public void setDownloadPath(String downloadPath) {
         this.downloadPath = downloadPath;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+
+        if (obj != null && obj instanceof DownloadableFile) {
+            DownloadableFile other = (DownloadableFile) obj;
+
+            return serviceName != null && serviceName.equals(other.getServiceName());
+        }
+
+        return false;
+    }
 }
