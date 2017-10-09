@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane prefHeight="580.0" prefWidth="500.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.epam.main.MainPage">
+   <children>
+      <Button id="buttonOpenShim" fx:id="buttonOpenShim" layoutX="482.0" layoutY="15.0" mnemonicParsing="false" onAction="#buttonInit" text="Open..." />
+      <TextField id="pathToShim" fx:id="pathToSave" layoutX="29.0" layoutY="15.0" prefHeight="31.0" prefWidth="417.0" promptText="path to download location" />
+      <TextField id="cluster_node_FQDN" fx:id="cluster_node_FQDN" layoutX="29.0" layoutY="60.0" prefHeight="31.0" prefWidth="417.0" promptText="host (example: svqxbdcn6cdh59n1.pentahoqa.com )" />
+      <TextField id="kerberosUser" fx:id="kerberosUser" layoutX="24.0" layoutY="174.0" prefHeight="31.0" prefWidth="244.0" promptText="kerberos user (default &quot;devuser&quot;)" />
+      <PasswordField id="kerberosPassword" fx:id="kerberosPassword" layoutX="24.0" layoutY="231.0" prefHeight="31.0" prefWidth="244.0" promptText="kerberos password (default &quot;password&quot;)" />
+      <TextField id="restUser" fx:id="restUser" layoutX="298.0" layoutY="174.0" prefHeight="31.0" prefWidth="244.0" promptText="REST user (default &quot;admin&quot;)" />
+      <PasswordField id="restPassword" fx:id="restPassword" layoutX="298.0" layoutY="231.0" prefHeight="31.0" prefWidth="244.0" promptText="REST password (&quot;default admin&quot;)" />
+      <Button id="buttonStart" fx:id="buttonStart" layoutX="230.0" layoutY="290.0" mnemonicParsing="false" onAction="#buttonInit" prefHeight="31.0" prefWidth="75.0" text="Start" />
+      <TextArea id="output" fx:id="output" editable="false" focusTraversable="false" layoutX="4.0" layoutY="330.0" prefHeight="180.0" prefWidth="550.0" scrollTop="5000.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="4.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="330.0" />
+      <ComboBox id="clusterType" fx:id="clusterType" layoutX="29.0" onShowing="#compoBoxOnShowing" layoutY="111.0" prefWidth="150.0" />
+
+   </children>
+   <padding>
+      <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+   </padding>
+</AnchorPane>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<VBox prefHeight="521.0" prefWidth="580.0" xmlns:fx="http://javafx.com/fxml" fx:controller="com.epam.main.MainController">
+    <children>
+         <StackPane fx:id="sceneHolder" VBox.vgrow="ALWAYS" />
+    </children>
+</VBox>

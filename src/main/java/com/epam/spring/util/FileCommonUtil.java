@@ -9,6 +9,7 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.io.FileUtils;
+import org.apache.log4j.Logger;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -20,6 +21,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class FileCommonUtil {
+    private static Logger logger = Logger.getLogger(FileCommonUtil.class);
+
     public static void writeByteArrayToFile(String dest, byte[] input) {
         try {
             FileUtils.writeByteArrayToFile(new File(dest), input);
@@ -32,7 +35,7 @@ public class FileCommonUtil {
         try {
             FileUtils.writeStringToFile(new File(dest), input);
             //Files.write(Paths.get(dest), Collections.singletonList(input));
-            System.out.println("Save - " + dest);
+            logger.info("Save - " + dest);
         } catch (IOException e) {
             e.printStackTrace();
         }

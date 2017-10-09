@@ -1,19 +1,31 @@
 package com.epam.spring.config;
 
+import com.epam.spring.manager.LoadConfigsManager;
+
 public class LoadConfigs {
     private HttpCredentials httpCredentials;
     private Krb5Credentials krb5Credentials;
     private SshCredentials sshCredentials;
     private String host;
     private String saveDir;
+    private LoadConfigsManager.ClusterType clusterType;
 
     public LoadConfigs(HttpCredentials httpCredentials, Krb5Credentials krb5Credentials, SshCredentials sshCredentials,
-                       String host, String saveDir) {
+                       String host, String saveDir, LoadConfigsManager.ClusterType clusterType) {
+        this.clusterType = clusterType;
         this.saveDir = saveDir;
         this.host = host;
         this.httpCredentials = httpCredentials;
         this.krb5Credentials = krb5Credentials;
         this.sshCredentials = sshCredentials;
+    }
+
+    public LoadConfigsManager.ClusterType getClusterType() {
+        return clusterType;
+    }
+
+    public void setClusterType(LoadConfigsManager.ClusterType clusterType) {
+        this.clusterType = clusterType;
     }
 
     public String getSaveDir() {
