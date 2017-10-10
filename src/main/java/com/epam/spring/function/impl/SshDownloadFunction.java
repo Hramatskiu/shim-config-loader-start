@@ -25,7 +25,7 @@ public class SshDownloadFunction extends DownloadFunction {
 
   public void downloadConfigs( DownloadConfigsCondition downloadConfigsCondition, SearchStrategy searchStrategy,
                                DownloadPlan.LoadPathConfig loadPathConfig ) throws Exception {
-    ExecutorService executor = Executors.newFixedThreadPool( 5 );
+    ExecutorService executor = Executors.newFixedThreadPool( 10 );
     List<CompletableFuture<Boolean>> taskList =
       searchService.searchForConfigsLocation( loadPathConfig.getCompositeHost(),
         downloadConfigsCondition.getUnloadedConfigsList(), searchStrategy ).stream()
@@ -35,8 +35,7 @@ public class SshDownloadFunction extends DownloadFunction {
             copiedLoadPathConfig.setLoadedFiles( file.getFiles() );
 
             return downloadService
-              .loadConfigsFromCommand( loadPathConfig.getCompositeHost(), file.getDownloadPath(), copiedLoadPathConfig,
-                executor );
+              .loadConfigsFromCommand( file.getDownloadPath(), copiedLoadPathConfig, executor );
           } catch ( Exception e ) {
             throw new CompletionException( e );
           }

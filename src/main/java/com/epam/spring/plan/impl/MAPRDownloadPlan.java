@@ -30,8 +30,11 @@ public class MAPRDownloadPlan extends DownloadPlan {
     DownloadConfigsCondition downloadConfigsCondition = new DownloadConfigsCondition();
 
     downloadConfigsCondition.addConfigFilesToMap( new DownloadableFile( DownloadableFileConstants.ServiceName.HDFS,
-      Arrays.asList( DownloadableFileConstants.ServiceFileName.HDFS, DownloadableFileConstants.ServiceFileName.CORE,
-        DownloadableFileConstants.ServiceFileName.YARN, DownloadableFileConstants.ServiceFileName.MAPRED ) ) );
+      Arrays.asList( DownloadableFileConstants.ServiceFileName.HDFS, DownloadableFileConstants.ServiceFileName.CORE ) ) );
+    downloadConfigsCondition.addConfigFilesToMap( new DownloadableFile( DownloadableFileConstants.ServiceName.YARN,
+      Collections.singletonList( DownloadableFileConstants.ServiceFileName.YARN ) ) );
+    downloadConfigsCondition.addConfigFilesToMap( new DownloadableFile( DownloadableFileConstants.ServiceName.MAPREDUCE2,
+      Collections.singletonList( DownloadableFileConstants.ServiceFileName.MAPRED ) ) );
     downloadConfigsCondition.addConfigFilesToMap( new DownloadableFile( DownloadableFileConstants.ServiceName.HBASE,
       Collections.singletonList( DownloadableFileConstants.ServiceFileName.HBASE ) ) );
     downloadConfigsCondition.addConfigFilesToMap( new DownloadableFile( DownloadableFileConstants.ServiceName.HIVE,

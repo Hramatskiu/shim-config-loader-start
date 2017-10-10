@@ -43,6 +43,10 @@ public class MainPage {
   @FXML
   TextField restPassword;
   @FXML
+  TextField sshUser;
+  @FXML
+  TextField sshPassword;
+  @FXML
   TextArea output;
   @FXML
   ComboBox<String> clusterType;
@@ -92,7 +96,7 @@ public class MainPage {
       Thread thread = new Thread( () -> {
         clusterConfigLoader
           .loadConfigs( new LoadConfigs( new HttpCredentials( restUser.getText(), restPassword.getText() ),
-            new Krb5Credentials( kerberosUser.getText(), kerberosUser.getText() ), new SshCredentials(),
+            new Krb5Credentials( kerberosUser.getText(), kerberosPassword.getText() ), new SshCredentials( sshUser.getText(), sshPassword.getText() ),
             cluster_node_FQDN.getText(), pathToSave.getText(),
             LoadConfigsManager.ClusterType.valueOf( clusterType.getValue() ) ) );
         buttonStart.setDisable( false );

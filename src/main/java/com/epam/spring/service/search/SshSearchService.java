@@ -2,7 +2,8 @@ package com.epam.spring.service.search;
 
 import com.epam.spring.condition.DownloadableFile;
 import com.epam.spring.search.SearchStrategy;
-import com.epam.spring.util.SshCommonUtil;
+import com.epam.spring.util.CommonUtilHolder;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -17,6 +18,6 @@ public class SshSearchService {
   }
 
   private String askForClientsConfigs( String host, int port, String command ) throws Exception {
-    return SshCommonUtil.executeCommand( "mapr", "password", host, port, command );
+    return CommonUtilHolder.sshCommonUtilInstance().executeCommand( StringUtils.EMPTY, StringUtils.EMPTY, host, port, command );
   }
 }

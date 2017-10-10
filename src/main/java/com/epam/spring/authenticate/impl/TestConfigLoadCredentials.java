@@ -41,7 +41,7 @@ public class TestConfigLoadCredentials extends BaseCredentialsToken implements I
   }
 
   @Override
-  public SshCredentials getSshSession() {
+  public SshCredentials getSshCredentials() {
     return sshCredentials;
   }
 
