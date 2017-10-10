@@ -1,6 +1,7 @@
 package com.epam.spring.function.impl;
 
 import com.epam.spring.condition.DownloadConfigsCondition;
+import com.epam.spring.exception.ServiceException;
 import com.epam.spring.function.DownloadFunction;
 import com.epam.spring.plan.DownloadPlan;
 import com.epam.spring.search.SearchStrategy;
@@ -11,7 +12,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
@@ -24,7 +24,7 @@ public class HttpDownloadFunction extends DownloadFunction {
   private HttpSearchService httpSearchService;
 
   public void downloadConfigs( DownloadConfigsCondition downloadConfigsCondition, SearchStrategy searchStrategy,
-                               DownloadPlan.LoadPathConfig loadPathConfig ) throws Exception {
+                               DownloadPlan.LoadPathConfig loadPathConfig ) {
     ExecutorService executor = Executors.newFixedThreadPool( 5 );
     List<CompletableFuture<Boolean>> taskList =
       httpSearchService.searchForConfigsLocation( loadPathConfig.getCompositeHost(),
@@ -36,7 +36,7 @@ public class HttpDownloadFunction extends DownloadFunction {
 
             return downloadService.loadConfigsFromUri( file.getDownloadPath(), copiedLoadPathConfig, executor );
           } catch ( Exception e ) {
-            throw new CompletionException( e );
+            throw new ServiceException( e );
           }
         } ).collect( Collectors.toList() );
 

@@ -17,7 +17,7 @@ public abstract class DownloadPlan {
     this.searchStrategy = searchStrategy;
   }
 
-  public boolean downloadConfigs( String hostName, String destPrefix ) throws Exception {
+  public boolean downloadConfigs( String hostName, String destPrefix ) {
     DownloadConfigsCondition downloadConfigsCondition = createDownloadConfigsCondition();
     downloadFunction
       .downloadConfigs( downloadConfigsCondition, searchStrategy, createLoadPathConfig( hostName, destPrefix ) );

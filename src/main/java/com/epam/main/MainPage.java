@@ -24,7 +24,7 @@ import java.util.List;
 
 public class MainPage {
 
-  final static Logger logger = Logger.getLogger( MainPage.class );
+  private final static Logger logger = Logger.getLogger( MainPage.class );
 
   @FXML
   Button buttonStart;
@@ -86,7 +86,7 @@ public class MainPage {
     }
   }
 
-  public void buttonStartAction() {
+  private void buttonStartAction() {
     if ( pathToSave.getText().isEmpty() || cluster_node_FQDN.getText().isEmpty() ) {
       logger.info( "One or more required field(s) is empty! Only test.properties field is not required!" );
     } else {
@@ -96,7 +96,8 @@ public class MainPage {
       Thread thread = new Thread( () -> {
         clusterConfigLoader
           .loadConfigs( new LoadConfigs( new HttpCredentials( restUser.getText(), restPassword.getText() ),
-            new Krb5Credentials( kerberosUser.getText(), kerberosPassword.getText() ), new SshCredentials( sshUser.getText(), sshPassword.getText() ),
+            new Krb5Credentials( kerberosUser.getText(), kerberosPassword.getText() ),
+            new SshCredentials( sshUser.getText(), sshPassword.getText() ),
             cluster_node_FQDN.getText(), pathToSave.getText(),
             LoadConfigsManager.ClusterType.valueOf( clusterType.getValue() ) ) );
         buttonStart.setDisable( false );
@@ -106,7 +107,7 @@ public class MainPage {
     }
   }
 
-  public void buttonOpenShimAction() {
+  private void buttonOpenShimAction() {
     Stage stage = new Stage();
     DirectoryChooser directoryChooser = new DirectoryChooser();
     directoryChooser.setTitle( "Choose Shim directory" );

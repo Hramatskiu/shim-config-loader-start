@@ -7,5 +7,5 @@ import com.epam.spring.search.SearchStrategy;
 public abstract class DownloadFunction {
   public abstract void downloadConfigs( DownloadConfigsCondition downloadConfigsCondition,
                                         SearchStrategy searchStrategy,
-                                        DownloadPlan.LoadPathConfig loadPathConfig ) throws Exception;
+                                        DownloadPlan.LoadPathConfig loadPathConfig );
 }

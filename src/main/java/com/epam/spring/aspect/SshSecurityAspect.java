@@ -18,15 +18,11 @@ public class SshSecurityAspect {
   }
 
   @Around( "addSshSecurity()" )
-  public String setHttpSecurityToClientBuilder( ProceedingJoinPoint joinPoint ) throws Exception {
-    try {
-      Object[] args = joinPoint.getArgs();
-      setupSecurityArgs( args, getCredentialsFromSecurityContext().getSshCredentials() );
+  public String setHttpSecurityToClientBuilder( ProceedingJoinPoint joinPoint ) throws Throwable {
+    Object[] args = joinPoint.getArgs();
+    setupSecurityArgs( args, getCredentialsFromSecurityContext().getSshCredentials() );
 
-      return (String) joinPoint.proceed( args );
-    } catch ( Throwable throwable ) {
-      throw (Exception) throwable;
-    }
+    return (String) joinPoint.proceed( args );
   }
 
   private TestConfigLoadCredentials getCredentialsFromSecurityContext() throws Exception {
@@ -39,12 +35,12 @@ public class SshSecurityAspect {
   }
 
   private void setupSecurityArgs( Object[] args, SshCredentials sshCredentials ) {
-    if ( args[0] instanceof String ) {
-      args[0] = sshCredentials.getUsername();
+    if ( args[ 0 ] instanceof String ) {
+      args[ 0 ] = sshCredentials.getUsername();
     }
 
-    if ( args[1] instanceof String ) {
-      args[1] = sshCredentials.getPassword();
+    if ( args[ 1 ] instanceof String ) {
+      args[ 1 ] = sshCredentials.getPassword();
     }
   }
 }

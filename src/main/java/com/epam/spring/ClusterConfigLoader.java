@@ -2,6 +2,7 @@ package com.epam.spring;
 
 import com.epam.spring.config.LoadConfigs;
 import com.epam.spring.config.SpringAppConfig;
+import com.epam.spring.exception.ServiceException;
 import com.epam.spring.manager.LoadConfigsManager;
 import org.apache.log4j.Logger;
 import org.springframework.context.ApplicationContext;
@@ -30,72 +31,20 @@ public class ClusterConfigLoader {
     LoadConfigsManager loadConfigsManager = applicationContext.getBean( LoadConfigsManager.class );
     ExecutorService executor = Executors.newFixedThreadPool( 2 );
 
-    Stream.of( CompletableFuture.supplyAsync( () -> {
-      try {
-        return loadConfigsManager.downloadClientConfigs( loadConfigs.getClusterType(), loadConfigs );
-      } catch ( Exception e ) {
-        throw new CompletionException( e );
-      }
-    }, executor ) ).map( CompletableFuture::join ).collect( Collectors.toList() ).forEach( logger::info );
+    try {
+      Stream.of( CompletableFuture.supplyAsync( () -> {
+        try {
+          return loadConfigsManager.downloadClientConfigs( loadConfigs.getClusterType(), loadConfigs );
+        } catch ( Exception e ) {
+          throw new CompletionException( e );
+        }
+      }, executor ) ).map( CompletableFuture::join ).collect( Collectors.toList() ).forEach( logger::info );
+    } catch ( CompletionException | ServiceException ex ) {
+      logger.error( ex.getMessage() );
+    }
 
     executor.shutdown();
     date = new Date();
     logger.info( start - date.getTime() );
   }
-
-    /*public static void main(String[] args) throws Exception{
-        Date date = new Date();
-        long start = date.getTime();
-        System.out.println(date.getTime());
-
-        ApplicationContext applicationContext = new AnnotationConfigApplicationContext(SpringAppConfig.class);
-
-        date = new Date();
-        System.out.println(start - date.getTime());
-
-        LoadConfigsManager loadConfigsManager = applicationContext.getBean(LoadConfigsManager.class);
-        ExecutorService executor = Executors.newFixedThreadPool(2);
-
-        Stream.of(CompletableFuture.supplyAsync(() -> {
-            try {
-                return loadConfigsManager.downloadClientConfigs(LoadConfigsManager.ClusterType.HDP, new LoadConfigs
-                (new HttpCredentials("admin", "admin"),
-                        new Krb5Credentials("devuser", "password"), new SshCredentials(),
-                        "svqxbdcn6hdp26secn1.pentahoqa.com", "D:\\test_conf_hdp"));
-            } catch (Exception e) {
-                throw new CompletionException(e);
-            }
-        }, executor), CompletableFuture.supplyAsync(() -> {
-            try {
-                return loadConfigsManager.downloadClientConfigs(LoadConfigsManager.ClusterType.CDH, new LoadConfigs
-                (new HttpCredentials("admin", "admin"),
-                        new Krb5Credentials("devuser", "password"), new SshCredentials(),
-                        "svqxbdcn6cdh512secn1.pentahoqa.com", "D:\\test_conf_cdh"));
-            } catch (Exception e) {
-                throw new CompletionException(e);
-            }
-        }, executor)/*, CompletableFuture.supplyAsync(() -> {
-            try {
-                return loadConfigsManager.downloadClientConfigs(LoadConfigsManager.ClusterType.CDH, new LoadConfigs
-                (new HttpCredentials("admin", "admin"),
-                        new Krb5Credentials("devuser", "password"), new SshCredentials(),
-                        "svqxbdcn6cdh512secn1.pentahoqa.com", "D:\\test_conf_cdh_2"));
-            } catch (Exception e) {
-                throw new CompletionException(e);
-            }
-        }, executor), CompletableFuture.supplyAsync(() -> {
-            try {
-                return loadConfigsManager.downloadClientConfigs(LoadConfigsManager.ClusterType.CDH, new LoadConfigs
-                (new HttpCredentials("admin", "admin"),
-                        new Krb5Credentials("devuser", "password"), new SshCredentials(),
-                        "svqxbdcn6cdh512secn1.pentahoqa.com", "D:\\test_conf_cdh_3"));
-            } catch (Exception e) {
-                throw new CompletionException(e);
-            }
-        }, executor)).map(CompletableFuture::join).collect(Collectors.toList()).forEach(System.out::println);
-
-        executor.shutdown();
-        date = new Date();
-        System.out.println(start - date.getTime());
-    }*/
 }

@@ -31,7 +31,7 @@ public class LoadConfigsManager {
     CDH, HDP, MAPR, EMR
   }
 
-  public boolean downloadClientConfigs( ClusterType clusterType, LoadConfigs loadConfigs ) throws Exception {
+  public boolean downloadClientConfigs( ClusterType clusterType, LoadConfigs loadConfigs ) {
     configureSecurity( loadConfigs );
     return downloadPlanMap.containsKey( clusterType ) && downloadPlanMap.get( clusterType )
       .downloadConfigs( loadConfigs.getHost(), loadConfigs.getSaveDir() );

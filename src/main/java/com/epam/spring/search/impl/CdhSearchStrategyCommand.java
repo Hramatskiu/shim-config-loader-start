@@ -1,7 +1,9 @@
 package com.epam.spring.search.impl;
 
 import com.epam.spring.condition.DownloadableFile;
+import com.epam.spring.exception.StrategyException;
 import com.epam.spring.search.SearchStrategy;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +19,8 @@ public class CdhSearchStrategyCommand implements SearchStrategy {
 
   @Override
   public List<DownloadableFile> resolveCommandResult( String commandResult,
-                                                      List<DownloadableFile> searchableServiceNames ) throws Exception {
+                                                      List<DownloadableFile> searchableServiceNames )
+    throws StrategyException {
     String clusterName = extractClusterNameFromCommandResult( commandResult );
     if ( !clusterName.isEmpty() ) {
       searchableServiceNames.forEach( service -> service
@@ -29,7 +32,11 @@ public class CdhSearchStrategyCommand implements SearchStrategy {
     return Collections.emptyList();
   }
 
-  private String extractClusterNameFromCommandResult( String commandResult ) throws Exception {
-    return new JSONObject( commandResult ).getJSONArray( "items" ).getJSONObject( 0 ).getString( "name" );
+  private String extractClusterNameFromCommandResult( String commandResult ) throws StrategyException {
+    try {
+      return new JSONObject( commandResult ).getJSONArray( "items" ).getJSONObject( 0 ).getString( "name" );
+    } catch ( JSONException e ) {
+      throw new StrategyException( e );
+    }
   }
 }

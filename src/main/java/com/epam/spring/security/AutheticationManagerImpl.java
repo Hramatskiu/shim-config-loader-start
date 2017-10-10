@@ -49,7 +49,6 @@ public class AutheticationManagerImpl implements AuthenticationManager {
     testConfigLoadCredentials
       .setCredentialsProvider( createHttpCredentialsProvider( authentication.getHttpCredentials() ) );
     testConfigLoadCredentials.setAuthShemes( createAuthShemesList() );
-    //testConfigLoadCredentials.setKrbSubject(createKrb5Subject(authentication.getKrb5Credentials()));
     testConfigLoadCredentials.setSshCredentials( createSshCredentials( authentication.getSshCredentials() ) );
 
     return testConfigLoadCredentials;

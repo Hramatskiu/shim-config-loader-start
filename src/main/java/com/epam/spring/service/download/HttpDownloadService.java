@@ -1,6 +1,8 @@
 package com.epam.spring.service.download;
 
 import com.epam.spring.annotation.SecurityAnnotation;
+import com.epam.spring.exception.CommonUtilException;
+import com.epam.spring.exception.ServiceException;
 import com.epam.spring.plan.DownloadPlan;
 import com.epam.spring.service.FileExtractingService;
 import com.epam.spring.util.CommonUtilHolder;
@@ -10,8 +12,8 @@ import org.apache.http.HttpResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutorService;
 
 @Component
@@ -21,30 +23,36 @@ public class HttpDownloadService {
 
   @SecurityAnnotation
   public CompletableFuture<Boolean> loadConfigsFromUri( String uri, DownloadPlan.LoadPathConfig loadPathConfig,
-                                                        ExecutorService executorService ) throws Exception {
+                                                        ExecutorService executorService ) {
     return CompletableFuture.supplyAsync( () -> {
-      try {
-        HttpResponse clientConfigsResponse = askForClientsConfigs( uri );
+      HttpResponse clientConfigsResponse = askForClientsConfigs( uri );
 
-        return clientConfigsResponse.getStatusLine().getStatusCode() == HttpStatus.SC_OK &&
-          saveClientsConfigs( IOUtils.toByteArray( clientConfigsResponse.getEntity().getContent() ), loadPathConfig );
-      } catch ( Exception e ) {
-        throw new CompletionException( e );
-      }
+      return clientConfigsResponse.getStatusLine().getStatusCode() == HttpStatus.SC_OK
+        && saveClientsConfigs( extractByteArrayFromResponse( clientConfigsResponse ), loadPathConfig );
     }, executorService );
   }
 
-  private HttpResponse askForClientsConfigs( String uri ) throws Exception {
-    return CommonUtilHolder.httpCommonUtilInstance().createHttpClient()
-      .execute( CommonUtilHolder.httpCommonUtilInstance().createHttpUriRequest( uri ) );
+  private HttpResponse askForClientsConfigs( String uri ) {
+    try {
+      return CommonUtilHolder.httpCommonUtilInstance().createHttpClient()
+        .execute( CommonUtilHolder.httpCommonUtilInstance().createHttpUriRequest( uri ) );
+    } catch ( IOException | CommonUtilException e ) {
+      throw new ServiceException( e );
+    }
   }
 
-  //Think about
-  private boolean saveClientsConfigs( byte[] configsArray, DownloadPlan.LoadPathConfig loadPathConfig )
-    throws Exception {
+  private boolean saveClientsConfigs( byte[] configsArray, DownloadPlan.LoadPathConfig loadPathConfig ) {
     fileExtractingService.getExtractFunction( loadPathConfig.getExtractFormat() )
       .accept( configsArray, loadPathConfig );
 
     return true;
+  }
+
+  private byte[] extractByteArrayFromResponse( HttpResponse clientConfigsResponse ) {
+    try {
+      return IOUtils.toByteArray( clientConfigsResponse.getEntity().getContent() );
+    } catch ( IOException e ) {
+      throw new ServiceException( e );
+    }
   }
 }

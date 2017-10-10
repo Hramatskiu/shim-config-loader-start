@@ -1,5 +1,6 @@
 package com.epam.spring.util;
 
+import com.epam.spring.exception.CommonUtilException;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
@@ -20,25 +21,25 @@ import java.util.stream.Collectors;
 public class FileCommonUtil {
   private static Logger logger = Logger.getLogger( FileCommonUtil.class );
 
-  public static void writeByteArrayToFile( String dest, byte[] input ) {
+  public static void writeByteArrayToFile( String dest, byte[] input ) throws CommonUtilException {
     try {
       FileUtils.writeByteArrayToFile( new File( dest ), input );
     } catch ( IOException e ) {
-      e.printStackTrace();
+      throw new CommonUtilException( e );
     }
   }
 
-  public static void writeStringToFile( String dest, String input ) {
+  public static void writeStringToFile( String dest, String input ) throws CommonUtilException {
     try {
       FileUtils.writeStringToFile( new File( dest ), input );
       logger.info( "Save - " + dest );
     } catch ( IOException e ) {
-      e.printStackTrace();
+      throw new CommonUtilException( e );
     }
   }
 
   public static void extractFilesFromTarArchiveByteArray( byte[] source, List<String> unpackingFileNames,
-                                                          String destPrefix ) throws Exception {
+                                                          String destPrefix ) throws CommonUtilException {
     try ( TarArchiveInputStream debInputStream =
             new TarArchiveInputStream( new GzipCompressorInputStream(
               new ByteArrayInputStream( source ) ) ) ) {
@@ -47,12 +48,12 @@ public class FileCommonUtil {
         saveEntry( entry, debInputStream, unpackingFileNames, destPrefix );
       }
     } catch ( IOException ex ) {
-      ex.printStackTrace();
+      throw new CommonUtilException( ex );
     }
   }
 
   public static void extractFilesFromZipArchiveByteArray( byte[] source, List<String> unpackingFileNames,
-                                                          String destPrefix ) throws Exception {
+                                                          String destPrefix ) throws CommonUtilException {
     try ( ZipArchiveInputStream debInputStream =
             new ZipArchiveInputStream(
               new ByteArrayInputStream( source ) ) ) {
@@ -61,12 +62,12 @@ public class FileCommonUtil {
         saveEntry( entry, debInputStream, unpackingFileNames, destPrefix );
       }
     } catch ( IOException ex ) {
-      ex.printStackTrace();
+      throw new CommonUtilException( ex );
     }
   }
 
   private static void saveEntry( ArchiveEntry entry, ArchiveInputStream archiveInputStream,
-                                 List<String> unpackingFileNames, String destPrefix ) {
+                                 List<String> unpackingFileNames, String destPrefix ) throws CommonUtilException {
     try ( ByteArrayOutputStream out = new ByteArrayOutputStream() ) {
       if ( !entry.isDirectory() ) {
         List<String> matchingFileNames =
@@ -82,7 +83,7 @@ public class FileCommonUtil {
         }
       }
     } catch ( IOException ex ) {
-      ex.printStackTrace();
+      throw new CommonUtilException( ex );
     }
   }
 }

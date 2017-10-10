@@ -1,5 +1,6 @@
 package com.epam.spring.service;
 
+import com.epam.spring.exception.ServiceException;
 import com.epam.spring.plan.DownloadPlan;
 import com.epam.spring.util.FileCommonUtil;
 import org.springframework.stereotype.Component;
@@ -12,7 +13,6 @@ import java.util.function.BiConsumer;
 public class FileExtractingService {
   private Map<ExtractFormats, BiConsumer<byte[], DownloadPlan.LoadPathConfig>> extractingFunctionsMap;
 
-  //Exception handling
   public FileExtractingService() {
     extractingFunctionsMap = new HashMap<>();
     extractingFunctionsMap.put( ExtractFormats.ZIP, ( bytes, loadPathConfig ) -> {
@@ -20,7 +20,7 @@ public class FileExtractingService {
         FileCommonUtil.extractFilesFromZipArchiveByteArray( bytes, loadPathConfig.getLoadedFiles(),
           loadPathConfig.getDestPrefix() );
       } catch ( Exception e ) {
-        e.printStackTrace();
+        throw new ServiceException( e );
       }
     } );
     extractingFunctionsMap.put( ExtractFormats.TAR, ( bytes, loadPathConfig ) -> {
@@ -28,7 +28,7 @@ public class FileExtractingService {
         FileCommonUtil.extractFilesFromTarArchiveByteArray( bytes, loadPathConfig.getLoadedFiles(),
           loadPathConfig.getDestPrefix() );
       } catch ( Exception e ) {
-        e.printStackTrace();
+        throw new ServiceException( e );
       }
     } );
   }

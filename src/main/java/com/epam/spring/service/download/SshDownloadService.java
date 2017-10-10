@@ -1,6 +1,8 @@
 package com.epam.spring.service.download;
 
 import com.epam.spring.annotation.SecurityAnnotation;
+import com.epam.spring.exception.CommonUtilException;
+import com.epam.spring.exception.ServiceException;
 import com.epam.spring.plan.DownloadPlan;
 import com.epam.spring.util.CommonUtilHolder;
 import com.epam.spring.util.FileCommonUtil;
@@ -12,7 +14,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
@@ -21,25 +22,27 @@ import java.util.stream.Collectors;
 public class SshDownloadService {
   @SecurityAnnotation
   public CompletableFuture<Boolean> loadConfigsFromCommand( String command, DownloadPlan.LoadPathConfig loadPathConfig,
-                                                            ExecutorService executorService ) throws Exception {
+                                                            ExecutorService executorService ) {
     return CompletableFuture.supplyAsync( () -> {
-      try {
-        List<String> answer = new ArrayList<>( askForClientsConfigs( loadPathConfig.getLoadedFiles(), loadPathConfig.getCompositeHost(), command ) );
+      List<String> answer = new ArrayList<>(
+        askForClientsConfigs( loadPathConfig.getLoadedFiles(), loadPathConfig.getCompositeHost(), command ) );
 
-        return checkAnswer( answer, loadPathConfig.getLoadedFiles() )
-          && saveClientConfigs( answer, loadPathConfig );
-      } catch ( Exception e ) {
-        throw new CompletionException( e );
-      }
+      return checkAnswer( answer, loadPathConfig.getLoadedFiles() ) && saveClientConfigs( answer, loadPathConfig );
     }, executorService );
   }
 
   private String askForClientsConfigs( String host, String command ) {
-    return CommonUtilHolder.sshCommonUtilInstance().executeCommand( StringUtils.EMPTY, StringUtils.EMPTY, host, 22, command );
+    try {
+      return CommonUtilHolder.sshCommonUtilInstance()
+        .executeCommand( StringUtils.EMPTY, StringUtils.EMPTY, host, 22, command );
+    } catch ( CommonUtilException e ) {
+      throw new ServiceException( e );
+    }
   }
 
   private List<String> askForClientsConfigs( List<String> loadedFiles, String host, String command ) {
-    return loadedFiles.size() == 1 ? Collections.singletonList( askForClientsConfigs( host, "cat " + command + loadedFiles.get( 0 ) ) )
+    return loadedFiles.size() == 1
+      ? Collections.singletonList( askForClientsConfigs( host, "cat " + command + loadedFiles.get( 0 ) ) )
       : askForClientsConfigsInParallel( loadedFiles, host, command );
   }
 
@@ -56,7 +59,8 @@ public class SshDownloadService {
     return answers;
   }
 
-  private CompletableFuture<String> createAskForClientsConfigsTask( String host, String command, ExecutorService executorService ) {
+  private CompletableFuture<String> createAskForClientsConfigsTask( String host, String command,
+                                                                    ExecutorService executorService ) {
     return CompletableFuture.supplyAsync( () -> askForClientsConfigs( host, command ), executorService );
   }
 
@@ -65,25 +69,34 @@ public class SshDownloadService {
   }
 
   private boolean saveClientConfigs( List<String> configString, DownloadPlan.LoadPathConfig loadPathConfig ) {
-    return configString.size() == 1 ? saveClientConfigs( configString.get( 0 ), loadPathConfig.getDestPrefix() + "\\" + loadPathConfig.getLoadedFiles().get( 0 ) )
+    return configString.size() == 1 ? saveClientConfigs( configString.get( 0 ),
+      loadPathConfig.getDestPrefix() + "\\" + loadPathConfig.getLoadedFiles().get( 0 ) )
       : saveClientConfigsInParallel( configString, loadPathConfig );
   }
 
   //Think about
   private boolean saveClientConfigs( String configString, String destPath ) {
-    FileCommonUtil.writeStringToFile( destPath, configString );
+    try {
+      FileCommonUtil.writeStringToFile( destPath, configString );
 
-    return true;
+      return true;
+    } catch ( CommonUtilException e ) {
+      //logging
+      e.printStackTrace();
+    }
+
+    return false;
   }
 
   private boolean saveClientConfigsInParallel( List<String> configString, DownloadPlan.LoadPathConfig loadPathConfig ) {
-    List<CompletableFuture<Boolean>> saveConfigsTasksList = new ArrayList<>(  );
+    List<CompletableFuture<Boolean>> saveConfigsTasksList = new ArrayList<>();
     ExecutorService executorService = Executors.newFixedThreadPool( configString.size() );
 
     Iterator<String> iterator = configString.iterator();
     loadPathConfig.getLoadedFiles().forEach( file -> {
       if ( iterator.hasNext() ) {
-        saveConfigsTasksList.add( createSaveConfigsTask( iterator.next(), loadPathConfig.getDestPrefix() + "\\" + file, executorService ) );
+        saveConfigsTasksList.add(
+          createSaveConfigsTask( iterator.next(), loadPathConfig.getDestPrefix() + "\\" + file, executorService ) );
       }
     } );
 
@@ -94,7 +107,8 @@ public class SshDownloadService {
     return result;
   }
 
-  private CompletableFuture<Boolean> createSaveConfigsTask( String configString, String destPath, ExecutorService executorService ) {
+  private CompletableFuture<Boolean> createSaveConfigsTask( String configString, String destPath,
+                                                            ExecutorService executorService ) {
     return CompletableFuture.supplyAsync( () -> saveClientConfigs( configString, destPath ), executorService );
   }
 }

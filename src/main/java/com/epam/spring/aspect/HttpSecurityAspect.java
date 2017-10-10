@@ -33,44 +33,32 @@ public class HttpSecurityAspect {
   }
 
   @Around( "addHttpClientBuilderSecurity()" )
-  public HttpClientBuilder setHttpSecurityToClientBuilder( ProceedingJoinPoint joinPoint ) throws Exception {
-    try {
-      Object httpClientBuilder = joinPoint.proceed();
-      ( (HttpClientBuilder) httpClientBuilder )
-        .setDefaultCredentialsProvider( getCredentialsFromSecurityContext().getCredentialsProvider() );
+  public HttpClientBuilder setHttpSecurityToClientBuilder( ProceedingJoinPoint joinPoint ) throws Throwable {
+    Object httpClientBuilder = joinPoint.proceed();
+    ( (HttpClientBuilder) httpClientBuilder )
+      .setDefaultCredentialsProvider( getCredentialsFromSecurityContext().getCredentialsProvider() );
 
-      return (HttpClientBuilder) httpClientBuilder;
-    } catch ( Throwable throwable ) {
-      throw (Exception) throwable;
-    }
+    return (HttpClientBuilder) httpClientBuilder;
   }
 
   @Around( "addHttpRequestBuilderSecurity()" )
-  public RequestBuilder setHttpSecurityToRequestBuilder( ProceedingJoinPoint joinPoint ) throws Exception {
-    try {
-      Object requestBuilder = joinPoint.proceed();
-      ( (RequestBuilder) requestBuilder ).setConfig( RequestConfig.custom()
-        .setTargetPreferredAuthSchemes( getPrefShemesList() ).build() );
+  public RequestBuilder setHttpSecurityToRequestBuilder( ProceedingJoinPoint joinPoint ) throws Throwable {
+    Object requestBuilder = joinPoint.proceed();
+    ( (RequestBuilder) requestBuilder ).setConfig( RequestConfig.custom()
+      .setTargetPreferredAuthSchemes( getPrefShemesList() ).build() );
 
-      return (RequestBuilder) requestBuilder;
-    } catch ( Throwable throwable ) {
-      throw (Exception) throwable;
-    }
+    return (RequestBuilder) requestBuilder;
   }
 
   @Around( "addHttpRequestSecurity()" )
-  public HttpUriRequest setHttpSecurityToRequest( ProceedingJoinPoint joinPoint ) throws Exception {
-    try {
-      Object request = joinPoint.proceed();
-      ( (HttpUriRequest) request ).setHeader( (
-        new BasicScheme()
-          .authenticate( getCredentialsFromSecurityContext().getCredentialsProvider().getCredentials( AuthScope.ANY ),
-            (HttpUriRequest) request, null ) ) );
+  public HttpUriRequest setHttpSecurityToRequest( ProceedingJoinPoint joinPoint ) throws Throwable {
+    Object request = joinPoint.proceed();
+    ( (HttpUriRequest) request ).setHeader( (
+      new BasicScheme()
+        .authenticate( getCredentialsFromSecurityContext().getCredentialsProvider().getCredentials( AuthScope.ANY ),
+          (HttpUriRequest) request, null ) ) );
 
-      return (HttpUriRequest) request;
-    } catch ( Throwable throwable ) {
-      throw (Exception) throwable;
-    }
+    return (HttpUriRequest) request;
   }
 
   private List<String> getPrefShemesList() throws Exception {
@@ -83,6 +71,6 @@ public class HttpSecurityAspect {
       return (TestConfigLoadCredentials) loggedAuthentication;
     }
 
-    throw new Exception( "tt" );
+    throw new Exception( "Another authentication!" );
   }
 }
