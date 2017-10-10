@@ -1,5 +1,6 @@
 package com.epam.spring.service;
 
+import com.epam.spring.exception.CommonUtilException;
 import com.epam.spring.exception.ServiceException;
 import com.epam.spring.plan.DownloadPlan;
 import com.epam.spring.util.FileCommonUtil;
@@ -19,7 +20,7 @@ public class FileExtractingService {
       try {
         FileCommonUtil.extractFilesFromZipArchiveByteArray( bytes, loadPathConfig.getLoadedFiles(),
           loadPathConfig.getDestPrefix() );
-      } catch ( Exception e ) {
+      } catch ( CommonUtilException e ) {
         throw new ServiceException( e );
       }
     } );
@@ -27,7 +28,7 @@ public class FileExtractingService {
       try {
         FileCommonUtil.extractFilesFromTarArchiveByteArray( bytes, loadPathConfig.getLoadedFiles(),
           loadPathConfig.getDestPrefix() );
-      } catch ( Exception e ) {
+      } catch ( CommonUtilException e ) {
         throw new ServiceException( e );
       }
     } );

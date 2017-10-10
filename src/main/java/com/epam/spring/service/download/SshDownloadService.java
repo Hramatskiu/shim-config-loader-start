@@ -65,7 +65,7 @@ public class SshDownloadService {
   }
 
   private boolean checkAnswer( List<String> answer, List<String> loaddedFileNames ) {
-    return !answer.isEmpty() && answer.size() == loaddedFileNames.size();
+    return !answer.isEmpty() && answer.size() == loaddedFileNames.size() && answer.stream().noneMatch( String::isEmpty );
   }
 
   private boolean saveClientConfigs( List<String> configString, DownloadPlan.LoadPathConfig loadPathConfig ) {

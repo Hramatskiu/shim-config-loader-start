@@ -13,11 +13,12 @@ import org.springframework.stereotype.Component;
 import java.util.Arrays;
 import java.util.Collections;
 
-@Component( "mapr-plan" )
+@Component( "MAPR" )
 public class MAPRDownloadPlan extends DownloadPlan {
   protected MAPRDownloadPlan( @Autowired @Qualifier( "ssh-download-function" ) DownloadFunction downloadFunction,
-                              @Autowired @Qualifier( "MAPR" ) SearchStrategy searchStrategy ) {
-    super( downloadFunction, searchStrategy );
+                              @Autowired @Qualifier( "mapr-default-strategy" ) SearchStrategy searchStrategy,
+                              @Autowired @Qualifier( "hadoop-classpath-strategy" ) SearchStrategy searchStrategy1 ) {
+    super( downloadFunction, searchStrategy, searchStrategy1 );
   }
 
   @Override

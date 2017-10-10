@@ -14,13 +14,13 @@ import org.springframework.stereotype.Component;
 import java.util.Arrays;
 import java.util.Collections;
 
-@Component( "cdh-plan" )
+@Component( "CDH" )
 public class CDHDownloadPlan extends DownloadPlan {
   private static final String HTTP_POSTFIX = ":7180/api/v10/";
   private static final FileExtractingService.ExtractFormats EXTRACT_FORMATS = FileExtractingService.ExtractFormats.ZIP;
 
   protected CDHDownloadPlan( @Autowired @Qualifier( "http-download-function" ) DownloadFunction downloadFunction,
-                             @Autowired @Qualifier( "CDH" ) SearchStrategy searchStrategy ) {
+                             @Autowired @Qualifier( "cdh-rest-strategy" ) SearchStrategy searchStrategy ) {
     super( downloadFunction, searchStrategy );
   }
 

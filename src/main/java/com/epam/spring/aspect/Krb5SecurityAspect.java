@@ -18,7 +18,7 @@ public class Krb5SecurityAspect {
   }
 
   @SuppressWarnings( { "unchecked", "ConstantConditions" } )
-  @Around( "accessSecurityCluster()" )
+  @Around( "accessSecureCluster()" )
   public CompletableFuture<Boolean> aroundKerberosAccess( ProceedingJoinPoint joinPoint ) throws Exception {
     return (CompletableFuture<Boolean>) UserGroupInformation.getLoginUser()
       .doAs( (PrivilegedExceptionAction<Object>) () -> {

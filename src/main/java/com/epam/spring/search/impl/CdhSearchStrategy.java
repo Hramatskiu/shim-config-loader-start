@@ -10,8 +10,8 @@ import org.springframework.stereotype.Component;
 import java.util.Collections;
 import java.util.List;
 
-@Component( "HDP" )
-public class HdpSearchStrategyCommand implements SearchStrategy {
+@Component( "cdh-rest-strategy" )
+public class CdhSearchStrategy implements SearchStrategy {
   @Override
   public String getStrategyCommand() {
     return "clusters/";
@@ -24,8 +24,7 @@ public class HdpSearchStrategyCommand implements SearchStrategy {
     String clusterName = extractClusterNameFromCommandResult( commandResult );
     if ( !clusterName.isEmpty() ) {
       searchableServiceNames.forEach( service -> service
-        .setDownloadPath( "clusters/" + clusterName + "/services/" + service.getServiceName().toUpperCase()
-          + "/components/" + service.getServiceName().toUpperCase() + "_CLIENT?format=client_config_tar" ) );
+        .setDownloadPath( "clusters/" + clusterName + "/services/" + service.getServiceName() + "/clientConfig" ) );
 
       return searchableServiceNames;
     }
@@ -35,8 +34,7 @@ public class HdpSearchStrategyCommand implements SearchStrategy {
 
   private String extractClusterNameFromCommandResult( String commandResult ) throws StrategyException {
     try {
-      return new JSONObject( commandResult ).getJSONArray( "items" ).getJSONObject( 0 ).getJSONObject( "Clusters" )
-        .getString( "cluster_name" );
+      return new JSONObject( commandResult ).getJSONArray( "items" ).getJSONObject( 0 ).getString( "name" );
     } catch ( JSONException e ) {
       throw new StrategyException( e );
     }

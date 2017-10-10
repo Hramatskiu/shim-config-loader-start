@@ -10,8 +10,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
-@Component( "MAPR" )
-public class MaprDefaultSearchStrategyCommand implements SearchStrategy {
+@Component( "mapr-default-strategy" )
+public class MaprDefaultSearchStrategy implements SearchStrategy {
   @Override
   public String getStrategyCommand() {
     return "hadoop version; ls $MAPR_HOME/hbase; ls $MAPR_HOME/hive";

@@ -18,9 +18,9 @@ public class LoadConfigsManager {
   private AuthenticationManager authenticationManager;
   private Map<ClusterType, DownloadPlan> downloadPlanMap;
 
-  public LoadConfigsManager( @Autowired @Qualifier( "hdp-plan" ) DownloadPlan hdpDownloadPlan,
-                             @Autowired @Qualifier( "cdh-plan" ) DownloadPlan cdhDownloadPlan,
-                             @Autowired @Qualifier( "mapr-plan" ) DownloadPlan maprDownloadPlan ) {
+  public LoadConfigsManager( @Autowired @Qualifier( "HDP" ) DownloadPlan hdpDownloadPlan,
+                             @Autowired @Qualifier( "CDH" ) DownloadPlan cdhDownloadPlan,
+                             @Autowired @Qualifier( "MAPR" ) DownloadPlan maprDownloadPlan ) {
     downloadPlanMap = new HashMap<>();
     downloadPlanMap.put( ClusterType.HDP, hdpDownloadPlan );
     downloadPlanMap.put( ClusterType.CDH, cdhDownloadPlan );

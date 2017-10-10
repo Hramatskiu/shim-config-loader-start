@@ -5,22 +5,29 @@ import com.epam.spring.function.DownloadFunction;
 import com.epam.spring.search.SearchStrategy;
 import com.epam.spring.service.FileExtractingService;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Deque;
 import java.util.List;
 
 public abstract class DownloadPlan {
   private DownloadFunction downloadFunction;
-  private SearchStrategy searchStrategy;
+  //private SearchStrategy searchStrategy;
+  private Deque<SearchStrategy> searchStrategies;
 
-  protected DownloadPlan( DownloadFunction downloadFunction, SearchStrategy searchStrategy ) {
+  protected DownloadPlan( DownloadFunction downloadFunction, SearchStrategy... searchStrategies ) {
     this.downloadFunction = downloadFunction;
-    this.searchStrategy = searchStrategy;
+    setupSearchStrategies( searchStrategies );
+    //this.searchStrategy = searchStrategy;
   }
 
   public boolean downloadConfigs( String hostName, String destPrefix ) {
     DownloadConfigsCondition downloadConfigsCondition = createDownloadConfigsCondition();
-    downloadFunction
-      .downloadConfigs( downloadConfigsCondition, searchStrategy, createLoadPathConfig( hostName, destPrefix ) );
+    while ( !downloadConfigsCondition.getUnloadedConfigsList().isEmpty() && !searchStrategies.isEmpty() ) {
+      downloadFunction
+        .downloadConfigs( downloadConfigsCondition, searchStrategies.pop(), createLoadPathConfig( hostName, destPrefix ) );
+    }
 
     return downloadConfigsCondition.getUnloadedConfigsList().isEmpty();
   }
@@ -28,6 +35,11 @@ public abstract class DownloadPlan {
   protected abstract LoadPathConfig createLoadPathConfig( String hostName, String destPrefix );
 
   protected abstract DownloadConfigsCondition createDownloadConfigsCondition();
+
+  private void setupSearchStrategies( SearchStrategy[] searchStrategies ) {
+    this.searchStrategies = new ArrayDeque<>(  );
+    Arrays.stream( searchStrategies ).forEach( searchStrategy -> this.searchStrategies.push( searchStrategy ) );
+  }
 
   public static class LoadPathConfig {
     private String compositeHost;

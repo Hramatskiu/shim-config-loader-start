@@ -9,6 +9,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.springframework.stereotype.Component;
 
+import javax.net.ssl.SSLContext;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -26,20 +27,24 @@ public class HttpCommonUtil {
 
   public CloseableHttpClient createHttpClient() throws CommonUtilException {
     HttpClientBuilder builder = CommonUtilHolder.httpCommonUtilInstance().createHttpClientBuilder();
+    builder.setSSLContext( createSslContext() );
 
-    SSLContextBuilder sslcb = new SSLContextBuilder();
-    try {
-      sslcb.loadTrustMaterial( KeyStore.getInstance( KeyStore.getDefaultType() ),
-        new TrustSelfSignedStrategy() );
-      builder.setSSLContext( sslcb.build() );
-
-      return builder.build();
-    } catch ( NoSuchAlgorithmException | KeyStoreException | KeyManagementException e ) {
-      throw new CommonUtilException( e );
-    }
+    return builder.build();
   }
 
   public HttpUriRequest createHttpUriRequest( String uri ) {
     return CommonUtilHolder.httpCommonUtilInstance().createRequestBuilder( uri ).build();
+  }
+
+  private SSLContext createSslContext() throws CommonUtilException {
+    try {
+      SSLContextBuilder sslcb = new SSLContextBuilder();
+      sslcb.loadTrustMaterial( KeyStore.getInstance( KeyStore.getDefaultType() ),
+        new TrustSelfSignedStrategy() );
+
+      return sslcb.build();
+    } catch ( NoSuchAlgorithmException | KeyStoreException | KeyManagementException e ) {
+      throw new CommonUtilException( e );
+    }
   }
 }

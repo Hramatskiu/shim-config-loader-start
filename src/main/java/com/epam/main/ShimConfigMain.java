@@ -11,7 +11,7 @@ import java.io.IOException;
 
 public class ShimConfigMain extends Application {
 
-  final static Logger logger = Logger.getLogger( ShimConfigMain.class );
+  final Logger logger = Logger.getLogger( ShimConfigMain.class );
 
   @Override
   public void start( Stage stage ) throws Exception {
