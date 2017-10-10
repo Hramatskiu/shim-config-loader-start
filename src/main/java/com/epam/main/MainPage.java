@@ -1,7 +1,7 @@
 package com.epam.main;
 
 import com.epam.logger.TextAreaAppender;
-import com.epam.spring.SpringTaskApp;
+import com.epam.spring.ClusterConfigLoader;
 import com.epam.spring.config.HttpCredentials;
 import com.epam.spring.config.Krb5Credentials;
 import com.epam.spring.config.LoadConfigs;
@@ -44,7 +44,7 @@ public class MainPage {
     @FXML
     ComboBox<String> clusterType;
 
-    private SpringTaskApp springTaskApp;
+    private ClusterConfigLoader clusterConfigLoader;
 
     @FXML
     void buttonInit (ActionEvent event) {
@@ -59,8 +59,8 @@ public class MainPage {
     @FXML
     void initialize() {
         TextAreaAppender.setTextArea(output);
-        springTaskApp = new SpringTaskApp();
-        springTaskApp.init();
+        clusterConfigLoader = new ClusterConfigLoader();
+        clusterConfigLoader.init();
 
     }
 
@@ -86,7 +86,7 @@ public class MainPage {
             buttonStart.setDisable( true );
 
             Thread thread = new Thread(() -> {
-                springTaskApp.loadConfigs(new LoadConfigs(new HttpCredentials(restUser.getText(), restPassword.getText()),
+                clusterConfigLoader.loadConfigs(new LoadConfigs(new HttpCredentials(restUser.getText(), restPassword.getText()),
                         new Krb5Credentials(kerberosUser.getText(), kerberosUser.getText()), new SshCredentials(),
                         cluster_node_FQDN.getText(), pathToSave.getText(), LoadConfigsManager.ClusterType.valueOf(clusterType.getValue())));
                 buttonStart.setDisable( false );

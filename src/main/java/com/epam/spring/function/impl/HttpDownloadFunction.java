@@ -17,7 +17,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
-@Component
+@Component("http-download-function")
 public class HttpDownloadFunction extends DownloadFunction {
     @Autowired
     private HttpDownloadService downloadService;

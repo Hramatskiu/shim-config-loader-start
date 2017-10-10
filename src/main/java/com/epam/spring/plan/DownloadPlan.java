@@ -1,12 +1,33 @@
 package com.epam.spring.plan;
 
+import com.epam.spring.condition.DownloadConfigsCondition;
+import com.epam.spring.function.DownloadFunction;
+import com.epam.spring.search.SearchStrategy;
 import com.epam.spring.service.FileExtractingService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public abstract class DownloadPlan {
-    public abstract boolean downloadConfigs(String hostName, String destPrefix) throws Exception;
+    private DownloadFunction downloadFunction;
+    private SearchStrategy searchStrategy;
+
+    protected DownloadPlan(DownloadFunction downloadFunction, SearchStrategy searchStrategy) {
+        this.downloadFunction = downloadFunction;
+        this.searchStrategy = searchStrategy;
+    }
+
+    public boolean downloadConfigs(String hostName, String destPrefix) throws Exception{
+        DownloadConfigsCondition downloadConfigsCondition = createDownloadConfigsCondition();
+        downloadFunction.downloadConfigs(downloadConfigsCondition, searchStrategy, createLoadPathConfig(hostName, destPrefix));
+
+        return downloadConfigsCondition.getUnloadedConfigsList().isEmpty();
+    }
+
+    protected abstract LoadPathConfig createLoadPathConfig(String hostName, String destPrefix);
+    protected abstract DownloadConfigsCondition createDownloadConfigsCondition();
 
     public static class LoadPathConfig {
         private String compositeHost;

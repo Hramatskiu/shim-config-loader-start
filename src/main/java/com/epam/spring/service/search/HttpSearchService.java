@@ -13,11 +13,12 @@ import java.util.List;
 
 @Component
 public class HttpSearchService {
+    private static final String HTTP_PREFIX = "http://";
 
     public List<DownloadableFile> searchForConfigsLocation(String remoteUrl, List<DownloadableFile> searchableServiceNames, SearchStrategy searchStrategy) throws Exception {
         List<DownloadableFile> files = searchStrategy.resolveCommandResult(
-                askForClientsConfigs("http://" + remoteUrl + searchStrategy.getStrategyCommand()), searchableServiceNames);
-        files.forEach(service -> service.setDownloadPath("http://" + remoteUrl + service.getDownloadPath()));
+                askForClientsConfigs( HTTP_PREFIX + remoteUrl + searchStrategy.getStrategyCommand()), searchableServiceNames);
+        files.forEach(service -> service.setDownloadPath(HTTP_PREFIX + remoteUrl + service.getDownloadPath()));
 
         return files;
     }

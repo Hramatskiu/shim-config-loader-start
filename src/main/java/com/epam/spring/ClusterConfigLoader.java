@@ -6,7 +6,6 @@ import org.apache.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
-import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutorService;
@@ -14,9 +13,9 @@ import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class SpringTaskApp {
+public class ClusterConfigLoader {
     private ApplicationContext applicationContext;
-    private static Logger logger = Logger.getLogger(SpringTaskApp.class);
+    private static Logger logger = Logger.getLogger(ClusterConfigLoader.class);
 
     public void init() {
         applicationContext = new AnnotationConfigApplicationContext(SpringAppConfig.class);

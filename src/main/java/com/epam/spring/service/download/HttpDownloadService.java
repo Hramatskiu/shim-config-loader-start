@@ -4,12 +4,12 @@ import com.epam.spring.annotation.SecurityAnnotation;
 import com.epam.spring.plan.DownloadPlan;
 import com.epam.spring.service.FileExtractingService;
 import com.epam.spring.util.CommonUtilHolder;
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutorService;
@@ -25,7 +25,7 @@ public class HttpDownloadService {
             try {
                 HttpResponse clientConfigsResponse = askForClientsConfigs(uri);
 
-                return clientConfigsResponse.getStatusLine().getStatusCode() == 200 &&
+                return clientConfigsResponse.getStatusLine().getStatusCode() == HttpStatus.SC_OK &&
                         saveClientsConfigs(IOUtils.toByteArray(clientConfigsResponse.getEntity().getContent()), loadPathConfig);
             } catch (Exception e) {
                 throw new CompletionException(e);

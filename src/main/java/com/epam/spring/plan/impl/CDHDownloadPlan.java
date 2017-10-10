@@ -2,6 +2,7 @@ package com.epam.spring.plan.impl;
 
 import com.epam.spring.condition.DownloadConfigsCondition;
 import com.epam.spring.condition.DownloadableFile;
+import com.epam.spring.constant.DownloadableFileConstants;
 import com.epam.spring.function.DownloadFunction;
 import com.epam.spring.plan.DownloadPlan;
 import com.epam.spring.search.SearchStrategy;
@@ -15,28 +16,30 @@ import java.util.Collections;
 
 @Component("cdh-plan")
 public class CDHDownloadPlan extends DownloadPlan {
-    @Autowired
-    private DownloadFunction downloadFunction;
-    @Autowired
-    @Qualifier("CDH")
-    private SearchStrategy searchStrategy;
+    private static final String HTTP_POSTFIX = ":7180/api/v10/";
+    private static final FileExtractingService.ExtractFormats EXTRACT_FORMATS = FileExtractingService.ExtractFormats.ZIP;
 
-    @Override
-    public boolean downloadConfigs(String hostName, String destPrefix) throws Exception {
-        DownloadConfigsCondition downloadConfigsCondition = createDownloadConfigsCondition();
-        downloadFunction.downloadConfigs(downloadConfigsCondition, searchStrategy,
-                new LoadPathConfig(hostName + ":7180/api/v10/", destPrefix, FileExtractingService.ExtractFormats.ZIP));
-
-        return downloadConfigsCondition.getUnloadedConfigsList().isEmpty();
+    protected CDHDownloadPlan(@Autowired @Qualifier("http-download-function") DownloadFunction downloadFunction,
+                              @Autowired @Qualifier("CDH") SearchStrategy searchStrategy) {
+        super(downloadFunction, searchStrategy);
     }
 
-    private DownloadConfigsCondition createDownloadConfigsCondition() {
+    @Override
+    protected LoadPathConfig createLoadPathConfig(String hostName, String destPrefix) {
+        return new LoadPathConfig(hostName + HTTP_POSTFIX, destPrefix, EXTRACT_FORMATS);
+    }
+
+    protected DownloadConfigsCondition createDownloadConfigsCondition() {
         DownloadConfigsCondition downloadConfigsCondition = new DownloadConfigsCondition();
 
-        downloadConfigsCondition.addConfigFilesToMap(new DownloadableFile("hdfs", Arrays.asList("hdfs-site.xml", "core-site.xml")));
-        downloadConfigsCondition.addConfigFilesToMap(new DownloadableFile("yarn", Arrays.asList("yarn-site.xml", "mapred-site.xml")));
-        downloadConfigsCondition.addConfigFilesToMap(new DownloadableFile("hbase", Collections.singletonList("hbase-site.xml")));
-        downloadConfigsCondition.addConfigFilesToMap(new DownloadableFile("hive", Collections.singletonList("hive-site.xml")));
+        downloadConfigsCondition.addConfigFilesToMap(new DownloadableFile(DownloadableFileConstants.ServiceName.HDFS,
+                Arrays.asList(DownloadableFileConstants.ServiceFileName.HDFS, DownloadableFileConstants.ServiceFileName.CORE)));
+        downloadConfigsCondition.addConfigFilesToMap(new DownloadableFile(DownloadableFileConstants.ServiceName.YARN,
+                Arrays.asList(DownloadableFileConstants.ServiceFileName.YARN, DownloadableFileConstants.ServiceFileName.MAPRED)));
+        downloadConfigsCondition.addConfigFilesToMap(new DownloadableFile(DownloadableFileConstants.ServiceName.HBASE,
+                Collections.singletonList(DownloadableFileConstants.ServiceFileName.HBASE)));
+        downloadConfigsCondition.addConfigFilesToMap(new DownloadableFile(DownloadableFileConstants.ServiceName.HIVE,
+                Collections.singletonList(DownloadableFileConstants.ServiceFileName.HIVE)));
 
         return downloadConfigsCondition;
     }

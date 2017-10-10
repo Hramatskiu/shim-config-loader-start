@@ -9,7 +9,6 @@ public class Navigator {
 
     public static final String MAIN    = "/main.fxml";
     public static final String SCENE_1 = "/main_page.fxml";
-    //public static final String SCENE_2 = "../resources/taxiPark.fxml";
 
     private static MainController mainController;
 
