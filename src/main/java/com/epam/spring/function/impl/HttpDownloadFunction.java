@@ -1,7 +1,6 @@
 package com.epam.spring.function.impl;
 
 import com.epam.spring.condition.DownloadConfigsCondition;
-import com.epam.spring.condition.DownloadableFile;
 import com.epam.spring.function.DownloadFunction;
 import com.epam.spring.plan.DownloadPlan;
 import com.epam.spring.search.SearchStrategy;
@@ -17,39 +16,40 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
-@Component("http-download-function")
+@Component( "http-download-function" )
 public class HttpDownloadFunction extends DownloadFunction {
-    @Autowired
-    private HttpDownloadService downloadService;
-    @Autowired
-    private HttpSearchService httpSearchService;
+  @Autowired
+  private HttpDownloadService downloadService;
+  @Autowired
+  private HttpSearchService httpSearchService;
 
-    public void downloadConfigs(DownloadConfigsCondition downloadConfigsCondition, SearchStrategy searchStrategy,
-                                DownloadPlan.LoadPathConfig loadPathConfig) throws Exception{
-        ExecutorService executor = Executors.newFixedThreadPool(5);
-        List<CompletableFuture<Boolean>> taskList = httpSearchService.searchForConfigsLocation(loadPathConfig.getCompositeHost(),
-                downloadConfigsCondition.getUnloadedConfigsList(), searchStrategy).stream()
-                .map(file -> {
-                    try {
-                        DownloadPlan.LoadPathConfig copiedLoadPathConfig = copyLoadPathConfig(loadPathConfig);
-                        copiedLoadPathConfig.setLoadedFiles(file.getFiles());
+  public void downloadConfigs( DownloadConfigsCondition downloadConfigsCondition, SearchStrategy searchStrategy,
+                               DownloadPlan.LoadPathConfig loadPathConfig ) throws Exception {
+    ExecutorService executor = Executors.newFixedThreadPool( 5 );
+    List<CompletableFuture<Boolean>> taskList =
+      httpSearchService.searchForConfigsLocation( loadPathConfig.getCompositeHost(),
+        downloadConfigsCondition.getUnloadedConfigsList(), searchStrategy ).stream()
+        .map( file -> {
+          try {
+            DownloadPlan.LoadPathConfig copiedLoadPathConfig = copyLoadPathConfig( loadPathConfig );
+            copiedLoadPathConfig.setLoadedFiles( file.getFiles() );
 
-                        return downloadService.loadConfigsFromUri(file.getDownloadPath(), copiedLoadPathConfig, executor);
-                    } catch (Exception e) {
-                        throw new CompletionException(e);
-                    }
-                }).collect(Collectors.toList());
+            return downloadService.loadConfigsFromUri( file.getDownloadPath(), copiedLoadPathConfig, executor );
+          } catch ( Exception e ) {
+            throw new CompletionException( e );
+          }
+        } ).collect( Collectors.toList() );
 
-        downloadConfigsCondition.setDownloadCondition(
-                taskList.stream().map(CompletableFuture::join)
-                        .collect(Collectors.toList()));
+    downloadConfigsCondition.setDownloadCondition(
+      taskList.stream().map( CompletableFuture::join )
+        .collect( Collectors.toList() ) );
 
-        executor.shutdown();
-    }
+    executor.shutdown();
+  }
 
-    private DownloadPlan.LoadPathConfig copyLoadPathConfig(DownloadPlan.LoadPathConfig loadPathConfig) {
-        return new DownloadPlan.LoadPathConfig(loadPathConfig.getCompositeHost(),
-                loadPathConfig.getDestPrefix(), loadPathConfig.getExtractFormat());
-    }
+  private DownloadPlan.LoadPathConfig copyLoadPathConfig( DownloadPlan.LoadPathConfig loadPathConfig ) {
+    return new DownloadPlan.LoadPathConfig( loadPathConfig.getCompositeHost(),
+      loadPathConfig.getDestPrefix(), loadPathConfig.getExtractFormat() );
+  }
 
 }

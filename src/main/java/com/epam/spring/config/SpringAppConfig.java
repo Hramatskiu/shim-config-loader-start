@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 
 @Configuration
-@ComponentScan(basePackages = {"com.epam.spring"})
+@ComponentScan( basePackages = { "com.epam.spring" } )
 @EnableAspectJAutoProxy
 public class SpringAppConfig {
 }

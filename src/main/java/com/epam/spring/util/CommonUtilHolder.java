@@ -5,14 +5,14 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class CommonUtilHolder {
-    private static HttpCommonUtil httpCommonUtil;
+  private static HttpCommonUtil httpCommonUtil;
 
-    @Autowired
-    public CommonUtilHolder(HttpCommonUtil httpCommonUtil){
-        CommonUtilHolder.httpCommonUtil = httpCommonUtil;
-    }
+  @Autowired
+  public CommonUtilHolder( HttpCommonUtil httpCommonUtil ) {
+    CommonUtilHolder.httpCommonUtil = httpCommonUtil;
+  }
 
-    public static HttpCommonUtil httpCommonUtilInstance(){
-        return httpCommonUtil;
-    }
+  public static HttpCommonUtil httpCommonUtilInstance() {
+    return httpCommonUtil;
+  }
 }

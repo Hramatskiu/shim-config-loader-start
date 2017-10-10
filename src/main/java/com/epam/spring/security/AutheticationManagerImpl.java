@@ -19,85 +19,88 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
 
-import javax.security.auth.Subject;
 import javax.security.auth.login.LoginException;
 import java.io.IOException;
-import java.security.AccessController;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 
 @Component
 public class AutheticationManagerImpl implements AuthenticationManager {
-    public Authentication authenticate(Authentication auth) throws AuthenticationException {
-        if (auth instanceof TestConfigLoadCredentials && auth.isAuthenticated()) {
-            return auth;
+  public Authentication authenticate( Authentication auth ) throws AuthenticationException {
+    if ( auth instanceof TestConfigLoadCredentials && auth.isAuthenticated() ) {
+      return auth;
+    }
+
+    if ( auth instanceof BaseConfigLoadAuthentication ) {
+      return makeAuthentication( (BaseConfigLoadAuthentication) auth );
+    }
+
+    //change on own exception extends AuthenticationException
+    throw new BadCredentialsException( "Can't authenticate" );
+  }
+
+  private Authentication makeAuthentication( BaseConfigLoadAuthentication authentication )
+    throws AuthenticationException {
+    TestConfigLoadCredentials testConfigLoadCredentials = new TestConfigLoadCredentials();
+
+    loginWithKerberos( authentication.getKrb5Credentials() );
+
+    testConfigLoadCredentials
+      .setCredentialsProvider( createHttpCredentialsProvider( authentication.getHttpCredentials() ) );
+    testConfigLoadCredentials.setAuthShemes( createAuthShemesList() );
+    //testConfigLoadCredentials.setKrbSubject(createKrb5Subject(authentication.getKrb5Credentials()));
+    testConfigLoadCredentials.setSshCredentials( createSshCredentials( authentication.getSshCredentials() ) );
+
+    return testConfigLoadCredentials;
+  }
+
+  private CredentialsProvider createHttpCredentialsProvider( HttpCredentials httpCredentials )
+    throws AuthenticationException {
+    CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+    UsernamePasswordCredentials credentials =
+      new UsernamePasswordCredentials( httpCredentials.getUsername(), httpCredentials.getPassword() );
+    credentialsProvider.setCredentials( AuthScope.ANY, credentials );
+    credentialsProvider
+      .setCredentials( new AuthScope( null, -1, AuthScope.ANY_REALM, AuthPolicy.SPNEGO ), new Credentials() {
+        @Override
+        public Principal getUserPrincipal() {
+          return null;
         }
 
-        if (auth instanceof BaseConfigLoadAuthentication){
-            return makeAuthentication((BaseConfigLoadAuthentication) auth);
+        @Override
+        public String getPassword() {
+          return null;
         }
+      } );
 
-        //change on own exception extends AuthenticationException
-        throw new BadCredentialsException("Can't authenticate");
+    return credentialsProvider;
+  }
+
+  private List<String> createAuthShemesList() {
+    List<String> authShemes = new ArrayList<>();
+
+    authShemes.add( AuthSchemes.BASIC );
+    authShemes.add( AuthSchemes.SPNEGO );
+
+    return authShemes;
+  }
+
+  private void loginWithKerberos( Krb5Credentials krb5Credentials ) throws AuthenticationException {
+    try {
+      if ( krb5Credentials.getKeytabLocation() != null && !krb5Credentials.getKeytabLocation().isEmpty() ) {
+        HadoopKerberosUtil.doLoginWithKeytab( krb5Credentials.getUsername(), krb5Credentials.getKeytabLocation() );
+      } else {
+        HadoopKerberosUtil
+          .doLoginWithPrincipalAndPassword( krb5Credentials.getUsername(), krb5Credentials.getPassword() );
+      }
+    } catch ( IOException | LoginException ex ) {
+      throw new BadCredentialsException( "Bad kerberos credentials", ex );
     }
+  }
 
-    private Authentication makeAuthentication(BaseConfigLoadAuthentication authentication) throws AuthenticationException {
-        TestConfigLoadCredentials testConfigLoadCredentials = new TestConfigLoadCredentials();
-
-        loginWithKerberos(authentication.getKrb5Credentials());
-
-        testConfigLoadCredentials.setCredentialsProvider(createHttpCredentialsProvider(authentication.getHttpCredentials()));
-        testConfigLoadCredentials.setAuthShemes(createAuthShemesList());
-        //testConfigLoadCredentials.setKrbSubject(createKrb5Subject(authentication.getKrb5Credentials()));
-        testConfigLoadCredentials.setSshCredentials(createSshCredentials(authentication.getSshCredentials()));
-
-        return testConfigLoadCredentials;
-    }
-
-    private CredentialsProvider createHttpCredentialsProvider(HttpCredentials httpCredentials) throws AuthenticationException {
-        CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-        UsernamePasswordCredentials credentials = new UsernamePasswordCredentials( httpCredentials.getUsername(), httpCredentials.getPassword() );
-        credentialsProvider.setCredentials(AuthScope.ANY, credentials);
-        credentialsProvider.setCredentials(new AuthScope(null, -1, AuthScope.ANY_REALM, AuthPolicy.SPNEGO), new Credentials() {
-            @Override
-            public Principal getUserPrincipal() {
-                return null;
-            }
-            @Override
-            public String getPassword() {
-                return null;
-            }
-        });
-
-        return credentialsProvider;
-    }
-
-    private List<String> createAuthShemesList() {
-        List<String> authShemes = new ArrayList<>();
-
-        authShemes.add(AuthSchemes.BASIC);
-        authShemes.add(AuthSchemes.SPNEGO);
-
-        return authShemes;
-    }
-
-    private void loginWithKerberos(Krb5Credentials krb5Credentials) throws AuthenticationException {
-        try {
-            if (krb5Credentials.getKeytabLocation() != null && !krb5Credentials.getKeytabLocation().isEmpty()) {
-                HadoopKerberosUtil.doLoginWithKeytab(krb5Credentials.getUsername(), krb5Credentials.getKeytabLocation());
-            }
-            else {
-                HadoopKerberosUtil.doLoginWithPrincipalAndPassword(krb5Credentials.getUsername(), krb5Credentials.getPassword());
-            }
-        }
-        catch (IOException | LoginException ex) {
-            throw new BadCredentialsException("Bad kerberos credentials", ex);
-        }
-    }
-
-    //Think about
-    private SshCredentials createSshCredentials(SshCredentials sshCredentials) throws AuthenticationException {
-        return sshCredentials;
-    }
+  //Think about
+  private SshCredentials createSshCredentials( SshCredentials sshCredentials ) throws AuthenticationException {
+    return sshCredentials;
+  }
 }

@@ -12,26 +12,26 @@ import java.security.KeyStore;
 
 @Component
 public class HttpCommonUtil {
-    public HttpClientBuilder createHttpClientBuilder() {
-        return HttpClientBuilder.create();
-    }
+  public HttpClientBuilder createHttpClientBuilder() {
+    return HttpClientBuilder.create();
+  }
 
-    public RequestBuilder createRequestBuilder(String uri) throws Exception{
-        return RequestBuilder.get().setUri( uri );
-    }
+  public RequestBuilder createRequestBuilder( String uri ) throws Exception {
+    return RequestBuilder.get().setUri( uri );
+  }
 
-    public CloseableHttpClient createHttpClient() throws Exception{
-        HttpClientBuilder builder = CommonUtilHolder.httpCommonUtilInstance().createHttpClientBuilder();
+  public CloseableHttpClient createHttpClient() throws Exception {
+    HttpClientBuilder builder = CommonUtilHolder.httpCommonUtilInstance().createHttpClientBuilder();
 
-        SSLContextBuilder sslcb = new SSLContextBuilder();
-        sslcb.loadTrustMaterial(KeyStore.getInstance(KeyStore.getDefaultType()),
-                new TrustSelfSignedStrategy());
-        builder.setSSLContext(sslcb.build());
+    SSLContextBuilder sslcb = new SSLContextBuilder();
+    sslcb.loadTrustMaterial( KeyStore.getInstance( KeyStore.getDefaultType() ),
+      new TrustSelfSignedStrategy() );
+    builder.setSSLContext( sslcb.build() );
 
-        return builder.build();
-    }
+    return builder.build();
+  }
 
-    public HttpUriRequest createHttpUriRequest(String uri) throws Exception {
-        return CommonUtilHolder.httpCommonUtilInstance().createRequestBuilder(uri).build();
-    }
+  public HttpUriRequest createHttpUriRequest( String uri ) throws Exception {
+    return CommonUtilHolder.httpCommonUtilInstance().createRequestBuilder( uri ).build();
+  }
 }
