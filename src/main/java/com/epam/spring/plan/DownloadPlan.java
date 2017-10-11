@@ -4,27 +4,29 @@ import com.epam.spring.condition.DownloadConfigsCondition;
 import com.epam.spring.function.DownloadFunction;
 import com.epam.spring.search.SearchStrategy;
 import com.epam.spring.service.FileExtractingService;
+import org.apache.log4j.Logger;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Deque;
 import java.util.List;
 
 public abstract class DownloadPlan {
   private DownloadFunction downloadFunction;
-  //private SearchStrategy searchStrategy;
   private Deque<SearchStrategy> searchStrategies;
+  private final Logger logger = Logger.getLogger( DownloadPlan.class );
 
   protected DownloadPlan( DownloadFunction downloadFunction, SearchStrategy... searchStrategies ) {
     this.downloadFunction = downloadFunction;
     setupSearchStrategies( searchStrategies );
-    //this.searchStrategy = searchStrategy;
   }
 
   public boolean downloadConfigs( String hostName, String destPrefix ) {
     DownloadConfigsCondition downloadConfigsCondition = createDownloadConfigsCondition();
     while ( !downloadConfigsCondition.getUnloadedConfigsList().isEmpty() && !searchStrategies.isEmpty() ) {
+      logger.info( "Start loading at " + new Date(  ) );
       downloadFunction
         .downloadConfigs( downloadConfigsCondition, searchStrategies.pop(), createLoadPathConfig( hostName, destPrefix ) );
     }
@@ -38,7 +40,7 @@ public abstract class DownloadPlan {
 
   private void setupSearchStrategies( SearchStrategy[] searchStrategies ) {
     this.searchStrategies = new ArrayDeque<>(  );
-    Arrays.stream( searchStrategies ).forEach( searchStrategy -> this.searchStrategies.push( searchStrategy ) );
+    Arrays.stream( searchStrategies ).forEach( this.searchStrategies::push );
   }
 
   public static class LoadPathConfig {

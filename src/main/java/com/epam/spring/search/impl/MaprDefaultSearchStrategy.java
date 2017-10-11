@@ -14,24 +14,25 @@ import java.util.stream.Stream;
 public class MaprDefaultSearchStrategy implements SearchStrategy {
   @Override
   public String getStrategyCommand() {
-    return "hadoop version; ls $MAPR_HOME/hbase; ls $MAPR_HOME/hive";
+    return "hadoop version; ls $MAPR_HOME/hbase; ls $MAPR_HOME/hive; echo $MAPR_HOME";
   }
 
   @Override
   public List<DownloadableFile> resolveCommandResult( String commandResult,
                                                       List<DownloadableFile> searchableServiceNames ) {
     String hadoopVersion = extractHadoopVersionFromCommandResult( commandResult );
+    String maprHome = extractMaprHome( commandResult );
     searchableServiceNames.forEach( service -> {
       if ( DownloadableFileConstants.ServiceName.HIVE.equals( service.getServiceName() ) ) {
         service.setDownloadPath(
-          "$MAPR_HOME/" + service.getServiceName() + "/" + extractHiveHomeDirFromCommandResult( commandResult )
+          maprHome + "/" + service.getServiceName() + "/" + extractHiveHomeDirFromCommandResult( commandResult )
             + "/conf/" );
       } else if ( DownloadableFileConstants.ServiceName.HBASE.equals( service.getServiceName() ) ) {
         service.setDownloadPath(
-          "$MAPR_HOME/" + service.getServiceName() + "/" + extractHbaseHomeDirFromCommandResult( commandResult )
+          maprHome + "/" + service.getServiceName() + "/" + extractHbaseHomeDirFromCommandResult( commandResult )
             + "/conf/" );
       } else {
-        service.setDownloadPath( "$MAPR_HOME/hadoop/hadoop-" + hadoopVersion + "/etc/hadoop/" );
+        service.setDownloadPath( maprHome + "/hadoop/hadoop-" + hadoopVersion + "/etc/hadoop/" );
       }
     } );
 
@@ -52,5 +53,11 @@ public class MaprDefaultSearchStrategy implements SearchStrategy {
   private String extractHbaseHomeDirFromCommandResult( String commandResult ) {
     return Stream.of( commandResult.split( "[ \n]" ) )
       .filter( splitCommand -> splitCommand.contains( "hbase-" ) ).findFirst().orElse( StringUtils.EMPTY );
+  }
+
+  private String extractMaprHome( String commandResult ) {
+    String[] parsedCommand = commandResult.split( "\n" );
+
+    return parsedCommand[parsedCommand.length - 1];
   }
 }

@@ -24,7 +24,7 @@ public class SshSearchService {
   }
 
   private String askForClientsConfigs( String host, String command ) throws CommonUtilException {
-    return CommonUtilHolder.sshCommonUtilInstance()
-      .executeCommand( StringUtils.EMPTY, StringUtils.EMPTY, host, 22, command );
+    return !command.isEmpty() ? CommonUtilHolder.sshCommonUtilInstance()
+      .executeCommand( StringUtils.EMPTY, StringUtils.EMPTY, host, 22, command, StringUtils.EMPTY ) : command;
   }
 }

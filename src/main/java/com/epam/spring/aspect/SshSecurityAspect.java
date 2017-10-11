@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 @Aspect
 @Component
 public class SshSecurityAspect {
-  @Pointcut( "execution(* com.epam.spring.util.SshCommonUtil.executeCommand(..))" )
+  @Pointcut( "execution(* com.epam.spring.util.SshCommonUtil.*(..))" )
   public void addSshSecurity() {
   }
 
@@ -34,6 +34,7 @@ public class SshSecurityAspect {
     throw new Exception( "tt" );
   }
 
+  //Change to dto wrapping
   private void setupSecurityArgs( Object[] args, SshCredentials sshCredentials ) {
     if ( args[ 0 ] instanceof String ) {
       args[ 0 ] = sshCredentials.getUsername();
@@ -41,6 +42,10 @@ public class SshSecurityAspect {
 
     if ( args[ 1 ] instanceof String ) {
       args[ 1 ] = sshCredentials.getPassword();
+    }
+
+    if ( args[ 5 ] instanceof String ) {
+      args[ 5 ] = sshCredentials.getIdentityPath();
     }
   }
 }

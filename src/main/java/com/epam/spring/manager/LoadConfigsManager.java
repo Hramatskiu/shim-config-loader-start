@@ -5,6 +5,7 @@ import com.epam.spring.config.LoadConfigs;
 import com.epam.spring.plan.DownloadPlan;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Scope;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -13,6 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Component
+@Scope( "prototype" )
 public class LoadConfigsManager {
   @Autowired
   private AuthenticationManager authenticationManager;
@@ -20,11 +22,13 @@ public class LoadConfigsManager {
 
   public LoadConfigsManager( @Autowired @Qualifier( "HDP" ) DownloadPlan hdpDownloadPlan,
                              @Autowired @Qualifier( "CDH" ) DownloadPlan cdhDownloadPlan,
-                             @Autowired @Qualifier( "MAPR" ) DownloadPlan maprDownloadPlan ) {
+                             @Autowired @Qualifier( "MAPR" ) DownloadPlan maprDownloadPlan,
+                             @Autowired @Qualifier( "EMR" ) DownloadPlan emrDownloadPlan ) {
     downloadPlanMap = new HashMap<>();
     downloadPlanMap.put( ClusterType.HDP, hdpDownloadPlan );
     downloadPlanMap.put( ClusterType.CDH, cdhDownloadPlan );
     downloadPlanMap.put( ClusterType.MAPR, maprDownloadPlan );
+    downloadPlanMap.put( ClusterType.EMR, emrDownloadPlan );
   }
 
   public enum ClusterType {

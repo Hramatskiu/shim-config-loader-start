@@ -7,10 +7,12 @@ import com.epam.spring.plan.DownloadPlan;
 import com.epam.spring.util.CommonUtilHolder;
 import com.epam.spring.util.FileCommonUtil;
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -20,12 +22,16 @@ import java.util.stream.Collectors;
 
 @Component
 public class SshDownloadService {
+  private final Logger logger = Logger.getLogger( SshDownloadService.class );
+
   @SecurityAnnotation
   public CompletableFuture<Boolean> loadConfigsFromCommand( String command, DownloadPlan.LoadPathConfig loadPathConfig,
                                                             ExecutorService executorService ) {
     return CompletableFuture.supplyAsync( () -> {
       List<String> answer = new ArrayList<>(
         askForClientsConfigs( loadPathConfig.getLoadedFiles(), loadPathConfig.getCompositeHost(), command ) );
+
+      logger.info( "Download configs for " + loadPathConfig.getLoadedFiles() + "; at" + new Date() );
 
       return checkAnswer( answer, loadPathConfig.getLoadedFiles() ) && saveClientConfigs( answer, loadPathConfig );
     }, executorService );
@@ -34,7 +40,7 @@ public class SshDownloadService {
   private String askForClientsConfigs( String host, String command ) {
     try {
       return CommonUtilHolder.sshCommonUtilInstance()
-        .executeCommand( StringUtils.EMPTY, StringUtils.EMPTY, host, 22, command );
+        .downloadConfigs( StringUtils.EMPTY, StringUtils.EMPTY, host, 22, command, StringUtils.EMPTY );
     } catch ( CommonUtilException e ) {
       throw new ServiceException( e );
     }
@@ -42,7 +48,7 @@ public class SshDownloadService {
 
   private List<String> askForClientsConfigs( List<String> loadedFiles, String host, String command ) {
     return loadedFiles.size() == 1
-      ? Collections.singletonList( askForClientsConfigs( host, "cat " + command + loadedFiles.get( 0 ) ) )
+      ? Collections.singletonList( askForClientsConfigs( host, command + loadedFiles.get( 0 ) ) )
       : askForClientsConfigsInParallel( loadedFiles, host, command );
   }
 
@@ -50,7 +56,7 @@ public class SshDownloadService {
     ExecutorService executorService = Executors.newFixedThreadPool( loadedFiles.size() );
 
     List<CompletableFuture<String>> loadedFileTasks = loadedFiles.stream()
-      .map( file -> createAskForClientsConfigsTask( host, "cat " + command + file, executorService ) )
+      .map( file -> createAskForClientsConfigsTask( host, command + file, executorService ) )
       .collect( Collectors.toList() );
 
     List<String> answers = loadedFileTasks.stream().map( CompletableFuture::join ).collect( Collectors.toList() );
@@ -65,7 +71,8 @@ public class SshDownloadService {
   }
 
   private boolean checkAnswer( List<String> answer, List<String> loaddedFileNames ) {
-    return !answer.isEmpty() && answer.size() == loaddedFileNames.size() && answer.stream().noneMatch( String::isEmpty );
+    return !answer.isEmpty() && answer.size() == loaddedFileNames.size() && answer.stream()
+      .noneMatch( String::isEmpty );
   }
 
   private boolean saveClientConfigs( List<String> configString, DownloadPlan.LoadPathConfig loadPathConfig ) {

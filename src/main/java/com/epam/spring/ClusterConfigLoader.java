@@ -34,6 +34,7 @@ public class ClusterConfigLoader {
     try {
       Stream.of( CompletableFuture.supplyAsync( () -> {
         try {
+          logger.info( "Start pressed at - " + new Date(  ) );
           return loadConfigsManager.downloadClientConfigs( loadConfigs.getClusterType(), loadConfigs );
         } catch ( Exception e ) {
           throw new CompletionException( e );

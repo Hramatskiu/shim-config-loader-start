@@ -24,7 +24,7 @@ import java.util.List;
 
 public class MainPage {
 
-  private final static Logger logger = Logger.getLogger( MainPage.class );
+  private final Logger logger = Logger.getLogger( MainPage.class );
 
   @FXML
   Button buttonStart;
@@ -32,6 +32,8 @@ public class MainPage {
   Button buttonOpenShim;
   @FXML
   TextField pathToSave;
+  @FXML
+  TextField pathToPemFile;
   @FXML
   TextField cluster_node_FQDN;
   @FXML
@@ -80,6 +82,7 @@ public class MainPage {
         clusterTypes.add( LoadConfigsManager.ClusterType.HDP.toString() );
         clusterTypes.add( LoadConfigsManager.ClusterType.CDH.toString() );
         clusterTypes.add( LoadConfigsManager.ClusterType.MAPR.toString() );
+        clusterTypes.add( LoadConfigsManager.ClusterType.EMR.toString() );
 
         clusterType.getItems().setAll( clusterTypes );
       }
@@ -97,7 +100,7 @@ public class MainPage {
         clusterConfigLoader
           .loadConfigs( new LoadConfigs( new HttpCredentials( restUser.getText(), restPassword.getText() ),
             new Krb5Credentials( kerberosUser.getText(), kerberosPassword.getText() ),
-            new SshCredentials( sshUser.getText(), sshPassword.getText() ),
+            new SshCredentials( sshUser.getText(), sshPassword.getText(), pathToPemFile.getText() ),
             cluster_node_FQDN.getText(), pathToSave.getText(),
             LoadConfigsManager.ClusterType.valueOf( clusterType.getValue() ) ) );
         buttonStart.setDisable( false );

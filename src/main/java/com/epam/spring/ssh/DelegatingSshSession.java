@@ -2,9 +2,11 @@ package com.epam.spring.ssh;
 
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelExec;
+import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
+import com.jcraft.jsch.SftpException;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.Closeable;
@@ -14,8 +16,33 @@ import java.io.InputStream;
 public class DelegatingSshSession implements Closeable {
   private Session session;
 
-  public DelegatingSshSession( String user, String host, int port, String password ) {
-    this.session = createSession( user, host, port, password );
+  public DelegatingSshSession( String user, String host, int port, String password, String identityPath ) {
+    this.session = createSession( user, host, port, password, identityPath );
+  }
+
+  public String downloadFile( String sourcePath ) {
+    StringBuilder commandResult = new StringBuilder( StringUtils.EMPTY );
+    Channel channel = null;
+
+    try {
+      channel = session.openChannel( "sftp" );
+      channel.connect();
+
+      InputStream in = ( (ChannelSftp) channel ).get( sourcePath );
+      byte[] tmp = new byte[ 1024 ];
+      int i;
+      while ( ( i = in.read( tmp, 0, 1024 ) ) > 0 ) {
+        commandResult.append( new String( tmp, 0, i ) );
+      }
+    } catch ( JSchException | IOException | SftpException ex ) {
+      ex.printStackTrace();
+    } finally {
+      if ( channel != null ) {
+        channel.disconnect();
+      }
+    }
+
+    return commandResult.toString();
   }
 
   public String executeCommand( String command ) {
@@ -67,12 +94,19 @@ public class DelegatingSshSession implements Closeable {
     session.disconnect();
   }
 
-  private Session createSession( String user, String host, int port, String password ) {
+  private Session createSession( String user, String host, int port, String password, String identityPath ) {
     try {
       JSch jsch = new JSch();
+      if ( identityPath != null && !identityPath.isEmpty() ) {
+        jsch.addIdentity( identityPath );
+      }
+
       Session session = jsch.getSession( user, host, 22 );
       session.setConfig( "StrictHostKeyChecking", "no" );
-      session.setPassword( password );
+      if ( identityPath == null || identityPath.isEmpty() ) {
+        session.setPassword( password );
+      }
+
       session.connect();
 
       return session;

@@ -34,7 +34,7 @@ public class SshSearchServiceTest {
 
     Mockito.when( CommonUtilHolder.sshCommonUtilInstance() ).thenReturn( sshCommonUtil );
     Mockito.when( sshCommonUtil.executeCommand( Mockito.anyString(), Mockito.anyString(),
-      Mockito.anyString(), Mockito.anyInt(), Mockito.anyString() ) )
+      Mockito.anyString(), Mockito.anyInt(), Mockito.anyString(), Mockito.anyString() ) )
       .thenThrow( CommonUtilException.class );
     Mockito.when( searchStrategy.getStrategyCommand() ).thenReturn( StringUtils.EMPTY );
 
@@ -51,7 +51,7 @@ public class SshSearchServiceTest {
 
     Mockito.when( CommonUtilHolder.sshCommonUtilInstance() ).thenReturn( sshCommonUtil );
     Mockito.when( sshCommonUtil.executeCommand( Mockito.anyString(), Mockito.anyString(),
-      Mockito.anyString(), Mockito.anyInt(), Mockito.anyString() ) )
+      Mockito.anyString(), Mockito.anyInt(), Mockito.anyString(), Mockito.anyString() ) )
       .thenReturn( "test" );
     Mockito.when( searchStrategy.getStrategyCommand() ).thenReturn( StringUtils.EMPTY );
     Mockito.when( searchStrategy.resolveCommandResult( Mockito.anyString(), Mockito.anyList() ) )

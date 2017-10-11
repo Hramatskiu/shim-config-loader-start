@@ -9,12 +9,14 @@ import com.epam.spring.search.SearchStrategy;
 import com.epam.spring.service.FileExtractingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.Collections;
 
 @Component( "CDH" )
+@Scope( "prototype" )
 public class CDHDownloadPlan extends DownloadPlan {
   private static final String HTTP_POSTFIX = ":7180/api/v10/";
   private static final FileExtractingService.ExtractFormats EXTRACT_FORMATS = FileExtractingService.ExtractFormats.ZIP;
