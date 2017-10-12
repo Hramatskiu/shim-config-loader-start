@@ -26,9 +26,10 @@ public abstract class DownloadPlan {
   public boolean downloadConfigs( String hostName, String destPrefix ) {
     DownloadConfigsCondition downloadConfigsCondition = createDownloadConfigsCondition();
     while ( !downloadConfigsCondition.getUnloadedConfigsList().isEmpty() && !searchStrategies.isEmpty() ) {
-      logger.info( "Start loading at " + new Date(  ) );
+      logger.info( "Start loading at " + new Date() );
       downloadFunction
-        .downloadConfigs( downloadConfigsCondition, searchStrategies.pop(), createLoadPathConfig( hostName, destPrefix ) );
+        .downloadConfigs( downloadConfigsCondition, searchStrategies.pop(),
+          createLoadPathConfig( hostName, destPrefix ) );
     }
 
     return downloadConfigsCondition.getUnloadedConfigsList().isEmpty();
@@ -39,7 +40,7 @@ public abstract class DownloadPlan {
   protected abstract DownloadConfigsCondition createDownloadConfigsCondition();
 
   private void setupSearchStrategies( SearchStrategy[] searchStrategies ) {
-    this.searchStrategies = new ArrayDeque<>(  );
+    this.searchStrategies = new ArrayDeque<>();
     Arrays.stream( searchStrategies ).forEach( this.searchStrategies::push );
   }
 

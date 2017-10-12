@@ -13,7 +13,7 @@ import java.util.List;
 @Component( "cdh-rest-strategy" )
 public class CdhSearchStrategy implements SearchStrategy {
   @Override
-  public String getStrategyCommand() {
+  public String getStrategyCommand( List<DownloadableFile> searchableServiceNames ) {
     return "clusters/";
   }
 

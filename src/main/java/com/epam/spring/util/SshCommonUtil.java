@@ -8,7 +8,8 @@ import java.io.IOException;
 
 @Component
 public class SshCommonUtil {
-  public String executeCommand( String username, String password, String host, int port, String command, String identityPath ) throws
+  public String executeCommand( String username, String password, String host, int port, String command,
+                                String identityPath ) throws
     CommonUtilException {
     try ( DelegatingSshSession sshSession = new DelegatingSshSession( username, host, port, password, identityPath ) ) {
       return sshSession.executeCommand( command );
@@ -17,7 +18,8 @@ public class SshCommonUtil {
     }
   }
 
-  public String downloadConfigs( String username, String password, String host, int port, String source, String identityPath ) throws
+  public String downloadConfigs( String username, String password, String host, int port, String source,
+                                 String identityPath ) throws
     CommonUtilException {
     try ( DelegatingSshSession sshSession = new DelegatingSshSession( username, host, port, password, identityPath ) ) {
       return sshSession.downloadFile( source );

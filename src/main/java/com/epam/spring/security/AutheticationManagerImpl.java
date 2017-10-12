@@ -44,12 +44,18 @@ public class AutheticationManagerImpl implements AuthenticationManager {
     throws AuthenticationException {
     TestConfigLoadCredentials testConfigLoadCredentials = new TestConfigLoadCredentials();
 
-    loginWithKerberos( authentication.getKrb5Credentials() );
+    if ( !authentication.getKrb5Credentials().getUsername().isEmpty() ) {
+      loginWithKerberos( authentication.getKrb5Credentials() );
+    }
 
     testConfigLoadCredentials
       .setCredentialsProvider( createHttpCredentialsProvider( authentication.getHttpCredentials() ) );
     testConfigLoadCredentials.setAuthShemes( createAuthShemesList() );
     testConfigLoadCredentials.setSshCredentials( createSshCredentials( authentication.getSshCredentials() ) );
+    testConfigLoadCredentials.setKerberosAuth( !authentication.getKrb5Credentials().getUsername().isEmpty() );
+
+    // Necessary?
+    testConfigLoadCredentials.setAuthenticated( true );
 
     return testConfigLoadCredentials;
   }

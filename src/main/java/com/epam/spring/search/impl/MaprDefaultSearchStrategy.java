@@ -2,26 +2,31 @@ package com.epam.spring.search.impl;
 
 import com.epam.spring.condition.DownloadableFile;
 import com.epam.spring.constant.DownloadableFileConstants;
+import com.epam.spring.exception.StrategyException;
 import com.epam.spring.search.SearchStrategy;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Component( "mapr-default-strategy" )
 public class MaprDefaultSearchStrategy implements SearchStrategy {
   @Override
-  public String getStrategyCommand() {
-    return "hadoop version; ls $MAPR_HOME/hbase; ls $MAPR_HOME/hive; echo $MAPR_HOME";
+  public String getStrategyCommand( List<DownloadableFile> searchableServiceNames ) {
+    return createStrategyCommand( searchableServiceNames );
   }
 
   @Override
   public List<DownloadableFile> resolveCommandResult( String commandResult,
-                                                      List<DownloadableFile> searchableServiceNames ) {
+                                                      List<DownloadableFile> searchableServiceNames )
+    throws StrategyException {
+    logger.info( "Mapr start resolve for - " );
     String hadoopVersion = extractHadoopVersionFromCommandResult( commandResult );
     String maprHome = extractMaprHome( commandResult );
+
     searchableServiceNames.forEach( service -> {
       if ( DownloadableFileConstants.ServiceName.HIVE.equals( service.getServiceName() ) ) {
         service.setDownloadPath(
@@ -58,6 +63,26 @@ public class MaprDefaultSearchStrategy implements SearchStrategy {
   private String extractMaprHome( String commandResult ) {
     String[] parsedCommand = commandResult.split( "\n" );
 
-    return parsedCommand[parsedCommand.length - 1];
+    return parsedCommand[ parsedCommand.length - 1 ];
+  }
+
+  private String createStrategyCommand( List<DownloadableFile> searchableServiceNames ) {
+    return searchableServiceNames.stream().map( DownloadableFile::getServiceName ).map( this::getSshCommandForService )
+      .collect( Collectors.joining( "; " ) ) + "; echo $MAPR_HOME";
+  }
+
+  private String getSshCommandForService( String serviceName ) {
+    switch ( serviceName ) {
+      case DownloadableFileConstants.ServiceName.HDFS:
+      case DownloadableFileConstants.ServiceName.YARN:
+      case DownloadableFileConstants.ServiceName.MAPREDUCE2:
+        return "hadoop version";
+      case DownloadableFileConstants.ServiceName.HBASE:
+        return "ls $MAPR_HOME/hbase";
+      case DownloadableFileConstants.ServiceName.HIVE:
+        return "ls $MAPR_HOME/hive";
+      default:
+        return StringUtils.EMPTY;
+    }
   }
 }

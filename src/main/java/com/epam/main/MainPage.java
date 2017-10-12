@@ -101,7 +101,7 @@ public class MainPage {
           .loadConfigs( new LoadConfigs( new HttpCredentials( restUser.getText(), restPassword.getText() ),
             new Krb5Credentials( kerberosUser.getText(), kerberosPassword.getText() ),
             new SshCredentials( sshUser.getText(), sshPassword.getText(), pathToPemFile.getText() ),
-            cluster_node_FQDN.getText(), pathToSave.getText(),
+            cluster_node_FQDN.getText().trim(), pathToSave.getText(),
             LoadConfigsManager.ClusterType.valueOf( clusterType.getValue() ) ) );
         buttonStart.setDisable( false );
       } );

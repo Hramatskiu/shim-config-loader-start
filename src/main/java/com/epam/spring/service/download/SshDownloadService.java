@@ -3,6 +3,7 @@ package com.epam.spring.service.download;
 import com.epam.spring.annotation.SecurityAnnotation;
 import com.epam.spring.exception.CommonUtilException;
 import com.epam.spring.exception.ServiceException;
+import com.epam.spring.executor.DelegatingExecutorService;
 import com.epam.spring.plan.DownloadPlan;
 import com.epam.spring.util.CommonUtilHolder;
 import com.epam.spring.util.FileCommonUtil;
@@ -10,6 +11,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -17,7 +19,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 @Component
@@ -53,16 +54,16 @@ public class SshDownloadService {
   }
 
   private List<String> askForClientsConfigsInParallel( List<String> loadedFiles, String host, String command ) {
-    ExecutorService executorService = Executors.newFixedThreadPool( loadedFiles.size() );
+    try ( DelegatingExecutorService delegatingExecutorService = new DelegatingExecutorService( loadedFiles.size() ) ) {
+      List<CompletableFuture<String>> loadedFileTasks = loadedFiles.stream()
+        .map( file -> createAskForClientsConfigsTask( host, command + file,
+          delegatingExecutorService.getExecutorService() ) )
+        .collect( Collectors.toList() );
 
-    List<CompletableFuture<String>> loadedFileTasks = loadedFiles.stream()
-      .map( file -> createAskForClientsConfigsTask( host, command + file, executorService ) )
-      .collect( Collectors.toList() );
-
-    List<String> answers = loadedFileTasks.stream().map( CompletableFuture::join ).collect( Collectors.toList() );
-    executorService.shutdown();
-
-    return answers;
+      return loadedFileTasks.stream().map( CompletableFuture::join ).collect( Collectors.toList() );
+    } catch ( IOException ex ) {
+      throw new ServiceException( ex );
+    }
   }
 
   private CompletableFuture<String> createAskForClientsConfigsTask( String host, String command,
@@ -88,30 +89,29 @@ public class SshDownloadService {
 
       return true;
     } catch ( CommonUtilException e ) {
-      //logging
-      e.printStackTrace();
+      throw new ServiceException( e );
     }
-
-    return false;
   }
 
+  //Think about
   private boolean saveClientConfigsInParallel( List<String> configString, DownloadPlan.LoadPathConfig loadPathConfig ) {
-    List<CompletableFuture<Boolean>> saveConfigsTasksList = new ArrayList<>();
-    ExecutorService executorService = Executors.newFixedThreadPool( configString.size() );
+    try ( DelegatingExecutorService delegatingExecutorService = new DelegatingExecutorService( configString.size() ) ) {
+      List<CompletableFuture<Boolean>> saveConfigsTasksList = new ArrayList<>();
 
-    Iterator<String> iterator = configString.iterator();
-    loadPathConfig.getLoadedFiles().forEach( file -> {
-      if ( iterator.hasNext() ) {
-        saveConfigsTasksList.add(
-          createSaveConfigsTask( iterator.next(), loadPathConfig.getDestPrefix() + "\\" + file, executorService ) );
-      }
-    } );
+      Iterator<String> iterator = configString.iterator();
+      loadPathConfig.getLoadedFiles().forEach( file -> {
+        if ( iterator.hasNext() ) {
+          saveConfigsTasksList.add(
+            createSaveConfigsTask( iterator.next(), loadPathConfig.getDestPrefix() + "\\" + file,
+              delegatingExecutorService.getExecutorService() ) );
+        }
+      } );
 
-    boolean result = saveConfigsTasksList.stream().allMatch( CompletableFuture::join );
+      return saveConfigsTasksList.stream().allMatch( CompletableFuture::join );
+    } catch ( IOException ex ) {
+      throw new ServiceException( ex );
+    }
 
-    executorService.shutdown();
-
-    return result;
   }
 
   private CompletableFuture<Boolean> createSaveConfigsTask( String configString, String destPath,

@@ -21,7 +21,7 @@ import java.util.Collections;
 import static org.junit.Assert.*;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest( CommonUtilHolder.class)
+@PrepareForTest(CommonUtilHolder.class)
 public class SshSearchServiceTest {
 
   @SuppressWarnings( "unchecked" )
@@ -36,14 +36,14 @@ public class SshSearchServiceTest {
     Mockito.when( sshCommonUtil.executeCommand( Mockito.anyString(), Mockito.anyString(),
       Mockito.anyString(), Mockito.anyInt(), Mockito.anyString(), Mockito.anyString() ) )
       .thenThrow( CommonUtilException.class );
-    Mockito.when( searchStrategy.getStrategyCommand() ).thenReturn( StringUtils.EMPTY );
+    Mockito.when( searchStrategy.getStrategyCommand( Mockito.anyList()) ).thenReturn( StringUtils.EMPTY );
 
     sshSearchService.searchForConfigsLocation( StringUtils.EMPTY, Collections.emptyList(), searchStrategy );
   }
 
   @SuppressWarnings( "unchecked" )
   @Test
-  public void searchForConfigsLocationWhenCommonUtilExecuteCommandSuccesfullyShouldReturnNotNullList() throws Exception {
+  public void searchForConfigsLocationWhenCommonUtilExecuteCommandSuccessfullyShouldReturnNotNullList() throws Exception {
     SshSearchService sshSearchService = new SshSearchService();
     SshCommonUtil sshCommonUtil = Mockito.mock( SshCommonUtil.class );
     SearchStrategy searchStrategy = Mockito.mock( SearchStrategy.class );
@@ -53,11 +53,18 @@ public class SshSearchServiceTest {
     Mockito.when( sshCommonUtil.executeCommand( Mockito.anyString(), Mockito.anyString(),
       Mockito.anyString(), Mockito.anyInt(), Mockito.anyString(), Mockito.anyString() ) )
       .thenReturn( "test" );
-    Mockito.when( searchStrategy.getStrategyCommand() ).thenReturn( StringUtils.EMPTY );
+    Mockito.when( searchStrategy.getStrategyCommand(Mockito.anyList()) ).thenReturn( StringUtils.EMPTY );
     Mockito.when( searchStrategy.resolveCommandResult( Mockito.anyString(), Mockito.anyList() ) )
       .thenReturn( Collections.singletonList( new DownloadableFile( StringUtils.EMPTY, Collections.emptyList() ) ) );
 
     Assert.assertNotNull( sshSearchService.searchForConfigsLocation( StringUtils.EMPTY, Collections.emptyList(), searchStrategy ) );
   }
+
+  @Test
+  public void askForClientsConfigsWhenCommandIsNullShouldReturnEmptyString() throws Exception{
+    SshSearchService sshSearchService = new SshSearchService();
+    Assert.assertTrue( sshSearchService.askForClientsConfigs( StringUtils.EMPTY, null ).isEmpty() );
+  }
+
 
 }

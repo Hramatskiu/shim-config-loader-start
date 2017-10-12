@@ -20,7 +20,7 @@ public class EMRDownloadPlan extends DownloadPlan {
   public EMRDownloadPlan( @Autowired @Qualifier( "ssh-download-function" ) DownloadFunction downloadFunction,
                           @Autowired @Qualifier( "emr-default-strategy" ) SearchStrategy searchStrategy,
                           @Autowired @Qualifier( "hadoop-classpath-strategy" ) SearchStrategy searchStrategy1 ) {
-    super( downloadFunction, searchStrategy1, searchStrategy );
+    super( downloadFunction, searchStrategy, searchStrategy1 );
   }
 
   @Override protected LoadPathConfig createLoadPathConfig( String hostName, String destPrefix ) {

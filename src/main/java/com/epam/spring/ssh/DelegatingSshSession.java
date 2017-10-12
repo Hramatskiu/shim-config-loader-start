@@ -16,7 +16,8 @@ import java.io.InputStream;
 public class DelegatingSshSession implements Closeable {
   private Session session;
 
-  public DelegatingSshSession( String user, String host, int port, String password, String identityPath ) {
+  public DelegatingSshSession( String user, String host, int port, String password, String identityPath )
+    throws IOException {
     this.session = createSession( user, host, port, password, identityPath );
   }
 
@@ -73,7 +74,7 @@ public class DelegatingSshSession implements Closeable {
           break;
         }
         try {
-          Thread.sleep( 1000 );
+          Thread.sleep( 100 );
         } catch ( Exception ex ) {
           System.out.println( ex.getMessage() );
         }
@@ -94,7 +95,8 @@ public class DelegatingSshSession implements Closeable {
     session.disconnect();
   }
 
-  private Session createSession( String user, String host, int port, String password, String identityPath ) {
+  private Session createSession( String user, String host, int port, String password, String identityPath )
+    throws IOException {
     try {
       JSch jsch = new JSch();
       if ( identityPath != null && !identityPath.isEmpty() ) {
@@ -111,9 +113,7 @@ public class DelegatingSshSession implements Closeable {
 
       return session;
     } catch ( JSchException ex ) {
-      ex.printStackTrace();
+      throw new IOException( ex );
     }
-
-    return null;
   }
 }

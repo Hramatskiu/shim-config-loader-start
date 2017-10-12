@@ -20,7 +20,7 @@ public class MAPRDownloadPlan extends DownloadPlan {
   protected MAPRDownloadPlan( @Autowired @Qualifier( "ssh-download-function" ) DownloadFunction downloadFunction,
                               @Autowired @Qualifier( "mapr-default-strategy" ) SearchStrategy searchStrategy,
                               @Autowired @Qualifier( "hadoop-classpath-strategy" ) SearchStrategy searchStrategy1 ) {
-    super( downloadFunction, searchStrategy1, searchStrategy );
+    super( downloadFunction, searchStrategy, searchStrategy1 );
   }
 
   @Override

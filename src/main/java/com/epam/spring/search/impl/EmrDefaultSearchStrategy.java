@@ -11,14 +11,15 @@ import java.util.List;
 
 @Component( "emr-default-strategy" )
 public class EmrDefaultSearchStrategy implements SearchStrategy {
-  @Override public String getStrategyCommand() {
+  @Override public String getStrategyCommand( List<DownloadableFile> searchableServiceNames ) {
     return StringUtils.EMPTY;
   }
 
   @Override public List<DownloadableFile> resolveCommandResult( String commandResult,
                                                                 List<DownloadableFile> searchableServiceNames )
     throws StrategyException {
-    searchableServiceNames.forEach( downloadableFile -> downloadableFile.setDownloadPath( chooseDownloadPath( downloadableFile.getServiceName() ) ) );
+    searchableServiceNames.forEach(
+      downloadableFile -> downloadableFile.setDownloadPath( chooseDownloadPath( downloadableFile.getServiceName() ) ) );
 
     return searchableServiceNames;
   }
@@ -28,7 +29,7 @@ public class EmrDefaultSearchStrategy implements SearchStrategy {
       case DownloadableFileConstants.ServiceName.HDFS:
       case DownloadableFileConstants.ServiceName.YARN:
       case DownloadableFileConstants.ServiceName.MAPREDUCE2:
-        return "/etc/hadoop/conf";
+        return "/etc/hadoop/conf/";
       case DownloadableFileConstants.ServiceName.EMR:
         return "/usr/share/aws/emr/emrfs/conf/";
       default:
