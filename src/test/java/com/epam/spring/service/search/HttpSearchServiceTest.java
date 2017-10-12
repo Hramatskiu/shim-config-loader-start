@@ -20,13 +20,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(CommonUtilHolder.class)
+@RunWith( PowerMockRunner.class )
+@PrepareForTest( CommonUtilHolder.class )
 public class HttpSearchServiceTest {
   @Test
   public void askForClientConfigLocationWhenUriIsNullShouldReturnEmptyString() throws Exception {
     HttpSearchService httpSearchService = new HttpSearchService();
-    Assert.assertTrue( httpSearchService.askForClientsConfigs( null ).isEmpty() );
+    Assert.assertTrue( httpSearchService.askForClientsConfigLocation( null ).isEmpty() );
   }
 
   @SuppressWarnings( "unchecked" )
@@ -39,19 +39,22 @@ public class HttpSearchServiceTest {
 
     Mockito.when( CommonUtilHolder.httpCommonUtilInstance() ).thenReturn( httpCommonUtil );
     Mockito.when( httpCommonUtil.createHttpClient() ).thenThrow( CommonUtilException.class );
-    Mockito.when( searchStrategy.getStrategyCommand(Mockito.anyList()) ).thenReturn( StringUtils.EMPTY );
+    Mockito.when( searchStrategy.getStrategyCommand( Mockito.anyList() ) ).thenReturn( StringUtils.EMPTY );
 
     httpSearchService.searchForConfigsLocation( StringUtils.EMPTY, Collections.emptyList(), searchStrategy );
   }
 
   @SuppressWarnings( "unchecked" )
-  @Test(expected = ServiceException.class)
-  public void searchForConfigsLocationWhenAskForConfigLocationReturnEmptyStringShouldRaiseServiceException() throws Exception {
+  @Test( expected = ServiceException.class )
+  public void searchForConfigsLocationWhenAskForConfigLocationReturnEmptyStringShouldRaiseServiceException()
+    throws Exception {
     HttpSearchService httpSearchService = Mockito.mock( HttpSearchService.class );
     HdpSearchStrategy searchStrategy = new HdpSearchStrategy();
 
-    Mockito.when( httpSearchService.askForClientsConfigs( Mockito.anyString() ) ).thenReturn( StringUtils.EMPTY );
-    Mockito.when( httpSearchService.searchForConfigsLocation( Mockito.anyString(), Mockito.anyList(), Mockito.any( SearchStrategy.class ) ) )
+    Mockito.when( httpSearchService.askForClientsConfigLocation( Mockito.anyString() ) )
+      .thenReturn( StringUtils.EMPTY );
+    Mockito.when( httpSearchService
+      .searchForConfigsLocation( Mockito.anyString(), Mockito.anyList(), Mockito.any( SearchStrategy.class ) ) )
       .thenCallRealMethod();
 
     httpSearchService.searchForConfigsLocation( StringUtils.EMPTY, Collections.emptyList(), searchStrategy );
@@ -59,20 +62,25 @@ public class HttpSearchServiceTest {
 
   @SuppressWarnings( "unchecked" )
   @Test
-  public void searchForConfigsLocationWhenStrategyReturnNotEmptyStringShouldModifyDownloadableFileList() throws Exception{
+  public void searchForConfigsLocationWhenStrategyReturnNotEmptyStringShouldModifyDownloadableFileList()
+    throws Exception {
     HttpSearchService httpSearchService = Mockito.mock( HttpSearchService.class );
     SearchStrategy searchStrategy = Mockito.mock( SearchStrategy.class );
     String remoteUrl = "test";
-    List<DownloadableFile> downloadableFiles = new ArrayList<>(  );
+    List<DownloadableFile> downloadableFiles = new ArrayList<>();
     downloadableFiles.add( new DownloadableFile( "test", Collections.emptyList() ) );
 
-    Mockito.when( httpSearchService.askForClientsConfigs( Mockito.anyString() ) ).thenReturn( StringUtils.EMPTY );
-    Mockito.when( httpSearchService.searchForConfigsLocation( Mockito.anyString(), Mockito.anyList(), Mockito.any( SearchStrategy.class ) ) )
+    Mockito.when( httpSearchService.askForClientsConfigLocation( Mockito.anyString() ) )
+      .thenReturn( StringUtils.EMPTY );
+    Mockito.when( httpSearchService
+      .searchForConfigsLocation( Mockito.anyString(), Mockito.anyList(), Mockito.any( SearchStrategy.class ) ) )
       .thenCallRealMethod();
-    Mockito.when( searchStrategy.tryToResolveCommandResult( Mockito.anyString(), Mockito.anyList() ) ).thenReturn( downloadableFiles );
+    Mockito.when( searchStrategy.tryToResolveCommandResult( Mockito.anyString(), Mockito.anyList() ) )
+      .thenReturn( downloadableFiles );
 
     Assert.assertEquals( HttpSearchService.HTTP_PREFIX + remoteUrl,
-      httpSearchService.searchForConfigsLocation( remoteUrl, downloadableFiles, searchStrategy ).get( 0 ).getDownloadPath() );
+      httpSearchService.searchForConfigsLocation( remoteUrl, downloadableFiles, searchStrategy ).get( 0 )
+        .getDownloadPath() );
 
   }
 

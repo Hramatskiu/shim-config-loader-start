@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
@@ -23,29 +24,31 @@ import java.util.stream.Collectors;
 public class SshSearchService {
   private static final int SSH_DEFAULT_PORT = 22;
   private Logger logger = Logger.getLogger( SshSearchService.class );
+  private static final String LINUX_COMMAND_SEPARATOR = ";";
 
   public List<DownloadableFile> searchForConfigsLocation( String remoteUrl,
                                                           List<DownloadableFile> searchableServiceNames,
                                                           SearchStrategy searchStrategy ) {
     try {
       return searchStrategy.tryToResolveCommandResult(
-        askForClientsConfigsInParallel( remoteUrl, searchStrategy.getStrategyCommand( searchableServiceNames ) ),
+        askForClientsConfigLocationInParallel( remoteUrl, searchStrategy.getStrategyCommand( searchableServiceNames ) ),
         searchableServiceNames );
-    } catch ( StrategyException e ) {
+    } catch ( StrategyException | CompletionException e ) {
       throw new ServiceException( e );
     }
   }
 
-  String askForClientsConfigs( String host, String command ) throws CommonUtilException {
+  String askForClientsConfigLocation( String host, String command ) throws CommonUtilException {
     return CheckingParamsUtil.checkParamsWithNullAndEmpty( host, command ) ? CommonUtilHolder.sshCommonUtilInstance()
       .executeCommand( StringUtils.EMPTY, StringUtils.EMPTY, host, SSH_DEFAULT_PORT, command, StringUtils.EMPTY )
       : StringUtils.EMPTY;
   }
 
-  @SuppressWarnings( "unchecked" ) private String askForClientsConfigsInParallel( String host, String command ) {
-    try ( DelegatingExecutorService delegatingExecutorService = new DelegatingExecutorService( 4 ) ) {
-      List<CompletableFuture<String>> taskList = Arrays.stream( command.split( ";" ) )
-        .map( singleCommand -> createTaskAskForClientsConfigs( host, singleCommand,
+  @SuppressWarnings( "unchecked" ) private String askForClientsConfigLocationInParallel( String host, String command ) {
+    String[] singleCommandsArray = command.split( LINUX_COMMAND_SEPARATOR );
+    try ( DelegatingExecutorService delegatingExecutorService = new DelegatingExecutorService( singleCommandsArray.length ) ) {
+      List<CompletableFuture<String>> taskList = Arrays.stream( singleCommandsArray )
+        .map( singleCommand -> createTaskAskForClientsConfigLocation( host, singleCommand,
           delegatingExecutorService.getExecutorService() ) )
         .collect( Collectors.toList() );
 
@@ -55,12 +58,12 @@ public class SshSearchService {
     }
   }
 
-  private CompletableFuture<String> createTaskAskForClientsConfigs( String host, String command,
+  private CompletableFuture<String> createTaskAskForClientsConfigLocation( String host, String command,
                                                                     ExecutorService executorService ) {
     return CompletableFuture.supplyAsync( () -> {
       try {
         logger.info( "Start search for " + command );
-        String result = askForClientsConfigs( host, command );
+        String result = askForClientsConfigLocation( host, command );
         logger.info( "Finish search for " + command );
 
         return result;

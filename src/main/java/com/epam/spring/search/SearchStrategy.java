@@ -19,7 +19,7 @@ public interface SearchStrategy {
   default List<DownloadableFile> tryToResolveCommandResult( String commandResult,
                                                             List<DownloadableFile> searchableServiceNames )
     throws StrategyException {
-    //validateCommandResult( commandResult );
+    validateCommandResult( commandResult );
 
     return resolveCommandResult( commandResult, searchableServiceNames );
   }

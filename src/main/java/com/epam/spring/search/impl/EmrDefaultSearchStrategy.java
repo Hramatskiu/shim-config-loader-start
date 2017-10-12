@@ -4,6 +4,7 @@ import com.epam.spring.condition.DownloadableFile;
 import com.epam.spring.constant.DownloadableFileConstants;
 import com.epam.spring.exception.StrategyException;
 import com.epam.spring.search.SearchStrategy;
+import com.epam.spring.util.CheckingParamsUtil;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Component;
 
@@ -22,6 +23,12 @@ public class EmrDefaultSearchStrategy implements SearchStrategy {
       downloadableFile -> downloadableFile.setDownloadPath( chooseDownloadPath( downloadableFile.getServiceName() ) ) );
 
     return searchableServiceNames;
+  }
+
+  @Override public void validateCommandResult( String commandResult ) throws StrategyException {
+    if ( !CheckingParamsUtil.checkParamsWithNull( commandResult ) ) {
+      throw new StrategyException( "Invalid command result." );
+    }
   }
 
   private String chooseDownloadPath( String serviceName ) {

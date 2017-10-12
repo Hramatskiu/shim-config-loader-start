@@ -9,7 +9,6 @@ import org.apache.log4j.Logger;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.Deque;
 import java.util.List;
 
@@ -26,7 +25,7 @@ public abstract class DownloadPlan {
   public boolean downloadConfigs( String hostName, String destPrefix ) {
     DownloadConfigsCondition downloadConfigsCondition = createDownloadConfigsCondition();
     while ( !downloadConfigsCondition.getUnloadedConfigsList().isEmpty() && !searchStrategies.isEmpty() ) {
-      logger.info( "Start loading at " + new Date() );
+      logger.info( "Start loading!" );
       downloadFunction
         .downloadConfigs( downloadConfigsCondition, searchStrategies.pop(),
           createLoadPathConfig( hostName, destPrefix ) );

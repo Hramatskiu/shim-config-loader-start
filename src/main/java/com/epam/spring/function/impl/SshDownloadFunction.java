@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -34,8 +33,7 @@ public class SshDownloadFunction extends DownloadFunction {
         searchService.searchForConfigsLocation( loadPathConfig.getCompositeHost(),
           downloadConfigsCondition.getUnloadedConfigsList(), searchStrategy ).stream()
           .map( file -> {
-            logger.info( "Start download for - " + file.getServiceName() + " from: " + file.getDownloadPath() + "; at"
-              + new Date() );
+            logger.info( "Start download for - " + file.getServiceName() + " from: " + file.getDownloadPath() );
             DownloadPlan.LoadPathConfig copiedLoadPathConfig = copyLoadPathConfig( loadPathConfig );
             copiedLoadPathConfig.setLoadedFiles( file.getFiles() );
 

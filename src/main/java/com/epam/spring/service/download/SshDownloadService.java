@@ -5,6 +5,7 @@ import com.epam.spring.exception.CommonUtilException;
 import com.epam.spring.exception.ServiceException;
 import com.epam.spring.executor.DelegatingExecutorService;
 import com.epam.spring.plan.DownloadPlan;
+import com.epam.spring.util.CheckingParamsUtil;
 import com.epam.spring.util.CommonUtilHolder;
 import com.epam.spring.util.FileCommonUtil;
 import org.apache.commons.lang.StringUtils;
@@ -14,7 +15,6 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -32,16 +32,18 @@ public class SshDownloadService {
       List<String> answer = new ArrayList<>(
         askForClientsConfigs( loadPathConfig.getLoadedFiles(), loadPathConfig.getCompositeHost(), command ) );
 
-      logger.info( "Download configs for " + loadPathConfig.getLoadedFiles() + "; at" + new Date() );
+      logger.info( "Download configs for " + loadPathConfig.getLoadedFiles() );
 
       return checkAnswer( answer, loadPathConfig.getLoadedFiles() ) && saveClientConfigs( answer, loadPathConfig );
     }, executorService );
   }
 
-  private String askForClientsConfigs( String host, String command ) {
+  String askForClientsConfigs( String host, String command ) {
     try {
-      return CommonUtilHolder.sshCommonUtilInstance()
-        .downloadConfigs( StringUtils.EMPTY, StringUtils.EMPTY, host, 22, command, StringUtils.EMPTY );
+      return CheckingParamsUtil.checkParamsWithNullAndEmpty( host, command )
+        ? CommonUtilHolder.sshCommonUtilInstance()
+        .downloadConfigs( StringUtils.EMPTY, StringUtils.EMPTY, host, 22, command, StringUtils.EMPTY )
+        : StringUtils.EMPTY;
     } catch ( CommonUtilException e ) {
       throw new ServiceException( e );
     }

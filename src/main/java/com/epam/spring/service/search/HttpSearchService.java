@@ -23,7 +23,7 @@ public class HttpSearchService {
                                                           SearchStrategy searchStrategy ) {
     try {
       List<DownloadableFile> files = searchStrategy.tryToResolveCommandResult(
-        askForClientsConfigs( HTTP_PREFIX + remoteUrl + searchStrategy.getStrategyCommand( searchableServiceNames ) ),
+        askForClientsConfigLocation( HTTP_PREFIX + remoteUrl + searchStrategy.getStrategyCommand( searchableServiceNames ) ),
         searchableServiceNames );
       files.forEach( service -> service.setDownloadPath( HTTP_PREFIX + remoteUrl + service.getDownloadPath() ) );
 
@@ -33,12 +33,12 @@ public class HttpSearchService {
     }
   }
 
-  String askForClientsConfigs( String uri ) {
+  String askForClientsConfigLocation( String uri ) {
     try {
       return CheckingParamsUtil.checkParamsWithNullAndEmpty( uri )
         ? new String( IOUtils.toByteArray( CommonUtilHolder.httpCommonUtilInstance().createHttpClient()
-          .execute( CommonUtilHolder.httpCommonUtilInstance().createHttpUriRequest( uri ) )
-          .getEntity().getContent() ) ) : StringUtils.EMPTY;
+        .execute( CommonUtilHolder.httpCommonUtilInstance().createHttpUriRequest( uri ) )
+        .getEntity().getContent() ) ) : StringUtils.EMPTY;
     } catch ( IOException | CommonUtilException e ) {
       throw new ServiceException( e );
     }
