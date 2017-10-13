@@ -1,8 +1,8 @@
 package com.epam.spring.manager;
 
-import com.epam.spring.authenticate.impl.BaseConfigLoadAuthentication;
 import com.epam.spring.config.LoadConfigs;
 import com.epam.spring.plan.DownloadPlan;
+import com.epam.spring.security.authenticate.impl.BaseConfigLoadAuthentication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Scope;

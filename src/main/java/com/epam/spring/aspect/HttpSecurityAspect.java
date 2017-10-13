@@ -1,6 +1,6 @@
 package com.epam.spring.aspect;
 
-import com.epam.spring.authenticate.impl.TestConfigLoadCredentials;
+import com.epam.spring.security.BaseSecurityContextHandler;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -11,15 +11,13 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Aspect
 @Component
-public class HttpSecurityAspect {
+public class HttpSecurityAspect extends BaseSecurityContextHandler {
   @Pointcut( "execution(* com.epam.spring.util.HttpCommonUtil.createHttpClientBuilder())" )
   public void addHttpClientBuilderSecurity() {
   }
@@ -63,14 +61,5 @@ public class HttpSecurityAspect {
 
   private List<String> getPrefShemesList() throws Exception {
     return getCredentialsFromSecurityContext().getAuthShemes();
-  }
-
-  private TestConfigLoadCredentials getCredentialsFromSecurityContext() throws Exception {
-    Authentication loggedAuthentication = SecurityContextHolder.getContext().getAuthentication();
-    if ( loggedAuthentication instanceof TestConfigLoadCredentials ) {
-      return (TestConfigLoadCredentials) loggedAuthentication;
-    }
-
-    throw new Exception( "Another authentication!" );
   }
 }

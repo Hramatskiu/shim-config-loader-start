@@ -1,6 +1,7 @@
 package com.epam.spring.service.download;
 
 import com.epam.spring.annotation.SecurityAnnotation;
+import com.epam.spring.config.SshCredentials;
 import com.epam.spring.exception.CommonUtilException;
 import com.epam.spring.exception.ServiceException;
 import com.epam.spring.executor.DelegatingExecutorService;
@@ -41,8 +42,7 @@ public class SshDownloadService {
   String askForClientsConfigs( String host, String command ) {
     try {
       return CheckingParamsUtil.checkParamsWithNullAndEmpty( host, command )
-        ? CommonUtilHolder.sshCommonUtilInstance()
-        .downloadConfigs( StringUtils.EMPTY, StringUtils.EMPTY, host, 22, command, StringUtils.EMPTY )
+        ? CommonUtilHolder.sshCommonUtilInstance().downloadConfigs( new SshCredentials(), host, 22, command )
         : StringUtils.EMPTY;
     } catch ( CommonUtilException e ) {
       throw new ServiceException( e );

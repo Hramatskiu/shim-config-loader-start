@@ -1,6 +1,7 @@
 package com.epam.spring.service.search;
 
 import com.epam.spring.condition.DownloadableFile;
+import com.epam.spring.config.SshCredentials;
 import com.epam.spring.exception.CommonUtilException;
 import com.epam.spring.exception.ServiceException;
 import com.epam.spring.exception.StrategyException;
@@ -39,14 +40,15 @@ public class SshSearchService {
   }
 
   String askForClientsConfigLocation( String host, String command ) throws CommonUtilException {
-    return CheckingParamsUtil.checkParamsWithNullAndEmpty( host, command ) ? CommonUtilHolder.sshCommonUtilInstance()
-      .executeCommand( StringUtils.EMPTY, StringUtils.EMPTY, host, SSH_DEFAULT_PORT, command, StringUtils.EMPTY )
+    return CheckingParamsUtil.checkParamsWithNullAndEmpty( host, command )
+      ? CommonUtilHolder.sshCommonUtilInstance().executeCommand( new SshCredentials(), host, SSH_DEFAULT_PORT, command )
       : StringUtils.EMPTY;
   }
 
   @SuppressWarnings( "unchecked" ) private String askForClientsConfigLocationInParallel( String host, String command ) {
     String[] singleCommandsArray = command.split( LINUX_COMMAND_SEPARATOR );
-    try ( DelegatingExecutorService delegatingExecutorService = new DelegatingExecutorService( singleCommandsArray.length ) ) {
+    try ( DelegatingExecutorService delegatingExecutorService = new DelegatingExecutorService(
+      singleCommandsArray.length ) ) {
       List<CompletableFuture<String>> taskList = Arrays.stream( singleCommandsArray )
         .map( singleCommand -> createTaskAskForClientsConfigLocation( host, singleCommand,
           delegatingExecutorService.getExecutorService() ) )
@@ -59,7 +61,7 @@ public class SshSearchService {
   }
 
   private CompletableFuture<String> createTaskAskForClientsConfigLocation( String host, String command,
-                                                                    ExecutorService executorService ) {
+                                                                           ExecutorService executorService ) {
     return CompletableFuture.supplyAsync( () -> {
       try {
         logger.info( "Start search for " + command );

@@ -1,4 +1,4 @@
-package com.epam.spring.authenticate;
+package com.epam.spring.security.authenticate;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;

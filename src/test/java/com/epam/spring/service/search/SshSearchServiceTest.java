@@ -1,6 +1,7 @@
 package com.epam.spring.service.search;
 
 import com.epam.spring.condition.DownloadableFile;
+import com.epam.spring.config.SshCredentials;
 import com.epam.spring.exception.CommonUtilException;
 import com.epam.spring.exception.ServiceException;
 import com.epam.spring.search.SearchStrategy;
@@ -30,8 +31,8 @@ public class SshSearchServiceTest {
     PowerMockito.mockStatic( CommonUtilHolder.class );
 
     Mockito.when( CommonUtilHolder.sshCommonUtilInstance() ).thenReturn( sshCommonUtil );
-    Mockito.when( sshCommonUtil.executeCommand( Mockito.anyString(), Mockito.anyString(),
-      Mockito.anyString(), Mockito.anyInt(), Mockito.anyString(), Mockito.anyString() ) )
+    Mockito.when( sshCommonUtil.executeCommand( Mockito.any( SshCredentials.class ),
+      Mockito.anyString(), Mockito.anyInt(),  Mockito.anyString() ) )
       .thenThrow( CommonUtilException.class );
     Mockito.when( searchStrategy.getStrategyCommand( Mockito.anyList() ) ).thenReturn( "some" );
 
@@ -48,8 +49,8 @@ public class SshSearchServiceTest {
     PowerMockito.mockStatic( CommonUtilHolder.class );
 
     Mockito.when( CommonUtilHolder.sshCommonUtilInstance() ).thenReturn( sshCommonUtil );
-    Mockito.when( sshCommonUtil.executeCommand( Mockito.anyString(), Mockito.anyString(),
-      Mockito.anyString(), Mockito.anyInt(), Mockito.anyString(), Mockito.anyString() ) )
+    Mockito.when( sshCommonUtil.executeCommand( Mockito.any( SshCredentials.class ),
+      Mockito.anyString(), Mockito.anyInt(), Mockito.anyString() ) )
       .thenReturn( "test" );
     Mockito.when( searchStrategy.getStrategyCommand( Mockito.anyList() ) ).thenReturn( StringUtils.EMPTY );
     Mockito.when( searchStrategy.resolveCommandResult( Mockito.anyString(), Mockito.anyList() ) )

@@ -1,4 +1,4 @@
-package com.epam.spring.authenticate;
+package com.epam.spring.security.authenticate;
 
 public interface IKerberosAuthentication {
   boolean isKerberosSet();

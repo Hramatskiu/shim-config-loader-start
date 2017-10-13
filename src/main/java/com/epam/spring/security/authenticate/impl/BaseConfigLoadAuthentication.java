@@ -1,9 +1,9 @@
-package com.epam.spring.authenticate.impl;
+package com.epam.spring.security.authenticate.impl;
 
-import com.epam.spring.authenticate.BaseCredentialsToken;
 import com.epam.spring.config.HttpCredentials;
 import com.epam.spring.config.Krb5Credentials;
 import com.epam.spring.config.SshCredentials;
+import com.epam.spring.security.authenticate.BaseCredentialsToken;
 
 public class BaseConfigLoadAuthentication extends BaseCredentialsToken {
   private HttpCredentials httpCredentials;

@@ -1,5 +1,6 @@
 package com.epam.spring.service.download;
 
+import com.epam.spring.config.SshCredentials;
 import com.epam.spring.exception.CommonUtilException;
 import com.epam.spring.executor.DelegatingExecutorService;
 import com.epam.spring.plan.DownloadPlan;
@@ -36,8 +37,8 @@ public class SshDownloadServiceTest {
     PowerMockito.mockStatic( CommonUtilHolder.class );
 
     Mockito.when( CommonUtilHolder.sshCommonUtilInstance() ).thenReturn( sshCommonUtil );
-    Mockito.when( sshCommonUtil.downloadConfigs( Mockito.anyString(), Mockito.anyString(), Mockito.anyString(),
-      Mockito.anyInt(), Mockito.anyString(), Mockito.anyString() ) )
+    Mockito.when( sshCommonUtil.downloadConfigs( Mockito.any( SshCredentials.class ), Mockito.anyString(),
+      Mockito.anyInt(), Mockito.anyString() ) )
       .thenThrow( CommonUtilException.class );
     Mockito.when( loadPathConfig.getLoadedFiles() ).thenReturn( Collections.singletonList( "some" ) );
     Mockito.when( loadPathConfig.getCompositeHost() ).thenReturn( "some" );
@@ -61,8 +62,8 @@ public class SshDownloadServiceTest {
     Mockito.when( CommonUtilHolder.sshCommonUtilInstance() ).thenReturn( sshCommonUtil );
     PowerMockito.doNothing()
       .when( FileCommonUtil.class, "writeStringToFile", Mockito.anyString(), Mockito.anyString() );
-    Mockito.when( sshCommonUtil.downloadConfigs( Mockito.anyString(), Mockito.anyString(), Mockito.anyString(),
-      Mockito.anyInt(), Mockito.anyString(), Mockito.anyString() ) )
+    Mockito.when( sshCommonUtil.downloadConfigs( Mockito.any( SshCredentials.class ), Mockito.anyString(),
+      Mockito.anyInt(), Mockito.anyString() ) )
       .thenReturn( "some" );
     Mockito.when( loadPathConfig.getLoadedFiles() ).thenReturn( Collections.singletonList( "some" ) );
     Mockito.when( loadPathConfig.getCompositeHost() ).thenReturn( "some" );

@@ -23,7 +23,8 @@ public class HttpSearchService {
                                                           SearchStrategy searchStrategy ) {
     try {
       List<DownloadableFile> files = searchStrategy.tryToResolveCommandResult(
-        askForClientsConfigLocation( HTTP_PREFIX + remoteUrl + searchStrategy.getStrategyCommand( searchableServiceNames ) ),
+        askForClientsConfigLocation(
+          HTTP_PREFIX + remoteUrl + searchStrategy.getStrategyCommand( searchableServiceNames ) ),
         searchableServiceNames );
       files.forEach( service -> service.setDownloadPath( HTTP_PREFIX + remoteUrl + service.getDownloadPath() ) );
 

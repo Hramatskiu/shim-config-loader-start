@@ -1,4 +1,4 @@
-package com.epam.spring.authenticate;
+package com.epam.spring.security.authenticate;
 
 import com.epam.spring.config.SshCredentials;
 

@@ -1,23 +1,23 @@
-package com.epam.spring.authenticate.impl;
+package com.epam.spring.security.authenticate.impl;
 
-import com.epam.spring.authenticate.BaseCredentialsToken;
-import com.epam.spring.authenticate.IHttpCredentials;
-import com.epam.spring.authenticate.IKerberosAuthentication;
-import com.epam.spring.authenticate.ISshCredentials;
 import com.epam.spring.config.SshCredentials;
+import com.epam.spring.security.authenticate.BaseCredentialsToken;
+import com.epam.spring.security.authenticate.IHttpCredentials;
+import com.epam.spring.security.authenticate.IKerberosAuthentication;
+import com.epam.spring.security.authenticate.ISshCredentials;
 import org.apache.http.client.CredentialsProvider;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class TestConfigLoadCredentials extends BaseCredentialsToken implements IHttpCredentials,
+public class ConfigLoadCredentials extends BaseCredentialsToken implements IHttpCredentials,
   ISshCredentials, IKerberosAuthentication {
   private CredentialsProvider credentialsProvider;
   private SshCredentials sshCredentials;
   private List<String> authShemes;
   private boolean kerberosAuth;
 
-  public TestConfigLoadCredentials() {
+  public ConfigLoadCredentials() {
     credentialsProvider = null;
     sshCredentials = null;
     authShemes = new ArrayList<>();

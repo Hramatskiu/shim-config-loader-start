@@ -1,11 +1,11 @@
 package com.epam.spring.security;
 
 import com.epam.kerberos.HadoopKerberosUtil;
-import com.epam.spring.authenticate.impl.BaseConfigLoadAuthentication;
-import com.epam.spring.authenticate.impl.TestConfigLoadCredentials;
 import com.epam.spring.config.HttpCredentials;
 import com.epam.spring.config.Krb5Credentials;
 import com.epam.spring.config.SshCredentials;
+import com.epam.spring.security.authenticate.impl.BaseConfigLoadAuthentication;
+import com.epam.spring.security.authenticate.impl.ConfigLoadCredentials;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -28,7 +28,7 @@ import java.util.List;
 @Component
 public class AutheticationManagerImpl implements AuthenticationManager {
   public Authentication authenticate( Authentication auth ) throws AuthenticationException {
-    if ( auth instanceof TestConfigLoadCredentials && auth.isAuthenticated() ) {
+    if ( auth instanceof ConfigLoadCredentials && auth.isAuthenticated() ) {
       return auth;
     }
 
@@ -42,22 +42,22 @@ public class AutheticationManagerImpl implements AuthenticationManager {
 
   private Authentication makeAuthentication( BaseConfigLoadAuthentication authentication )
     throws AuthenticationException {
-    TestConfigLoadCredentials testConfigLoadCredentials = new TestConfigLoadCredentials();
+    ConfigLoadCredentials configLoadCredentials = new ConfigLoadCredentials();
 
     if ( !authentication.getKrb5Credentials().getUsername().isEmpty() ) {
       loginWithKerberos( authentication.getKrb5Credentials() );
     }
 
-    testConfigLoadCredentials
+    configLoadCredentials
       .setCredentialsProvider( createHttpCredentialsProvider( authentication.getHttpCredentials() ) );
-    testConfigLoadCredentials.setAuthShemes( createAuthShemesList() );
-    testConfigLoadCredentials.setSshCredentials( createSshCredentials( authentication.getSshCredentials() ) );
-    testConfigLoadCredentials.setKerberosAuth( !authentication.getKrb5Credentials().getUsername().isEmpty() );
+    configLoadCredentials.setAuthShemes( createAuthShemesList() );
+    configLoadCredentials.setSshCredentials( createSshCredentials( authentication.getSshCredentials() ) );
+    configLoadCredentials.setKerberosAuth( !authentication.getKrb5Credentials().getUsername().isEmpty() );
 
     // Necessary?
-    testConfigLoadCredentials.setAuthenticated( true );
+    configLoadCredentials.setAuthenticated( true );
 
-    return testConfigLoadCredentials;
+    return configLoadCredentials;
   }
 
   private CredentialsProvider createHttpCredentialsProvider( HttpCredentials httpCredentials )
