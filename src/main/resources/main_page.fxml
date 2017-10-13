@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.text.*?>
+<?import java.lang.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
@@ -18,7 +20,15 @@
       <ComboBox id="clusterType" fx:id="clusterType" layoutX="467.0" layoutY="63.0" onShowing="#compoBoxOnShowing" prefWidth="150.0" />
       <PasswordField id="sshPassword" fx:id="sshPassword" layoutX="576.0" layoutY="231.0" prefHeight="31.0" prefWidth="244.0" promptText="Ssh password (&quot;default password&quot;)" text="password" />
       <TextField id="sshUser" fx:id="sshUser" layoutX="576.0" layoutY="174.0" prefHeight="31.0" prefWidth="244.0" promptText="Ssh user (default &quot;mapr&quot;)" text="mapr" />
-      <TextField id="pathToPemFile" fx:id="pathToPemFile" layoutX="29.0" layoutY="104.0" prefHeight="31.0" prefWidth="417.0" promptText="path to pem file" text="D:\backup\testcluster1.pem" />
+      <TextField id="pathToPemFile" fx:id="pathToPemFile" layoutX="190.0" layoutY="102.0" prefHeight="31.0" prefWidth="636.0" promptText="path to pem file" text="D:\backup\testcluster1.pem" />
+      <Label fx:id="kerberosLabel" layoutX="33.0" layoutY="144.0" prefHeight="17.0" prefWidth="232.0" text="Kerberos" />
+      <Label fx:id="restLabel" layoutX="305.0" layoutY="144.0" prefHeight="17.0" prefWidth="232.0" text="REST" />
+      <Label fx:id="sshLabel" layoutX="582.0" layoutY="144.0" prefHeight="17.0" prefWidth="232.0" text="SSH" />
+      <Label fx:id="pemFileLabel" layoutX="30.0" layoutY="109.0" prefHeight="17.0" prefWidth="136.0" text=".pem file location">
+         <font>
+            <Font size="14.0" />
+         </font>
+      </Label>
 
    </children>
    <padding>

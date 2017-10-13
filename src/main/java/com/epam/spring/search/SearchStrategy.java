@@ -13,8 +13,7 @@ public interface SearchStrategy {
   String getStrategyCommand( List<DownloadableFile> searchableServiceNames );
 
   List<DownloadableFile> resolveCommandResult( String commandResult, List<DownloadableFile> searchableServiceNames )
-    throws
-    StrategyException;
+    throws StrategyException;
 
   default List<DownloadableFile> tryToResolveCommandResult( String commandResult,
                                                             List<DownloadableFile> searchableServiceNames )

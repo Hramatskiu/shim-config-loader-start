@@ -37,7 +37,7 @@ public class SshDownloadServiceTest {
     PowerMockito.mockStatic( CommonUtilHolder.class );
 
     Mockito.when( CommonUtilHolder.sshCommonUtilInstance() ).thenReturn( sshCommonUtil );
-    Mockito.when( sshCommonUtil.downloadConfigs( Mockito.any( SshCredentials.class ), Mockito.anyString(),
+    Mockito.when( sshCommonUtil.downloadViaSftp( Mockito.any( SshCredentials.class ), Mockito.anyString(),
       Mockito.anyInt(), Mockito.anyString() ) )
       .thenThrow( CommonUtilException.class );
     Mockito.when( loadPathConfig.getLoadedFiles() ).thenReturn( Collections.singletonList( "some" ) );
@@ -62,7 +62,7 @@ public class SshDownloadServiceTest {
     Mockito.when( CommonUtilHolder.sshCommonUtilInstance() ).thenReturn( sshCommonUtil );
     PowerMockito.doNothing()
       .when( FileCommonUtil.class, "writeStringToFile", Mockito.anyString(), Mockito.anyString() );
-    Mockito.when( sshCommonUtil.downloadConfigs( Mockito.any( SshCredentials.class ), Mockito.anyString(),
+    Mockito.when( sshCommonUtil.downloadViaSftp( Mockito.any( SshCredentials.class ), Mockito.anyString(),
       Mockito.anyInt(), Mockito.anyString() ) )
       .thenReturn( "some" );
     Mockito.when( loadPathConfig.getLoadedFiles() ).thenReturn( Collections.singletonList( "some" ) );

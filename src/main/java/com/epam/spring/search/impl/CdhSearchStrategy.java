@@ -3,6 +3,8 @@ package com.epam.spring.search.impl;
 import com.epam.spring.condition.DownloadableFile;
 import com.epam.spring.exception.StrategyException;
 import com.epam.spring.search.SearchStrategy;
+import com.epam.spring.util.CheckingParamsUtil;
+import org.apache.commons.lang.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
@@ -32,9 +34,11 @@ public class CdhSearchStrategy implements SearchStrategy {
     return Collections.emptyList();
   }
 
-  private String extractClusterNameFromCommandResult( String commandResult ) throws StrategyException {
+  String extractClusterNameFromCommandResult( String commandResult ) throws StrategyException {
     try {
-      return new JSONObject( commandResult ).getJSONArray( "items" ).getJSONObject( 0 ).getString( "name" );
+      return CheckingParamsUtil.checkParamsWithNullAndEmpty( commandResult )
+        ? new JSONObject( commandResult ).getJSONArray( "items" ).getJSONObject( 0 ).getString( "name" )
+        : StringUtils.EMPTY;
     } catch ( JSONException e ) {
       throw new StrategyException( e );
     }

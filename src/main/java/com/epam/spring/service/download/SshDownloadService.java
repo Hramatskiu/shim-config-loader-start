@@ -42,7 +42,7 @@ public class SshDownloadService {
   String askForClientsConfigs( String host, String command ) {
     try {
       return CheckingParamsUtil.checkParamsWithNullAndEmpty( host, command )
-        ? CommonUtilHolder.sshCommonUtilInstance().downloadConfigs( new SshCredentials(), host, 22, command )
+        ? CommonUtilHolder.sshCommonUtilInstance().downloadViaSftp( new SshCredentials(), host, 22, command )
         : StringUtils.EMPTY;
     } catch ( CommonUtilException e ) {
       throw new ServiceException( e );

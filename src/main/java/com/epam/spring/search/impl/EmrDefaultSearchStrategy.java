@@ -12,6 +12,9 @@ import java.util.List;
 
 @Component( "emr-default-strategy" )
 public class EmrDefaultSearchStrategy implements SearchStrategy {
+  private static final String HADOOP_DEFAULT_HOME = "/etc/hadoop/conf/";
+  private static final String EMR_DEFAULT_HOME = "/usr/share/aws/emr/emrfs/conf/";
+
   @Override public String getStrategyCommand( List<DownloadableFile> searchableServiceNames ) {
     return StringUtils.EMPTY;
   }
@@ -36,9 +39,9 @@ public class EmrDefaultSearchStrategy implements SearchStrategy {
       case DownloadableFileConstants.ServiceName.HDFS:
       case DownloadableFileConstants.ServiceName.YARN:
       case DownloadableFileConstants.ServiceName.MAPREDUCE2:
-        return "/etc/hadoop/conf/";
+        return HADOOP_DEFAULT_HOME;
       case DownloadableFileConstants.ServiceName.EMR:
-        return "/usr/share/aws/emr/emrfs/conf/";
+        return EMR_DEFAULT_HOME;
       default:
         return "/etc/" + serviceName.toLowerCase() + "/conf/";
 

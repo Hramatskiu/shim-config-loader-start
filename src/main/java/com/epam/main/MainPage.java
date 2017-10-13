@@ -12,6 +12,7 @@ import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.stage.DirectoryChooser;
@@ -51,6 +52,14 @@ public class MainPage {
   @FXML
   TextArea output;
   @FXML
+  Label pemFileLabel;
+  @FXML
+  Label restLabel;
+  @FXML
+  Label sshLabel;
+  @FXML
+  Label kerberosLabel;
+  @FXML
   ComboBox<String> clusterType;
 
   private ClusterConfigLoader clusterConfigLoader;
@@ -69,9 +78,11 @@ public class MainPage {
   @FXML
   void initialize() {
     TextAreaAppender.setTextArea( output );
+    clusterType.valueProperty().addListener( ( observable, oldValue, newValue ) -> {
+      showNecessaryFields( newValue );
+    } );
     clusterConfigLoader = new ClusterConfigLoader();
     clusterConfigLoader.init();
-
   }
 
   @FXML
@@ -86,6 +97,45 @@ public class MainPage {
 
         clusterType.getItems().setAll( clusterTypes );
       }
+    }
+  }
+
+  private void showNecessaryFields( String newValue ) {
+    switch ( newValue ) {
+      case "EMR":
+        pemFileLabel.setVisible( true );
+        pathToPemFile.setVisible( true );
+        restLabel.setVisible( false );
+        restUser.setVisible( false );
+        restPassword.setVisible( false );
+        sshLabel.setVisible( true );
+        sshUser.setVisible( true );
+        sshPassword.setVisible( true );
+        break;
+      case "MAPR":
+        pemFileLabel.setVisible( false );
+        pathToPemFile.setText( "" );
+        pathToPemFile.setVisible( false );
+        restLabel.setVisible( false );
+        restUser.setVisible( false );
+        restPassword.setVisible( false );
+        sshLabel.setVisible( true );
+        sshUser.setVisible( true );
+        sshPassword.setVisible( true );
+        break;
+      case "CDH":
+      case "HDP":
+        pemFileLabel.setVisible( false );
+        pathToPemFile.setText( "" );
+        pathToPemFile.setVisible( false );
+        restLabel.setVisible( true );
+        restUser.setVisible( true );
+        restPassword.setVisible( true );
+        sshLabel.setVisible( false );
+        sshUser.setVisible( false );
+        sshPassword.setVisible( false );
+        break;
+      default:
     }
   }
 

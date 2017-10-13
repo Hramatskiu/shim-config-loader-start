@@ -11,21 +11,25 @@ import java.io.IOException;
 public class SshCommonUtil {
   public String executeCommand( SshCredentials sshCredentials, String host, int port, String command ) throws
     CommonUtilException {
-    try ( DelegatingSshSession sshSession = new DelegatingSshSession( sshCredentials.getUsername(), host, port,
-      sshCredentials.getPassword(), sshCredentials.getIdentityPath() ) ) {
+    try ( DelegatingSshSession sshSession = createDelegationSshSession( sshCredentials, host, port ) ) {
       return sshSession.executeCommand( command );
     } catch ( IOException ex ) {
       throw new CommonUtilException( ex );
     }
   }
 
-  public String downloadConfigs( SshCredentials sshCredentials, String host, int port, String source ) throws
+  public String downloadViaSftp( SshCredentials sshCredentials, String host, int port, String source ) throws
     CommonUtilException {
-    try ( DelegatingSshSession sshSession = new DelegatingSshSession( sshCredentials.getUsername(), host, port,
-      sshCredentials.getPassword(), sshCredentials.getIdentityPath() ) ) {
+    try ( DelegatingSshSession sshSession = createDelegationSshSession( sshCredentials, host, port ) ) {
       return sshSession.downloadFile( source );
     } catch ( IOException ex ) {
       throw new CommonUtilException( ex );
     }
+  }
+
+  DelegatingSshSession createDelegationSshSession( SshCredentials sshCredentials, String host, int port )
+    throws IOException {
+    return new DelegatingSshSession( sshCredentials.getUsername(), host, port,
+      sshCredentials.getPassword(), sshCredentials.getIdentityPath() );
   }
 }
