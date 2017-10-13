@@ -149,7 +149,7 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
-                            <mainClass>com.epam.spring.ClusterConfigLoader</mainClass>
+                            <mainClass>com.epam.loader.ClusterConfigLoader</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

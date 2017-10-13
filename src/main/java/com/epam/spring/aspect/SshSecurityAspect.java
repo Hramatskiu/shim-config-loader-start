@@ -1,6 +1,6 @@
 package com.epam.spring.aspect;
 
-import com.epam.spring.config.SshCredentials;
+import com.epam.loader.config.credentials.SshCredentials;
 import com.epam.spring.security.BaseSecurityContextHandler;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -13,7 +13,7 @@ import java.util.Arrays;
 @Aspect
 @Component
 public class SshSecurityAspect extends BaseSecurityContextHandler {
-  @Pointcut( "execution(* com.epam.spring.util.SshCommonUtil.*(..))" )
+  @Pointcut( "execution(* com.epam.loader.common.util.SshCommonUtil.*(..))" )
   public void addSshSecurity() {
   }
 

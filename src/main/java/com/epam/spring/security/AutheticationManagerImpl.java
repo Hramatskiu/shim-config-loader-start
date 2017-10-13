@@ -1,9 +1,9 @@
 package com.epam.spring.security;
 
 import com.epam.kerberos.HadoopKerberosUtil;
-import com.epam.spring.config.HttpCredentials;
-import com.epam.spring.config.Krb5Credentials;
-import com.epam.spring.config.SshCredentials;
+import com.epam.loader.config.credentials.HttpCredentials;
+import com.epam.loader.config.credentials.Krb5Credentials;
+import com.epam.loader.config.credentials.SshCredentials;
 import com.epam.spring.security.authenticate.impl.BaseConfigLoadAuthentication;
 import com.epam.spring.security.authenticate.impl.ConfigLoadCredentials;
 import org.apache.http.auth.AuthScope;

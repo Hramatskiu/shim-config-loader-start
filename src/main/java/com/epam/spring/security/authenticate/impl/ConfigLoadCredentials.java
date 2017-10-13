@@ -1,6 +1,6 @@
 package com.epam.spring.security.authenticate.impl;
 
-import com.epam.spring.config.SshCredentials;
+import com.epam.loader.config.credentials.SshCredentials;
 import com.epam.spring.security.authenticate.BaseCredentialsToken;
 import com.epam.spring.security.authenticate.IHttpCredentials;
 import com.epam.spring.security.authenticate.IKerberosAuthentication;

@@ -1,12 +1,14 @@
 package com.epam.main;
 
+import com.epam.loader.ClusterConfigLoader;
+import com.epam.loader.config.credentials.HttpCredentials;
+import com.epam.loader.config.credentials.Krb5Credentials;
+import com.epam.loader.config.credentials.LoadConfigs;
+import com.epam.loader.config.credentials.SshCredentials;
+import com.epam.loader.plan.manager.LoadConfigsManager;
 import com.epam.logger.TextAreaAppender;
-import com.epam.spring.ClusterConfigLoader;
-import com.epam.spring.config.HttpCredentials;
-import com.epam.spring.config.Krb5Credentials;
-import com.epam.spring.config.LoadConfigs;
-import com.epam.spring.config.SshCredentials;
-import com.epam.spring.manager.LoadConfigsManager;
+import com.epam.shim.configurator.ShimDependentConfigurator;
+import com.epam.shim.configurator.config.ModifierConfiguration;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.fxml.FXML;
@@ -49,6 +51,14 @@ public class MainPage {
   TextField sshUser;
   @FXML
   TextField sshPassword;
+  @FXML
+  TextField dfsInstallDir;
+  @FXML
+  TextField pathToTestProperties;
+  @FXML
+  Label testPathLabel;
+  @FXML
+  Label dfsInstallDirLabel;
   @FXML
   TextArea output;
   @FXML
@@ -96,6 +106,7 @@ public class MainPage {
         clusterTypes.add( LoadConfigsManager.ClusterType.EMR.toString() );
 
         clusterType.getItems().setAll( clusterTypes );
+        clusterType.setValue( LoadConfigsManager.ClusterType.HDP.toString() );
       }
     }
   }
@@ -142,7 +153,9 @@ public class MainPage {
 
   private void setVisibilityForPemFileInput( boolean isPemNeeded ) {
     pemFileLabel.setVisible( isPemNeeded );
-    if ( !isPemNeeded ) pathToPemFile.setText( "" );
+    if ( !isPemNeeded ) {
+      pathToPemFile.setText( "" );
+    }
     pathToPemFile.setVisible( isPemNeeded );
   }
 
@@ -154,12 +167,17 @@ public class MainPage {
       buttonStart.setDisable( true );
 
       Thread thread = new Thread( () -> {
-        clusterConfigLoader
+        boolean isDownloaded = clusterConfigLoader
           .loadConfigs( new LoadConfigs( new HttpCredentials( restUser.getText(), restPassword.getText() ),
             new Krb5Credentials( kerberosUser.getText(), kerberosPassword.getText() ),
             new SshCredentials( sshUser.getText(), sshPassword.getText(), pathToPemFile.getText() ),
             cluster_node_FQDN.getText().trim(), pathToSave.getText(),
             LoadConfigsManager.ClusterType.valueOf( clusterType.getValue() ) ) );
+
+        if ( isDownloaded ) {
+          ShimDependentConfigurator.configureShimProperties( new ModifierConfiguration( pathToSave.getText(),
+            dfsInstallDir.getText(), pathToTestProperties.getText() ) );
+        }
         buttonStart.setDisable( false );
       } );
 

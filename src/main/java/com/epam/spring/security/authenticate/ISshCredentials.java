@@ -1,6 +1,6 @@
 package com.epam.spring.security.authenticate;
 
-import com.epam.spring.config.SshCredentials;
+import com.epam.loader.config.credentials.SshCredentials;
 
 public interface ISshCredentials {
   SshCredentials getSshCredentials();

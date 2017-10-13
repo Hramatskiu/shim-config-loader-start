@@ -18,15 +18,15 @@ import java.util.List;
 @Aspect
 @Component
 public class HttpSecurityAspect extends BaseSecurityContextHandler {
-  @Pointcut( "execution(* com.epam.spring.util.HttpCommonUtil.createHttpClientBuilder())" )
+  @Pointcut( "execution(* com.epam.loader.common.util.HttpCommonUtil.createHttpClientBuilder())" )
   public void addHttpClientBuilderSecurity() {
   }
 
-  @Pointcut( "execution(* com.epam.spring.util.HttpCommonUtil.createRequestBuilder(..))" )
+  @Pointcut( "execution(* com.epam.loader.common.util.HttpCommonUtil.createRequestBuilder(..))" )
   public void addHttpRequestBuilderSecurity() {
   }
 
-  @Pointcut( "execution(* com.epam.spring.util.HttpCommonUtil.createHttpUriRequest(..))" )
+  @Pointcut( "execution(* com.epam.loader.common.util.HttpCommonUtil.createHttpUriRequest(..))" )
   public void addHttpRequestSecurity() {
   }
 
