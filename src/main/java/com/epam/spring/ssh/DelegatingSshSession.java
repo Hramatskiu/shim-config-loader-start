@@ -30,9 +30,9 @@ public class DelegatingSshSession implements Closeable {
       channel.connect();
 
       InputStream in = ( (ChannelSftp) channel ).get( sourcePath );
-      byte[] tmp = new byte[ 1024 ];
+      byte[] tmp = new byte[ 10024 ];
       int i;
-      while ( ( i = in.read( tmp, 0, 1024 ) ) > 0 ) {
+      while ( ( i = in.read( tmp, 0, 10024 ) ) > 0 ) {
         commandResult.append( new String( tmp, 0, i ) );
       }
     } catch ( JSchException | IOException | SftpException ex ) {
@@ -58,10 +58,10 @@ public class DelegatingSshSession implements Closeable {
       ( (ChannelExec) channel ).setErrStream( System.err );
       InputStream in = channel.getInputStream();
       channel.connect();
-      byte[] tmp = new byte[ 1024 ];
+      byte[] tmp = new byte[ 10024 ];
       while ( true ) {
         while ( in.available() > 0 ) {
-          int i = in.read( tmp, 0, 1024 );
+          int i = in.read( tmp, 0, 10024 );
           if ( i < 0 ) {
             break;
           }
@@ -105,6 +105,9 @@ public class DelegatingSshSession implements Closeable {
 
       Session session = jsch.getSession( user, host, 22 );
       session.setConfig( "StrictHostKeyChecking", "no" );
+      session.setConfig( "GSSAPIAuthentication", "yes" );
+      session.setConfig( "GSSAPIDelegateCredentials", "no" );
+      session.setConfig( "UseDNS", "no" );
       if ( identityPath == null || identityPath.isEmpty() ) {
         session.setPassword( password );
       }

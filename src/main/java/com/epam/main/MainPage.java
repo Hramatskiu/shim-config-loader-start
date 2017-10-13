@@ -103,40 +103,47 @@ public class MainPage {
   private void showNecessaryFields( String newValue ) {
     switch ( newValue ) {
       case "EMR":
-        pemFileLabel.setVisible( true );
-        pathToPemFile.setVisible( true );
-        restLabel.setVisible( false );
-        restUser.setVisible( false );
-        restPassword.setVisible( false );
-        sshLabel.setVisible( true );
-        sshUser.setVisible( true );
-        sshPassword.setVisible( true );
+        setVisibilityForPemFileInput( true );
+        setVisibilityForAuth( true );
+        setUpEMRFields();
         break;
       case "MAPR":
-        pemFileLabel.setVisible( false );
-        pathToPemFile.setText( "" );
-        pathToPemFile.setVisible( false );
-        restLabel.setVisible( false );
-        restUser.setVisible( false );
-        restPassword.setVisible( false );
-        sshLabel.setVisible( true );
-        sshUser.setVisible( true );
-        sshPassword.setVisible( true );
+        setVisibilityForPemFileInput( false );
+        setVisibilityForAuth( true );
+        setUpMAPRFields();
         break;
       case "CDH":
       case "HDP":
-        pemFileLabel.setVisible( false );
-        pathToPemFile.setText( "" );
-        pathToPemFile.setVisible( false );
-        restLabel.setVisible( true );
-        restUser.setVisible( true );
-        restPassword.setVisible( true );
-        sshLabel.setVisible( false );
-        sshUser.setVisible( false );
-        sshPassword.setVisible( false );
+        setVisibilityForPemFileInput( false );
+        setVisibilityForAuth( false );
         break;
       default:
     }
+  }
+
+  private void setUpEMRFields() {
+    sshUser.setText( "hadoop" );
+    sshPassword.setText( "password" );
+  }
+
+  private void setUpMAPRFields() {
+    sshUser.setText( "mapr" );
+    sshPassword.setText( "password" );
+  }
+
+  private void setVisibilityForAuth( boolean isSshOnly ) {
+    restLabel.setVisible( !isSshOnly );
+    restUser.setVisible( !isSshOnly );
+    restPassword.setVisible( !isSshOnly );
+    sshLabel.setVisible( isSshOnly );
+    sshUser.setVisible( isSshOnly );
+    sshPassword.setVisible( isSshOnly );
+  }
+
+  private void setVisibilityForPemFileInput( boolean isPemNeeded ) {
+    pemFileLabel.setVisible( isPemNeeded );
+    if ( !isPemNeeded ) pathToPemFile.setText( "" );
+    pathToPemFile.setVisible( isPemNeeded );
   }
 
   private void buttonStartAction() {
