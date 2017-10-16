@@ -1,10 +1,14 @@
- package com.epam.shim.configurator.modifier;
+package com.epam.shim.configurator.modifier;
 
+import com.epam.loader.plan.manager.LoadConfigsManager;
 import com.epam.shim.configurator.config.ModifierConfiguration;
+import com.epam.shim.configurator.util.LocalProccessCommandExecutor;
 import com.epam.shim.configurator.util.PropertyHandler;
 import org.apache.log4j.Logger;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 public class ModifyPluginConfigProperties {
 
@@ -22,6 +26,10 @@ public class ModifyPluginConfigProperties {
     PropertyHandler.setProperty( pluginPropertiesFile, "active.hadoop.configuration", shimFolder );
 
     PropertyHandler.setProperty( configPropertiesFile, "pentaho.oozie.proxy.user", "devuser" );
+
+    if ( modifierConfiguration.getClusterType().equals( LoadConfigsManager.ClusterType.MAPR ) ) {
+      addMaprClasspath( configPropertiesFile );
+    }
 
     if ( modifierConfiguration.isSecure() ) {
       //determine if shim is using impersonation and modify it accordingly
@@ -64,4 +72,14 @@ public class ModifyPluginConfigProperties {
     }
   }
 
+  private void addMaprClasspath( String configPropertiesFile ) {
+    if ( System.getProperty( "os.name" ).startsWith( "Windows" ) ) {
+      String lines = LocalProccessCommandExecutor
+        .executeCommand( "cmd /c %MAPR_HOME%\\hadoop\\hadoop-2.7.0\\bin\\hadoop.cmd classpath" );
+      String modifiedLines =
+        Arrays.stream( lines.split( ";" ) ).map( line -> "file:///" + line ).map( line -> line.replace( "\\", "/" ) )
+          .map( line -> line.replace( "*", "" ) ).collect( Collectors.joining( "," ) );
+      PropertyHandler.setProperty( configPropertiesFile, "windows.classpath", modifiedLines );
+    }
+  }
 }

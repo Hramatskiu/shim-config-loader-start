@@ -1,14 +1,14 @@
 package com.epam.loader.common.service.search;
 
 import com.epam.loader.common.delegating.executor.DelegatingExecutorService;
+import com.epam.loader.common.service.ServiceException;
 import com.epam.loader.common.util.CheckingParamsUtil;
+import com.epam.loader.common.util.CommonUtilException;
 import com.epam.loader.common.util.CommonUtilHolder;
 import com.epam.loader.config.condition.DownloadableFile;
 import com.epam.loader.config.credentials.SshCredentials;
 import com.epam.loader.plan.strategy.SearchStrategy;
-import com.epam.spring.exception.CommonUtilException;
-import com.epam.spring.exception.ServiceException;
-import com.epam.spring.exception.StrategyException;
+import com.epam.loader.plan.strategy.StrategyException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Component;

@@ -19,13 +19,16 @@ public class XmlPropertyHandler {
     // Read *-site.xml file and return property value, return null if property was not found
 
     try {
+      //FileCommonUtil.deleteCommentsFromXmlFile( pathToFile );
       NodeList list = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse( pathToFile )
         .getElementsByTagName( "property" );
       for ( int i = 0; i < list.getLength(); i++ ) {
         Node node = list.item( i );
 
-        if ( property.equals( node.getChildNodes().item( 1 ).getFirstChild().getNodeValue() ) ) {
-          return node.getChildNodes().item( 3 ).getFirstChild().getNodeValue();
+        int itemNumber = findPropertyIndex( node );
+        if ( itemNumber != -1 && property
+          .equals( node.getChildNodes().item( itemNumber ).getFirstChild().getNodeValue() ) ) {
+          return node.getChildNodes().item( itemNumber + 2 ).getFirstChild().getNodeValue();
         }
       }
 
@@ -48,6 +51,24 @@ public class XmlPropertyHandler {
     Element node = doc.createElement( name );
     node.appendChild( doc.createTextNode( value ) );
     return node;
+  }
+
+  private static int findPropertyIndex( Node node ) {
+    int i = 0;
+    boolean find = false;
+    while ( !find && i < node.getChildNodes().getLength() ) {
+      if ( node.getChildNodes().item( i ).getFirstChild() != null ) {
+        find = true;
+      } else {
+        i++;
+      }
+    }
+
+    if ( !find ) {
+      i = -1;
+    }
+
+    return i;
   }
 
 }

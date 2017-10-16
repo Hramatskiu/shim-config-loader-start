@@ -1,13 +1,13 @@
 package com.epam.loader.plan.function.impl;
 
 import com.epam.loader.common.delegating.executor.DelegatingExecutorService;
+import com.epam.loader.common.service.ServiceException;
 import com.epam.loader.common.service.download.HttpDownloadService;
 import com.epam.loader.common.service.search.HttpSearchService;
 import com.epam.loader.config.condition.DownloadConfigsCondition;
 import com.epam.loader.plan.function.DownloadFunction;
 import com.epam.loader.plan.plan.DownloadPlan;
 import com.epam.loader.plan.strategy.SearchStrategy;
-import com.epam.spring.exception.ServiceException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

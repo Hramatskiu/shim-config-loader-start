@@ -1,9 +1,8 @@
 package com.epam.loader.common.service;
 
+import com.epam.loader.common.util.CommonUtilException;
 import com.epam.loader.common.util.FileCommonUtil;
 import com.epam.loader.plan.plan.DownloadPlan;
-import com.epam.spring.exception.CommonUtilException;
-import com.epam.spring.exception.ServiceException;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;

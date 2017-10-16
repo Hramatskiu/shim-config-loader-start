@@ -1,7 +1,7 @@
 package com.epam.loader.common.service.download;
 
 import com.epam.loader.config.credentials.SshCredentials;
-import com.epam.spring.exception.CommonUtilException;
+import com.epam.loader.common.util.CommonUtilException;
 import com.epam.loader.common.delegating.executor.DelegatingExecutorService;
 import com.epam.loader.plan.plan.DownloadPlan;
 import com.epam.loader.common.util.CommonUtilHolder;

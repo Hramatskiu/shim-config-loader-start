@@ -5,6 +5,7 @@ import com.epam.shim.configurator.config.ModifierConfiguration;
 import com.epam.shim.configurator.modifier.AddCrossPlatform;
 import com.epam.shim.configurator.modifier.ModifyPluginConfigProperties;
 import com.epam.shim.configurator.modifier.ModifyTestProperties;
+import com.epam.shim.configurator.util.CopyDriversUtil;
 import com.epam.shim.configurator.xml.XmlPropertyHandler;
 
 import java.io.IOException;
@@ -32,5 +33,7 @@ public class ShimDependentConfigurator {
         e.printStackTrace();
       }
     }
+
+    CopyDriversUtil.copyAllDrivers( modifierConfiguration.getPathToShim() );
   }
 }

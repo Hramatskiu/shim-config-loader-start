@@ -1,10 +1,10 @@
 package com.epam.loader;
 
 import com.epam.loader.common.delegating.executor.DelegatingExecutorService;
+import com.epam.loader.common.service.ServiceException;
 import com.epam.loader.config.credentials.LoadConfigs;
 import com.epam.loader.plan.manager.LoadConfigsManager;
 import com.epam.spring.config.SpringAppConfig;
-import com.epam.spring.exception.ServiceException;
 import org.apache.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;

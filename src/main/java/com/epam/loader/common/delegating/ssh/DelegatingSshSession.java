@@ -12,17 +12,13 @@ import org.apache.commons.lang.StringUtils;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class DelegatingSshSession implements Closeable {
-  private static Session session;
-  private static ReentrantLock reentrantLock = new ReentrantLock();
-  private static AtomicBoolean instanceFlag = new AtomicBoolean( false );
+  private Session session;
 
   public DelegatingSshSession( String user, String host, int port, String password, String identityPath )
     throws IOException {
-    session = getInstance( user, host, port, password, identityPath );
+    session = createSession( user, host, port, password, identityPath );
   }
 
   public String downloadFile( String sourcePath ) {
@@ -96,23 +92,7 @@ public class DelegatingSshSession implements Closeable {
 
   @Override
   public void close() throws IOException {
-    //session.disconnect();
-  }
-
-  private Session getInstance( String user, String host, int port, String password, String identityPath )
-    throws IOException {
-    if ( !instanceFlag.compareAndSet( true, true ) ) {
-      reentrantLock.lock();
-      try {
-        if ( !instanceFlag.compareAndSet( true, true ) ) {
-          session = createSession( user, host, port, password, identityPath );
-        }
-      } finally {
-        reentrantLock.unlock();
-      }
-    }
-
-    return session;
+    session.disconnect();
   }
 
   private Session createSession( String user, String host, int port, String password, String identityPath )

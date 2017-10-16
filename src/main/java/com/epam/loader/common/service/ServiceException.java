@@ -1,4 +1,4 @@
-package com.epam.spring.exception;
+package com.epam.loader.common.service;
 
 public class ServiceException extends RuntimeException {
   public ServiceException() {

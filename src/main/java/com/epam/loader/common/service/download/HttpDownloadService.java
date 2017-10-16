@@ -1,11 +1,11 @@
 package com.epam.loader.common.service.download;
 
 import com.epam.loader.common.service.FileExtractingService;
+import com.epam.loader.common.service.ServiceException;
+import com.epam.loader.common.util.CommonUtilException;
 import com.epam.loader.common.util.CommonUtilHolder;
 import com.epam.loader.plan.plan.DownloadPlan;
 import com.epam.spring.annotation.SecurityAnnotation;
-import com.epam.spring.exception.CommonUtilException;
-import com.epam.spring.exception.ServiceException;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;

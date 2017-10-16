@@ -1,6 +1,5 @@
 package com.epam.loader.common.util;
 
-import com.epam.spring.exception.CommonUtilException;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;

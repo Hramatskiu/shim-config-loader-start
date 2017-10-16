@@ -2,7 +2,6 @@ package com.epam.loader.common.util;
 
 import com.epam.loader.common.delegating.ssh.DelegatingSshSession;
 import com.epam.loader.config.credentials.SshCredentials;
-import com.epam.spring.exception.CommonUtilException;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;

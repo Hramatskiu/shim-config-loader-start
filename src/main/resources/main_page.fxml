@@ -35,12 +35,12 @@
             <Font size="14.0" />
          </font>
       </Label>
-      <Label fx:id="testPathLabel" layoutX="29.0" layoutY="119.0" prefHeight="20.0" prefWidth="156.0" text="Path to test.properties">
+      <Label fx:id="testPathLabel" layoutX="29.0" layoutY="119.0" prefHeight="20.0" prefWidth="156.0" text="Path to test.properties" visible="false">
          <font>
             <Font size="14.0" />
          </font>
       </Label>
-      <TextField id="cluster_node_FQDN" fx:id="pathToTestProperties" layoutX="189.0" layoutY="113.0" prefHeight="31.0" prefWidth="636.0" promptText="path to test.properties" />
+      <TextField id="cluster_node_FQDN" fx:id="pathToTestProperties" layoutX="189.0" layoutY="113.0" prefHeight="31.0" prefWidth="636.0" promptText="path to test.properties" visible="false" />
 
    </children>
    <padding>

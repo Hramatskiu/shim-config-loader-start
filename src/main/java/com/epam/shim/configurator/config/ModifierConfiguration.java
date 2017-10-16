@@ -1,5 +1,6 @@
 package com.epam.shim.configurator.config;
 
+import com.epam.loader.plan.manager.LoadConfigsManager;
 import org.apache.commons.lang.StringUtils;
 
 public class ModifierConfiguration {
@@ -7,17 +8,20 @@ public class ModifierConfiguration {
   private String pathToShim;
   private String pathToTestProperties;
   private String dfsInstallDir;
+  private LoadConfigsManager.ClusterType clusterType;
 
   public ModifierConfiguration( String pathToShim, String dfsInstallDir, String pathToTestProperties,
-                                boolean isSecure ) {
+                                boolean isSecure, LoadConfigsManager.ClusterType clusterType ) {
     this.dfsInstallDir = dfsInstallDir;
     this.pathToShim = pathToShim;
     this.pathToTestProperties = pathToTestProperties;
     this.isSecure = isSecure;
+    this.clusterType = clusterType;
   }
 
-  public ModifierConfiguration( String pathToShim, String dfsInstallDir, String pathToTestProperties ) {
-    this( pathToShim, dfsInstallDir, pathToTestProperties, false );
+  public ModifierConfiguration( String pathToShim, String dfsInstallDir, String pathToTestProperties,
+                                LoadConfigsManager.ClusterType clusterType ) {
+    this( pathToShim, dfsInstallDir, pathToTestProperties, false, clusterType );
   }
 
   public String getPathToTestProperties() {
@@ -28,8 +32,16 @@ public class ModifierConfiguration {
     this.pathToTestProperties = pathToTestProperties;
   }
 
-  public ModifierConfiguration( String pathToShim ) {
-    this( pathToShim, StringUtils.EMPTY, StringUtils.EMPTY, false );
+  public LoadConfigsManager.ClusterType getClusterType() {
+    return clusterType;
+  }
+
+  public void setClusterType( LoadConfigsManager.ClusterType clusterType ) {
+    this.clusterType = clusterType;
+  }
+
+  public ModifierConfiguration( String pathToShim, LoadConfigsManager.ClusterType clusterType ) {
+    this( pathToShim, StringUtils.EMPTY, StringUtils.EMPTY, false, clusterType );
   }
 
   public boolean isSecure() {

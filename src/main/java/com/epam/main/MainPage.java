@@ -93,20 +93,32 @@ public class MainPage {
     } );
     clusterConfigLoader = new ClusterConfigLoader();
     clusterConfigLoader.init();
+    initClusterComboBox();
+  }
+
+  private void initClusterComboBox() {
+    List<String> clusterTypes = new ArrayList<>();
+    clusterTypes.add( LoadConfigsManager.ClusterType.HDP.toString() );
+    clusterTypes.add( LoadConfigsManager.ClusterType.CDH.toString() );
+    clusterTypes.add( LoadConfigsManager.ClusterType.MAPR.toString() );
+    clusterTypes.add( LoadConfigsManager.ClusterType.EMR.toString() );
+
+    clusterType.getItems().setAll( clusterTypes );
+    clusterType.setValue( LoadConfigsManager.ClusterType.HDP.toString() );
   }
 
   @FXML
   void compoBoxOnShowing( Event event ) {
     if ( event.getTarget() instanceof ComboBox ) {
       if ( event.getTarget() == clusterType ) {
-        List<String> clusterTypes = new ArrayList<>();
-        clusterTypes.add( LoadConfigsManager.ClusterType.HDP.toString() );
-        clusterTypes.add( LoadConfigsManager.ClusterType.CDH.toString() );
-        clusterTypes.add( LoadConfigsManager.ClusterType.MAPR.toString() );
-        clusterTypes.add( LoadConfigsManager.ClusterType.EMR.toString() );
-
-        clusterType.getItems().setAll( clusterTypes );
-        clusterType.setValue( LoadConfigsManager.ClusterType.HDP.toString() );
+        //        List<String> clusterTypes = new ArrayList<>();
+        //        clusterTypes.add( LoadConfigsManager.ClusterType.HDP.toString() );
+        //        clusterTypes.add( LoadConfigsManager.ClusterType.CDH.toString() );
+        //        clusterTypes.add( LoadConfigsManager.ClusterType.MAPR.toString() );
+        //        clusterTypes.add( LoadConfigsManager.ClusterType.EMR.toString() );
+        //
+        //        clusterType.getItems().setAll( clusterTypes );
+        //        //clusterType.setValue( LoadConfigsManager.ClusterType.HDP.toString() );
       }
     }
   }
@@ -176,7 +188,8 @@ public class MainPage {
 
         if ( isDownloaded ) {
           ShimDependentConfigurator.configureShimProperties( new ModifierConfiguration( pathToSave.getText(),
-            dfsInstallDir.getText(), pathToTestProperties.getText() ) );
+            dfsInstallDir.getText(), pathToTestProperties.getText(), false,
+            LoadConfigsManager.ClusterType.valueOf( clusterType.getValue() ) ) );
         }
         buttonStart.setDisable( false );
       } );

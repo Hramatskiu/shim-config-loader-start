@@ -2,7 +2,6 @@ package com.epam.loader.plan.strategy;
 
 import com.epam.loader.common.util.CheckingParamsUtil;
 import com.epam.loader.config.condition.DownloadableFile;
-import com.epam.spring.exception.StrategyException;
 import org.apache.log4j.Logger;
 
 import java.util.List;

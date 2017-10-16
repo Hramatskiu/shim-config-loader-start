@@ -1,6 +1,5 @@
 package com.epam.loader.common.util;
 
-import com.epam.spring.exception.CommonUtilException;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
@@ -15,6 +14,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -84,6 +85,16 @@ public class FileCommonUtil {
       }
     } catch ( IOException ex ) {
       throw new CommonUtilException( ex );
+    }
+  }
+
+  public static void deleteCommentsFromXmlFile( String pathToFile ) throws CommonUtilException {
+    try {
+      String modifiedFile = Files.lines( Paths.get( pathToFile ) ).filter( line -> line.startsWith( "<!-" ) )
+        .collect( Collectors.joining( "\n" ) );
+      FileCommonUtil.writeStringToFile( pathToFile, modifiedFile );
+    } catch ( IOException e ) {
+      throw new CommonUtilException( e );
     }
   }
 }

@@ -1,4 +1,4 @@
-package com.epam.spring.exception;
+package com.epam.loader.common.util;
 
 public class CommonUtilException extends Exception {
   public CommonUtilException() {

@@ -3,7 +3,7 @@ package com.epam.loader.plan.strategy.impl;
 import com.epam.loader.common.util.CheckingParamsUtil;
 import com.epam.loader.config.condition.DownloadableFile;
 import com.epam.loader.plan.strategy.SearchStrategy;
-import com.epam.spring.exception.StrategyException;
+import com.epam.loader.plan.strategy.StrategyException;
 import org.apache.commons.lang.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;

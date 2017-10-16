@@ -1,4 +1,4 @@
-package com.epam.spring.exception;
+package com.epam.loader.plan.strategy;
 
 public class StrategyException extends Exception {
   public StrategyException() {
