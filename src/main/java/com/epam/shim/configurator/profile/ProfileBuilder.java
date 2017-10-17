@@ -6,6 +6,7 @@ import com.epam.loader.config.credentials.SshCredentials;
 import com.epam.loader.plan.manager.LoadConfigsManager;
 import com.epam.shim.configurator.util.CopyDriversUtil;
 import com.epam.shim.configurator.util.PropertyHandler;
+import org.apache.commons.lang.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -137,7 +138,8 @@ public class ProfileBuilder {
   }
 
   private String extractHosts( String pathToFile ) {
-    return PropertyHandler.getPropertyFromFile( pathToFile, "hosts" );
+    String host = PropertyHandler.getPropertyFromFile( pathToFile, "hosts" );
+    return host != null ? host.substring( 1, host.length() - 1 ) : StringUtils.EMPTY;
   }
 
   private LoadConfigsManager.ClusterType extractClusterType( String pathToFile ) {

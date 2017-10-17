@@ -22,8 +22,12 @@ public abstract class DownloadPlan {
     setupSearchStrategies( searchStrategies );
   }
 
-  public boolean downloadConfigs( String hostName, String destPrefix ) {
-    DownloadConfigsCondition downloadConfigsCondition = createDownloadConfigsCondition();
+  public DownloadConfigsCondition downloadConfigs( String hostName, String destPrefix,
+                                                   DownloadConfigsCondition downloadConfigsCondition ) {
+    if ( downloadConfigsCondition == null ) {
+      downloadConfigsCondition = createDownloadConfigsCondition();
+    }
+
     while ( !downloadConfigsCondition.getUnloadedConfigsList().isEmpty() && !searchStrategies.isEmpty() ) {
       logger.info( "Start loading!" );
       downloadFunction
@@ -31,7 +35,7 @@ public abstract class DownloadPlan {
           createLoadPathConfig( hostName, destPrefix ) );
     }
 
-    return downloadConfigsCondition.getUnloadedConfigsList().isEmpty();
+    return downloadConfigsCondition;
   }
 
   protected abstract LoadPathConfig createLoadPathConfig( String hostName, String destPrefix );

@@ -1,5 +1,6 @@
 package com.epam.loader.plan.manager;
 
+import com.epam.loader.config.condition.DownloadConfigsCondition;
 import com.epam.loader.config.credentials.LoadConfigs;
 import com.epam.loader.plan.plan.DownloadPlan;
 import com.epam.spring.security.authenticate.impl.BaseConfigLoadAuthentication;
@@ -35,10 +36,11 @@ public class LoadConfigsManager {
     CDH, HDP, MAPR, EMR
   }
 
-  public boolean downloadClientConfigs( ClusterType clusterType, LoadConfigs loadConfigs ) {
+  public DownloadConfigsCondition downloadClientConfigs( ClusterType clusterType, LoadConfigs loadConfigs,
+                                                         DownloadConfigsCondition downloadConfigsCondition ) {
     configureSecurity( loadConfigs );
-    return downloadPlanMap.containsKey( clusterType ) && downloadPlanMap.get( clusterType )
-      .downloadConfigs( loadConfigs.getHost(), loadConfigs.getSaveDir() );
+    return downloadPlanMap.containsKey( clusterType ) ? downloadPlanMap.get( clusterType )
+      .downloadConfigs( loadConfigs.getHost(), loadConfigs.getSaveDir(), downloadConfigsCondition ) : null;
   }
 
   private void configureSecurity( LoadConfigs loadConfigs ) {

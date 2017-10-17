@@ -28,7 +28,7 @@ public class NamedClusterCreator {
   }
 
   private static void setupNamedCluster( NamedCluster namedCluster, ModifierConfiguration modifierConfiguration ) {
-    namedCluster.setName( modifierConfiguration.getHosts().split( "," )[0] );
+    namedCluster.setName( modifierConfiguration.getHosts().split( "," )[ 0 ] );
 
     if ( !modifierConfiguration.getClusterType().equals( LoadConfigsManager.ClusterType.MAPR ) ) {
       if ( !modifierConfiguration.isSecure() ) {

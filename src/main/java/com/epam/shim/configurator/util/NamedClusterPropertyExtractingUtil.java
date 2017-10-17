@@ -96,8 +96,9 @@ public class NamedClusterPropertyExtractingUtil {
   public static String extractOozieUrl( String hosts ) {
     return Arrays.stream( hosts.split( "," ) ).map( host -> CompletableFuture.supplyAsync( () -> {
       try {
-        String oozieResult = CommonUtilHolder.sshCommonUtilInstance().executeCommand( new SshCredentials(), host, 22,
-          "ps aux | grep oozie" );
+        String oozieResult =
+          CommonUtilHolder.sshCommonUtilInstance().executeCommand( new SshCredentials(), host.trim(), 22,
+            "ps aux | grep oozie" );
         List<String> oozieBaseUrl;
         if ( oozieResult != null && !( oozieBaseUrl = Arrays.stream( oozieResult.split( " " ) )
           .filter(
@@ -127,8 +128,9 @@ public class NamedClusterPropertyExtractingUtil {
   public static String extractOozieHost( String hosts ) {
     return Arrays.stream( hosts.split( "," ) ).map( host -> CompletableFuture.supplyAsync( () -> {
       try {
-        String oozieResult = CommonUtilHolder.sshCommonUtilInstance().executeCommand( new SshCredentials(), host, 22,
-          "ps aux | grep oozie" );
+        String oozieResult =
+          CommonUtilHolder.sshCommonUtilInstance().executeCommand( new SshCredentials(), host.trim(), 22,
+            "ps aux | grep oozie" );
         String oozieBaseUrl;
         if ( oozieResult != null && !( oozieBaseUrl =
           Arrays.stream( oozieResult.split( " " ) ).filter( splitted -> splitted.contains( "-Doozie.http.hostname=" ) )
