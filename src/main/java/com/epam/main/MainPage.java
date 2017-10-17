@@ -135,6 +135,7 @@ public class MainPage {
       restUser.setText( profile.getHttpCredentials().getUsername() );
       restPassword.setText( profile.getHttpCredentials().getPassword() );
       dfsInstallDir.setText( profile.getDfsInstallDir() );
+      clusterType.setValue( profile.getClusterType().toString() );
     } catch ( IOException e ) {
       e.printStackTrace();
     }
