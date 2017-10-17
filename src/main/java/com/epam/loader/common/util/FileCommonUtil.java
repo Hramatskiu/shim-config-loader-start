@@ -80,7 +80,7 @@ public class FileCommonUtil {
           while ( ( len = archiveInputStream.read( buffer ) ) != -1 ) {
             out.write( buffer, 0, len );
           }
-          writeStringToFile( destPrefix + "\\" + matchingFileNames.get( 0 ), out.toString() );
+          writeStringToFile( destPrefix + File.separator + matchingFileNames.get( 0 ), out.toString() );
         }
       }
     } catch ( IOException ex ) {

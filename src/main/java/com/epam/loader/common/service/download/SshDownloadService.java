@@ -13,6 +13,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -80,7 +81,7 @@ public class SshDownloadService {
 
   private boolean saveClientConfigs( List<String> configString, DownloadPlan.LoadPathConfig loadPathConfig ) {
     return configString.size() == 1 ? saveClientConfigs( configString.get( 0 ),
-      loadPathConfig.getDestPrefix() + "\\" + loadPathConfig.getLoadedFiles().get( 0 ) )
+      loadPathConfig.getDestPrefix() + File.separator + loadPathConfig.getLoadedFiles().get( 0 ) )
       : saveClientConfigsInParallel( configString, loadPathConfig );
   }
 
@@ -104,7 +105,7 @@ public class SshDownloadService {
       loadPathConfig.getLoadedFiles().forEach( file -> {
         if ( iterator.hasNext() ) {
           saveConfigsTasksList.add(
-            createSaveConfigsTask( iterator.next(), loadPathConfig.getDestPrefix() + "\\" + file,
+            createSaveConfigsTask( iterator.next(), loadPathConfig.getDestPrefix() + File.separator + file,
               delegatingExecutorService.getExecutorService() ) );
         }
       } );

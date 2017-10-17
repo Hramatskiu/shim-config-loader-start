@@ -34,6 +34,6 @@ public class ShimDependentConfigurator {
       }
     }
 
-    CopyDriversUtil.copyAllDrivers( modifierConfiguration.getPathToShim() );
+    //CopyDriversUtil.copyAllDrivers( modifierConfiguration.getPathToShim() );
   }
 }

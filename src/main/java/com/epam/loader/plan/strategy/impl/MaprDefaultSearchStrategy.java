@@ -36,6 +36,8 @@ public class MaprDefaultSearchStrategy implements SearchStrategy {
         service.setDownloadPath(
           maprHome + "/" + service.getServiceName() + "/" + extractHbaseHomeDirFromCommandResult( commandResult )
             + "/conf/" );
+      } else if ( DownloadableFileConstants.ServiceName.SSL_TRUSTSTORE.equals( service.getServiceName() ) ) {
+        service.setDownloadPath( maprHome + "/conf/" );
       } else {
         service.setDownloadPath( maprHome + "/hadoop/hadoop-" + hadoopVersion + "/etc/hadoop/" );
       }

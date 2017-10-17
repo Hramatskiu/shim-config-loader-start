@@ -44,6 +44,8 @@ public class MAPRDownloadPlan extends DownloadPlan {
       Collections.singletonList( DownloadableFileConstants.ServiceFileName.HBASE ) ) );
     downloadConfigsCondition.addConfigFilesToMap( new DownloadableFile( DownloadableFileConstants.ServiceName.HIVE,
       Collections.singletonList( DownloadableFileConstants.ServiceFileName.HIVE ) ) );
+    downloadConfigsCondition.addConfigFilesToMap( new DownloadableFile( DownloadableFileConstants.ServiceName.SSL_TRUSTSTORE,
+      Collections.singletonList( DownloadableFileConstants.ServiceFileName.SSL_TRUSTSTORE ) ) );
 
     return downloadConfigsCondition;
   }
