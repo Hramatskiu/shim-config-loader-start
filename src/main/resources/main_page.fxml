@@ -41,6 +41,12 @@
          </font>
       </Label>
       <TextField id="cluster_node_FQDN" fx:id="pathToTestProperties" layoutX="189.0" layoutY="113.0" prefHeight="31.0" prefWidth="636.0" promptText="path to test.properties" visible="false" />
+      <Label layoutX="896.0" layoutY="38.0" text="Profile" />
+      <ComboBox id="profiles" fx:id="profiles" layoutX="838.0" layoutY="63.0" onShowing="#compoBoxOnShowing" prefWidth="150.0" />
+      <Button id="profileSav" fx:id="profileSave" layoutX="850.0" layoutY="210.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="127.0" text="Save" onAction="#saveProfile" />
+      <Button id="profileLoad" fx:id="profileLoad" layoutX="850.0" layoutY="107.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="127.0" text="Load" onAction="#loadProfile" />
+      <TextField id="newProfile" fx:id="newProfile" layoutX="839.0" layoutY="173.0" />
+      <Label layoutX="882.0" layoutY="144.0" prefHeight="17.0" prefWidth="64.0" text="New profile" />
 
    </children>
    <padding>

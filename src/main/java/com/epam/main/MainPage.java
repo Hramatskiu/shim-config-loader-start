@@ -9,6 +9,8 @@ import com.epam.loader.plan.manager.LoadConfigsManager;
 import com.epam.logger.TextAreaAppender;
 import com.epam.shim.configurator.ShimDependentConfigurator;
 import com.epam.shim.configurator.config.ModifierConfiguration;
+import com.epam.shim.configurator.profile.Profile;
+import com.epam.shim.configurator.profile.ProfileBuilder;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.fxml.FXML;
@@ -22,6 +24,7 @@ import javafx.stage.Stage;
 import org.apache.log4j.Logger;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,6 +59,14 @@ public class MainPage {
   @FXML
   TextField pathToTestProperties;
   @FXML
+  TextField newProfile;
+  @FXML
+  Button profileSave;
+  @FXML
+  Button profileLoad;
+  @FXML
+  ComboBox profiles;
+  @FXML
   Label testPathLabel;
   @FXML
   Label dfsInstallDirLabel;
@@ -73,6 +84,7 @@ public class MainPage {
   ComboBox<String> clusterType;
 
   private ClusterConfigLoader clusterConfigLoader;
+  private ProfileBuilder profileBuilder;
 
   @FXML
   void buttonInit( ActionEvent event ) {
@@ -91,6 +103,8 @@ public class MainPage {
     clusterType.valueProperty().addListener( ( observable, oldValue, newValue ) -> {
       showNecessaryFields( newValue );
     } );
+    profileBuilder = new ProfileBuilder();
+    profiles.getItems().setAll( profileBuilder.loadProfileNames() );
     clusterConfigLoader = new ClusterConfigLoader();
     clusterConfigLoader.init();
     initClusterComboBox();
@@ -105,6 +119,45 @@ public class MainPage {
 
     clusterType.getItems().setAll( clusterTypes );
     clusterType.setValue( LoadConfigsManager.ClusterType.HDP.toString() );
+  }
+
+  @FXML
+  private void loadProfile( ActionEvent event ) {
+    try {
+      Profile profile = profileBuilder.buildProfile( profileBuilder.getProfilePath( profiles.getValue().toString() ) );
+      pathToSave.setText( profile.getPathToShim() );
+      cluster_node_FQDN.setText( profile.getHosts() );
+      kerberosUser.setText( profile.getKrb5Credentials().getUsername() );
+      kerberosPassword.setText( profile.getKrb5Credentials().getPassword() );
+      sshPassword.setText( profile.getSshCredentials().getPassword() );
+      sshUser.setText( profile.getSshCredentials().getUsername() );
+      pathToPemFile.setText( profile.getSshCredentials().getIdentityPath() );
+      restUser.setText( profile.getHttpCredentials().getUsername() );
+      restPassword.setText( profile.getHttpCredentials().getPassword() );
+      dfsInstallDir.setText( profile.getDfsInstallDir() );
+    } catch ( IOException e ) {
+      e.printStackTrace();
+    }
+  }
+
+  @FXML
+  private void saveProfile( ActionEvent event ) {
+    Profile profile = new Profile( new Krb5Credentials( kerberosUser.getText(), kerberosPassword.getText() ),
+      new SshCredentials( sshUser.getText(), sshPassword.getText(), pathToPemFile.getText() ),
+      new HttpCredentials( restUser.getText(), restPassword.getText() ),
+      LoadConfigsManager.ClusterType.valueOf( clusterType.getValue() ),
+      pathToSave.getText(), dfsInstallDir.getText(),
+      cluster_node_FQDN.getText().trim(), newProfile.getText() );
+
+    try {
+      profileBuilder.saveProfile( profile );
+      if ( !profiles.getItems().contains( profile.getName() + ".properties" ) ) {
+        profiles.getItems().add( profile.getName() + ".properties" );
+      }
+
+    } catch ( IOException e ) {
+      e.printStackTrace();
+    }
   }
 
   @FXML
@@ -158,9 +211,9 @@ public class MainPage {
     restLabel.setVisible( !isSshOnly );
     restUser.setVisible( !isSshOnly );
     restPassword.setVisible( !isSshOnly );
-    sshLabel.setVisible( isSshOnly );
-    sshUser.setVisible( isSshOnly );
-    sshPassword.setVisible( isSshOnly );
+    //    sshLabel.setVisible( isSshOnly );
+    //    sshUser.setVisible( isSshOnly );
+    //    sshPassword.setVisible( isSshOnly );
   }
 
   private void setVisibilityForPemFileInput( boolean isPemNeeded ) {
@@ -189,7 +242,7 @@ public class MainPage {
         if ( isDownloaded ) {
           ShimDependentConfigurator.configureShimProperties( new ModifierConfiguration( pathToSave.getText(),
             dfsInstallDir.getText(), pathToTestProperties.getText(), false,
-            LoadConfigsManager.ClusterType.valueOf( clusterType.getValue() ) ) );
+            LoadConfigsManager.ClusterType.valueOf( clusterType.getValue() ), cluster_node_FQDN.getText().trim() ) );
         }
         buttonStart.setDisable( false );
       } );

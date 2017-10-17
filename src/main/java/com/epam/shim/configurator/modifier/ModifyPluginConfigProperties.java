@@ -1,4 +1,3 @@
-
 package com.epam.shim.configurator.modifier;
 
 import com.epam.loader.plan.manager.LoadConfigsManager;
@@ -55,9 +54,9 @@ public class ModifyPluginConfigProperties {
       PropertyHandler.setProperty( configPropertiesFile, "windows.classpath", modifiedHadoopClasspath );
     } else if ( System.getProperty( "os.name" ).startsWith( "Linux" ) ) {
       String hadoopClasspath = LocalProccessCommandExecutor
-        .executeCommand( "bash /$MAPR_HOME/hadoop/hadoop-2.7.0/bin/hadoop classpath" );
+        .executeCommand( "/opt/mapr/hadoop/hadoop-2.7.0/bin/hadoop classpath" );
       String maprHome = LocalProccessCommandExecutor
-        .executeCommand( "bash echo $MAPR_HOME" );
+        .executeCommand( "echo /opt/mapr" );
       hadoopClasspath += "," + maprHome + "/lib" + "," + pathToShim;
       String modifiedHadoopClasspath =
         Arrays.stream( hadoopClasspath.split( "," ) ).filter( line -> !line.isEmpty() )

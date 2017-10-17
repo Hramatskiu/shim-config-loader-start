@@ -8,20 +8,22 @@ public class ModifierConfiguration {
   private String pathToShim;
   private String pathToTestProperties;
   private String dfsInstallDir;
+  private String hosts;
   private LoadConfigsManager.ClusterType clusterType;
 
   public ModifierConfiguration( String pathToShim, String dfsInstallDir, String pathToTestProperties,
-                                boolean isSecure, LoadConfigsManager.ClusterType clusterType ) {
+                                boolean isSecure, LoadConfigsManager.ClusterType clusterType, String hosts ) {
     this.dfsInstallDir = dfsInstallDir;
     this.pathToShim = pathToShim;
     this.pathToTestProperties = pathToTestProperties;
     this.isSecure = isSecure;
     this.clusterType = clusterType;
+    this.hosts = hosts;
   }
 
   public ModifierConfiguration( String pathToShim, String dfsInstallDir, String pathToTestProperties,
-                                LoadConfigsManager.ClusterType clusterType ) {
-    this( pathToShim, dfsInstallDir, pathToTestProperties, false, clusterType );
+                                LoadConfigsManager.ClusterType clusterType, String hosts ) {
+    this( pathToShim, dfsInstallDir, pathToTestProperties, false, clusterType, hosts );
   }
 
   public String getPathToTestProperties() {
@@ -40,8 +42,16 @@ public class ModifierConfiguration {
     this.clusterType = clusterType;
   }
 
-  public ModifierConfiguration( String pathToShim, LoadConfigsManager.ClusterType clusterType ) {
-    this( pathToShim, StringUtils.EMPTY, StringUtils.EMPTY, false, clusterType );
+  public String getHosts() {
+    return hosts;
+  }
+
+  public void setHosts( String hosts ) {
+    this.hosts = hosts;
+  }
+
+  public ModifierConfiguration( String pathToShim, LoadConfigsManager.ClusterType clusterType, String hosts ) {
+    this( pathToShim, StringUtils.EMPTY, StringUtils.EMPTY, false, clusterType, hosts );
   }
 
   public boolean isSecure() {

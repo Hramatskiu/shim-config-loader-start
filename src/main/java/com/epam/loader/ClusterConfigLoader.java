@@ -25,21 +25,28 @@ public class ClusterConfigLoader {
   }
 
   public boolean loadConfigs( LoadConfigs loadConfigs ) {
-    LoadConfigsManager loadConfigsManager = applicationContext.getBean( LoadConfigsManager.class );
-    try ( DelegatingExecutorService delegatingExecutorService = new DelegatingExecutorService( 2 ) ) {
-      List<Boolean> results = Stream.of( CompletableFuture.supplyAsync( () -> {
-        logger.info( "Start pressed!" );
-        return loadConfigsManager.downloadClientConfigs( loadConfigs.getClusterType(), loadConfigs );
-      }, delegatingExecutorService.getExecutorService() ) ).map( CompletableFuture::join )
-        .collect( Collectors.toList() );
+    String[] hosts = loadConfigs.getHost().split( "," );
+    int hostArrayIndex = 0;
+    boolean downloadResult = false;
 
-      results.forEach( logger::info );
+    while ( !downloadResult && hostArrayIndex < hosts.length ) {
+      loadConfigs.setHost( hosts[ hostArrayIndex++ ] );
+      LoadConfigsManager loadConfigsManager = applicationContext.getBean( LoadConfigsManager.class );
+      try ( DelegatingExecutorService delegatingExecutorService = new DelegatingExecutorService( 2 ) ) {
+        List<Boolean> results = Stream.of( CompletableFuture.supplyAsync( () -> {
+          logger.info( "Start pressed!" );
+          return loadConfigsManager.downloadClientConfigs( loadConfigs.getClusterType(), loadConfigs );
+        }, delegatingExecutorService.getExecutorService() ) ).map( CompletableFuture::join )
+          .collect( Collectors.toList() );
 
-      return results.stream().allMatch( result -> result );
-    } catch ( IOException | CompletionException | ServiceException ex ) {
-      logger.error( ex );
+        results.forEach( logger::info );
+
+        downloadResult = results.stream().allMatch( result -> result );
+      } catch ( IOException | CompletionException | ServiceException ex ) {
+        logger.error( ex );
+      }
     }
 
-    return false;
+    return downloadResult;
   }
 }
