@@ -1,5 +1,6 @@
 package com.epam.shim.configurator.profile;
 
+import com.epam.loader.config.credentials.EmrCredentials;
 import com.epam.loader.config.credentials.HttpCredentials;
 import com.epam.loader.config.credentials.Krb5Credentials;
 import com.epam.loader.config.credentials.SshCredentials;
@@ -14,11 +15,20 @@ public class Profile {
   private String dfsInstallDir;
   private String hosts;
   private String name;
+  private EmrCredentials emrCredentials;
+
+  public EmrCredentials getEmrCredentials() {
+    return emrCredentials;
+  }
+
+  public void setEmrCredentials( EmrCredentials emrCredentials ) {
+    this.emrCredentials = emrCredentials;
+  }
 
   public Profile( Krb5Credentials krb5Credentials, SshCredentials sshCredentials,
                   HttpCredentials httpCredentials,
                   LoadConfigsManager.ClusterType clusterType, String pathToShim, String dfsInstallDir,
-                  String hosts, String name ) {
+                  String hosts, String name, EmrCredentials emrCredentials ) {
     this.krb5Credentials = krb5Credentials;
     this.sshCredentials = sshCredentials;
     this.httpCredentials = httpCredentials;
@@ -27,6 +37,8 @@ public class Profile {
     this.dfsInstallDir = dfsInstallDir;
     this.hosts = hosts;
     this.name = name;
+    this.emrCredentials = emrCredentials;
+
   }
 
   public String getName() {

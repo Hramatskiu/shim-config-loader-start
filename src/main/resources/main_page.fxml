@@ -6,7 +6,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane prefHeight="1000.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.epam.main.MainPage">
+<AnchorPane prefHeight="1000.0" prefWidth="1175.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.epam.main.MainPage">
    <children>
       <Button id="buttonOpenShim" fx:id="buttonOpenShim" layoutX="482.0" layoutY="15.0" mnemonicParsing="false" onAction="#buttonInit" text="Open..." />
       <TextField id="pathToShim" fx:id="pathToSave" layoutX="29.0" layoutY="15.0" prefHeight="31.0" prefWidth="417.0" promptText="path to download location" />
@@ -43,10 +43,13 @@
       <TextField id="cluster_node_FQDN" fx:id="pathToTestProperties" layoutX="189.0" layoutY="113.0" prefHeight="31.0" prefWidth="636.0" promptText="path to test.properties" visible="false" />
       <Label layoutX="896.0" layoutY="38.0" text="Profile" />
       <ComboBox id="profiles" fx:id="profiles" layoutX="838.0" layoutY="63.0" onShowing="#compoBoxOnShowing" prefWidth="150.0" />
-      <Button id="profileSav" fx:id="profileSave" layoutX="850.0" layoutY="210.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="127.0" text="Save" onAction="#saveProfile" />
-      <Button id="profileLoad" fx:id="profileLoad" layoutX="850.0" layoutY="107.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="127.0" text="Load" onAction="#loadProfile" />
+      <Button id="profileSav" fx:id="profileSave" layoutX="850.0" layoutY="210.0" mnemonicParsing="false" onAction="#saveProfile" prefHeight="25.0" prefWidth="127.0" text="Save" />
+      <Button id="profileLoad" fx:id="profileLoad" layoutX="850.0" layoutY="107.0" mnemonicParsing="false" onAction="#loadProfile" prefHeight="25.0" prefWidth="127.0" text="Load" />
       <TextField id="newProfile" fx:id="newProfile" layoutX="839.0" layoutY="173.0" />
       <Label layoutX="882.0" layoutY="144.0" prefHeight="17.0" prefWidth="64.0" text="New profile" />
+      <Label id="emrKeys" fx:id="emrKeys" layoutX="28.0" layoutY="249.0" prefHeight="17.0" prefWidth="232.0" text="EMR keys" />
+      <TextField id="emrAccessKey" fx:id="emrAccessKey" layoutX="22.0" layoutY="279.0" prefHeight="31.0" prefWidth="244.0" promptText="emr access key" />
+      <TextField id="emrSecretKey" fx:id="emrSecretKey" layoutX="22.0" layoutY="336.0" prefHeight="31.0" prefWidth="244.0" promptText="emr secret access key" />
 
    </children>
    <padding>

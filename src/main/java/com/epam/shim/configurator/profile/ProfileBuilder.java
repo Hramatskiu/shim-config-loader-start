@@ -1,5 +1,6 @@
 package com.epam.shim.configurator.profile;
 
+import com.epam.loader.config.credentials.EmrCredentials;
 import com.epam.loader.config.credentials.HttpCredentials;
 import com.epam.loader.config.credentials.Krb5Credentials;
 import com.epam.loader.config.credentials.SshCredentials;
@@ -34,7 +35,8 @@ public class ProfileBuilder {
       extractPathToShim( profilePath.toAbsolutePath().toString() ),
       extractDfsInstallDir( profilePath.toAbsolutePath().toString() ),
       extractHosts( profilePath.toAbsolutePath().toString() ),
-      extractProfileName( profilePath.toAbsolutePath().toString() ) );
+      extractProfileName( profilePath.toAbsolutePath().toString() ),
+      extractEmrCredentials( profilePath.toAbsolutePath().toString() ) );
   }
 
   public Path getProfilePath( String profileName ) throws IOException {
@@ -53,6 +55,12 @@ public class ProfileBuilder {
     saveDfsInstallDir( profilePath, profile.getDfsInstallDir() );
     saveHosts( profilePath, profile.getHosts() );
     saveClusterName( profilePath, profile.getClusterType().toString() );
+    saveEmrCredentials( profilePath, profile.getEmrCredentials() );
+  }
+
+  private void saveEmrCredentials( String profilePath, EmrCredentials emrCredentials ) {
+    PropertyHandler.setProperty( profilePath, "emr.accessKey", emrCredentials.getAccessKey() );
+    PropertyHandler.setProperty( profilePath, "emr.secretKey", emrCredentials.getSecretKey() );
   }
 
   private void saveKrb5Properties( String profilePath, Krb5Credentials krb5Credentials ) {
@@ -113,6 +121,11 @@ public class ProfileBuilder {
       && p.getFileName().toString().matches( ".*\\.properties" ) ).collect( Collectors.toList() ) );
   }
 
+  private EmrCredentials extractEmrCredentials( String pathToFile ) {
+    return new EmrCredentials( PropertyHandler.getPropertyFromFile( pathToFile, "emr.accessKey" ),
+      PropertyHandler.getPropertyFromFile( pathToFile, "emr.secretKey" ) );
+  }
+
   private Krb5Credentials extractKrb5Credentials( String pathToFile ) {
     return new Krb5Credentials( PropertyHandler.getPropertyFromFile( pathToFile, "krb5.username" ),
       PropertyHandler.getPropertyFromFile( pathToFile, "krb5.password" ) );
@@ -139,7 +152,12 @@ public class ProfileBuilder {
 
   private String extractHosts( String pathToFile ) {
     String host = PropertyHandler.getPropertyFromFile( pathToFile, "hosts" );
-    return host != null ? host.substring( 1, host.length() - 1 ) : StringUtils.EMPTY;
+    if ( host != null && host.startsWith( "[" ) ) {
+      return host.substring( 1, host.length() - 1 );
+    } else {
+      return host != null ? host : StringUtils.EMPTY;
+    }
+
   }
 
   private LoadConfigsManager.ClusterType extractClusterType( String pathToFile ) {

@@ -1,18 +1,21 @@
 package com.epam.shim.configurator;
 
 import com.epam.loader.common.util.CheckingParamsUtil;
+import com.epam.loader.config.credentials.EmrCredentials;
 import com.epam.shim.configurator.cluster.NamedClusterCreator;
 import com.epam.shim.configurator.config.ModifierConfiguration;
 import com.epam.shim.configurator.modifier.AddCrossPlatform;
 import com.epam.shim.configurator.modifier.ModifyPluginConfigProperties;
 import com.epam.shim.configurator.modifier.ModifyTestProperties;
+import com.epam.shim.configurator.util.CopyDriversUtil;
 import com.epam.shim.configurator.xml.XmlPropertyHandler;
 
 import java.io.File;
 import java.io.IOException;
 
 public class ShimDependentConfigurator {
-  public static void configureShimProperties( ModifierConfiguration modifierConfiguration ) {
+  public static void configureShimProperties( ModifierConfiguration modifierConfiguration,
+                                              EmrCredentials emrCredentials ) {
     if ( System.getProperty( "os.name" ).startsWith( "Windows" ) ) {
       AddCrossPlatform addCrossPlatform = new AddCrossPlatform();
       addCrossPlatform.addCrossPlatform( modifierConfiguration.getPathToShim() + File.separator + "mapred-site.xml" );
@@ -28,7 +31,7 @@ public class ShimDependentConfigurator {
     }
 
     ModifyPluginConfigProperties modifyPluginConfigProperties = new ModifyPluginConfigProperties();
-    modifyPluginConfigProperties.modifyPluginProperties( modifierConfiguration );
+    modifyPluginConfigProperties.modifyPluginProperties( modifierConfiguration, emrCredentials );
 
     if ( CheckingParamsUtil.checkParamsWithNullAndEmpty( modifierConfiguration.getPathToTestProperties() ) ) {
       try {
@@ -39,6 +42,6 @@ public class ShimDependentConfigurator {
     }
 
     NamedClusterCreator.createNamedCluster( modifierConfiguration );
-    //CopyDriversUtil.copyAllDrivers( modifierConfiguration.getPathToShim() );
+    CopyDriversUtil.copyAllDrivers( modifierConfiguration.getPathToShim() );
   }
 }

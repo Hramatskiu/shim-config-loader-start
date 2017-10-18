@@ -1,9 +1,15 @@
 package com.epam.shim.configurator.modifier;
 
+import com.epam.loader.common.util.CommonUtilException;
+import com.epam.loader.common.util.CommonUtilHolder;
+import com.epam.loader.config.credentials.EmrCredentials;
+import com.epam.loader.config.credentials.SshCredentials;
 import com.epam.loader.plan.manager.LoadConfigsManager;
+import com.epam.shim.configurator.config.MaprSecureIdConfiguration;
 import com.epam.shim.configurator.config.ModifierConfiguration;
 import com.epam.shim.configurator.util.LocalProccessCommandExecutor;
 import com.epam.shim.configurator.util.PropertyHandler;
+import com.epam.shim.configurator.xml.XmlPropertyHandler;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -14,7 +20,7 @@ public class ModifyPluginConfigProperties {
 
   final static Logger logger = Logger.getLogger( ModifyPluginConfigProperties.class );
 
-  public void modifyPluginProperties( ModifierConfiguration modifierConfiguration ) {
+  public void modifyPluginProperties( ModifierConfiguration modifierConfiguration, EmrCredentials emrCredentials ) {
     File f = new File( modifierConfiguration.getPathToShim() );
     String shimFolder = f.getName();
     File hadoopConfigurationsFolder = new File( f.getParent() );
@@ -30,11 +36,21 @@ public class ModifyPluginConfigProperties {
     if ( !modifierConfiguration.getClusterType().equals( LoadConfigsManager.ClusterType.EMR ) ) {
       if ( modifierConfiguration.getClusterType().equals( LoadConfigsManager.ClusterType.MAPR ) ) {
         addMaprClasspath( configPropertiesFile, modifierConfiguration.getPathToShim() );
-        setMaprSecureConfig( configPropertiesFile );
+        if ( modifierConfiguration.isSecure() || modifierConfiguration.getHosts().split( "," )[ 0 ].trim()
+          .contains( "sn" )
+          || modifierConfiguration.getHosts().split( "," )[ 0 ].trim().contains( "secn" ) ) {
+          setMaprSecureConfig( configPropertiesFile );
+          addMaprSecureIdToCoreSiteFile( modifierConfiguration.getHosts().split( "," )[ 0 ].trim(),
+            modifierConfiguration.getPathToShim() + File.separator + "core-site.xml" );
+        }
       } else {
         PropertyHandler.setProperty( configPropertiesFile, "pentaho.oozie.proxy.user", "devuser" );
         setCdhAndHdpSecurity( configPropertiesFile, modifierConfiguration.isSecure() );
       }
+    } else {
+      setEmrSecureProperties( modifierConfiguration.getPathToShim(),
+        emrCredentials.getSecretKey(), emrCredentials.getAccessKey() );
+      setEmrFsImpl( modifierConfiguration.getPathToShim() );
     }
   }
 
@@ -76,6 +92,45 @@ public class ModifyPluginConfigProperties {
       "authentication.kerberos.id", "mapr-kerberos" );
   }
 
+  private void addMaprSecureIdToCoreSiteFile( String host, String pathToCoreSiteFile ) {
+    MaprSecureIdConfiguration maprSecureIdConfiguration = findMaprSecureConfiguration( host );
+    XmlPropertyHandler
+      .addPropertyToFile( pathToCoreSiteFile, "hadoop.spoofed.user.uid", maprSecureIdConfiguration.getUid() );
+    XmlPropertyHandler
+      .addPropertyToFile( pathToCoreSiteFile, "hadoop.spoofed.user.gid", maprSecureIdConfiguration.getGid() );
+    XmlPropertyHandler
+      .addPropertyToFile( pathToCoreSiteFile, "hadoop.spoofed.user.username", maprSecureIdConfiguration.getName() );
+    logger.info( "Set mapr secure uid to core-site.xml" );
+  }
+
+  private MaprSecureIdConfiguration findMaprSecureConfiguration( String host ) {
+    MaprSecureIdConfiguration maprSecureIdConfiguration = new MaprSecureIdConfiguration();
+    try {
+      String idString = CommonUtilHolder.sshCommonUtilInstance().executeCommand( new SshCredentials(), host, 22,
+        "id" );
+      if ( idString != null ) {
+        String[] ids = idString.split( " " );
+        for ( String id : ids ) {
+          if ( id.contains( "uid" ) ) {
+            maprSecureIdConfiguration.setUid( ( id.split( "=" )[ 1 ] ).split( "\\(" )[ 0 ] );
+          }
+
+          if ( id.contains( "gid" ) ) {
+            maprSecureIdConfiguration.setGid( ( id.split( "=" )[ 1 ] ).split( "\\(" )[ 0 ] );
+          }
+
+          if ( id.contains( "groups" ) ) {
+            maprSecureIdConfiguration.setName( ( id.split( "=" )[ 1 ] ).split( "\\(" )[ 1 ].replaceAll( "\\).*", "" ) );
+          }
+        }
+      }
+    } catch ( CommonUtilException e ) {
+      e.printStackTrace();
+    }
+
+    return maprSecureIdConfiguration;
+  }
+
   private void setCdhAndHdpSecurity( String configPropertiesFile, boolean isSecure ) {
     if ( isSecure ) {
       //determine if shim is using impersonation and modify it accordingly
@@ -110,5 +165,23 @@ public class ModifyPluginConfigProperties {
           "pentaho.authentication.default.kerberos.password", "" );
       }
     }
+  }
+
+  private void setEmrSecureProperties( String pathToShim, String secretKey, String accessKey ) {
+    XmlPropertyHandler
+      .addPropertyToFile( pathToShim + File.separator + "core-site.xml", "fs.s3.awsAccessKeyId", accessKey );
+    XmlPropertyHandler
+      .addPropertyToFile( pathToShim + File.separator + "core-site.xml", "fs.s3.awsSecretAccessKey", secretKey );
+    XmlPropertyHandler
+      .addPropertyToFile( pathToShim + File.separator + "core-site.xml", "fs.s3n.awsAccessKeyId", accessKey );
+    XmlPropertyHandler
+      .addPropertyToFile( pathToShim + File.separator + "core-site.xml", "fs.s3n.awsSecretAccessKey", secretKey );
+  }
+
+  private void setEmrFsImpl( String pathToShim ) {
+    XmlPropertyHandler.modifyPropertyInFile( pathToShim + File.separator + "core-site.xml",
+      "fs.s3.impl", "org.apache.hadoop.fs.s3.S3FileSystem" );
+    XmlPropertyHandler.modifyPropertyInFile( pathToShim + File.separator + "core-site.xml",
+      "fs.s3n.impl", "org.apache.hadoop.fs.s3native.NativeS3FileSystem" );
   }
 }

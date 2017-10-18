@@ -1,10 +1,15 @@
 package com.epam.shim.configurator.modifier;
 
+import com.epam.loader.common.util.CommonUtilException;
+import com.epam.loader.common.util.CommonUtilHolder;
+import com.epam.loader.config.credentials.SshCredentials;
+import com.epam.loader.plan.manager.LoadConfigsManager;
 import com.epam.shim.configurator.cluster.NamedClusterProperty;
 import com.epam.shim.configurator.config.ModifierConfiguration;
 import com.epam.shim.configurator.util.NamedClusterPropertyExtractingUtil;
 import com.epam.shim.configurator.util.PropertyHandler;
 import com.epam.shim.configurator.xml.XmlPropertyHandler;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -13,6 +18,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class ModifyTestProperties {
 
@@ -30,12 +36,17 @@ public class ModifyTestProperties {
       modifierConfiguration.getPathToShim() + File.separator );
     setJobTrackerServer( modifierConfiguration.getPathToTestProperties() + File.separator,
       modifierConfiguration.getPathToShim() + File.separator );
-    //        setHiveHost( modifierConfiguration.getPathToShim() + File.separator );
+    setHiveHost( modifierConfiguration.getPathToTestProperties() + File.separator,
+      modifierConfiguration.getHosts(), modifierConfiguration.getClusterType(),
+      modifierConfiguration.isSecure(), modifierConfiguration.getPathToShim() + File.separator );
     setZookeeper( modifierConfiguration.getPathToTestProperties() + File.separator,
       modifierConfiguration.getPathToShim() + File.separator );
-    //        setOozie( modifierConfiguration.getPathToShim() + File.separator );
-    //        setSpark( modifierConfiguration.getPathToShim() + File.separator );
-    //        setHdpVersion();
+    setOozie( modifierConfiguration.getPathToShim() + File.separator, modifierConfiguration.getHosts() );
+    setSpark( modifierConfiguration.getPathToShim() + File.separator,
+      modifierConfiguration.getHosts().split( "," )[ 0 ].trim(),
+      modifierConfiguration.getClusterType() );
+    setHdpVersion( modifierConfiguration.getPathToShim(), modifierConfiguration.getClusterType(),
+      modifierConfiguration.getHosts().split( "," )[ 0 ].trim() );
     //        setTextSplitter( modifierConfiguration.getPathToShim() + File.separator );
     setSqoopSecureLibjarPath( modifierConfiguration.getPathToTestProperties() + File.separator,
       modifierConfiguration.getPathToShim() + File.separator, modifierConfiguration.isSecure() );
@@ -92,179 +103,91 @@ public class ModifyTestProperties {
     PropertyHandler.setProperty( pathToTestProperties, "jobTrackerPort", jobTrackerProperties.getPort() );
   }
 
-  //      // determine hive host and set all values for it
-  //      //TODO: Refactor this and other methods - need to create interface(abstract class?) for different hadoop
-  // vendors
-  //      private static void setHiveHost( String pathToTestProperties ) {
-  //          if ( ShimValues.getHadoopVendor().equalsIgnoreCase( "cdh" ) ) {
-  //              String allClusterNodesFromRest = new String( RestClient.callRest( "http://" + ShimValues.getRestHost
-  //   () + ":7180/api/v10/hosts",
-  //                      RestClient.HttpMethod.HTTP_METHOD_GET,
-  //                      ShimValues.getRestUser(), ShimValues.getRestPassword(), null, null, null ) );
-  //              try {
-  //                  JSONObject obj = new JSONObject( allClusterNodesFromRest );
-  //                  JSONArray arr = obj.getJSONArray( "items" );
-  //                  for ( int i = 0; i < arr.length(); i++ ) {
-  //                      JSONObject obj2 = arr.getJSONObject( i );
-  //                      String hostname = obj2.getString( "hostname" );
-  //                      allClusterNodes.add( hostname );
-  //                  }
-  //              } catch ( JSONException e ) {
-  //                  logger.error( "JSON exception: " + e );
-  //              }
-  //          } else {
-  //              String allClusterNodesFromRest = new String( RestClient.callRest( "http://" + ShimValues.getRestHost
-  //   () + ":8080/api/v1/hosts",
-  //                      RestClient.HttpMethod.HTTP_METHOD_GET,
-  //                      ShimValues.getRestUser(), ShimValues.getRestPassword(), null, null, null ) );
-  //              try {
-  //                  JSONObject obj = new JSONObject( allClusterNodesFromRest );
-  //                  JSONArray arr = obj.getJSONArray( "items" );
-  //                  for ( int i = 0; i < arr.length(); i++ ) {
-  //                      JSONObject obj2 = arr.getJSONObject( i );
-  //                      JSONObject obj3 = obj2.getJSONObject( "Hosts" );
-  //                      String hostname = obj3.getString( "host_name" );
-  //                      allClusterNodes.add( hostname );
-  //                  }
-  //              } catch ( JSONException e ) {
-  //                  logger.error( "JSON exception: " + e );
-  //              }
-  //          }
-  //          String hiveServerNode = "";
-  //          for ( String node : allClusterNodes ) {
-  //              if ( SSHUtils.getCommandResponseBySSH( ShimValues.getSshUser(), node, ShimValues.getSshPassword(),
-  //                      "ps aux | grep HiveServer2" ).contains( "org.apache.hive.service.server.HiveServer2" ) ) {
-  //                  hiveServerNode = node;
-  //              }
-  //          }
-  //          if ( !hiveServerNode.equals( "" ) ) {
-  //              PropertyHandler.setProperty( pathToTestProperties, "hive2_hostname", hiveServerNode );
-  //              //If vendor is cdh - adding Impala properties, same as for hive
-  //              if ( ShimValues.getHadoopVendor().equalsIgnoreCase( "cdh" ) ) {
-  //                  PropertyHandler.setProperty( pathToTestProperties, "impala_hostname", hiveServerNode );
-  //              }
-  //          } else {
-  //              logger.error( "Hive node was not determined!!!" );
-  //          }
-  //          //if secured - add hive principal
-  //          if ( ShimValues.isShimSecured() ) {
-  //              if ( ShimValues.getHadoopVendor().equalsIgnoreCase( "cdh" ) ) {
-  //                  String cmCluster = new String( RestClient.callRest( "http://" + ShimValues.getRestHost() +
-  //   ":7180/api/v10/clusters",
-  //                          RestClient.HttpMethod.HTTP_METHOD_GET,
-  //                          ShimValues.getRestUser(), ShimValues.getRestPassword(), null, null, null ) );
-  //                  String cluster = "";
-  //                  try {
-  //                      JSONObject obj = new JSONObject( cmCluster );
-  //                      cluster = obj.getJSONArray( "items" ).getJSONObject( 0 ).getString( "name" );
-  //                  } catch ( JSONException e ) {
-  //                      logger.error( "JSON exception: " + e );
-  //                  }
-  //
-  //                  byte[] zipFromCM = RestClient.callRest( "http://" + ShimValues.getRestHost()
-  //                                  + ":7180/api/v10/clusters/" + cluster + "/services/hive/clientConfig",
-  //                          RestClient.HttpMethod.HTTP_METHOD_GET,
-  //                          ShimValues.getRestUser(), ShimValues.getRestPassword(), null, null, null );
-  //
-  //                  File tempHiveSiteXML = null;
-  //                  try {
-  //                      tempHiveSiteXML = ShimFileUtils.getFileFromZipAndSaveAsTempFile( zipFromCM, "hive-site.xml" );
-  //                  } catch ( IOException e ) {
-  //                      logger.error ("IOException on hive: " + e);
-  //                  }
-  //
-  //                  String[] hivePrincipalTemp1 = XmlPropertyHandler.readXmlPropertyValue( tempHiveSiteXML
-  //   .getAbsolutePath(),
-  //                          "hive.metastore.kerberos.principal" ).split( "/" );
-  //
-  //                  String[] hivePrincipalTemp2 = hivePrincipalTemp1[ 1 ].split( "@" );
-  //                  String hivePrincipal = hivePrincipalTemp1[ 0 ] + "/" + hiveServerNode + "@" + hivePrincipalTemp2[
-  //   1 ];
-  //                  String fullImpalaConfig =
-  //                          new String( RestClient.callRest( "http://" + ShimValues.getRestHost() +
-  //   ":7180/api/v10/clusters/" + cluster
-  //                                          + "/services/impala/config?view=FULL", RestClient.HttpMethod
-  //   .HTTP_METHOD_GET,
-  //                                ShimValues.getRestUser(), ShimValues.getRestPassword(), null, null,
-  //                                  null ) );
-  //
-  //                  String impalaKrbServiceName = "";
-  //                  try {
-  //                      JSONObject obj = new JSONObject( fullImpalaConfig );
-  //                      JSONArray arr = obj.getJSONArray( "items" );
-  //                      for ( int i = 0; i < arr.length(); i++ ) {
-  //                          if ( arr.getJSONObject( i ).getString( "name" ).equalsIgnoreCase( "kerberos_princ_name" )
-  //   ) {
-  //                              JSONObject obj2 = arr.getJSONObject( i );
-  //                              impalaKrbServiceName = obj2.getString( "default" );
-  //                              break;
-  //                          }
-  //                      }
-  //                  } catch ( JSONException e ) {
-  //                      logger.error( "JSON exception: " + e );
-  //                  }
-  //
-  //                  PropertyHandler.setProperty( pathToTestProperties, "hive2_option", "principal" );
-  //                  PropertyHandler.setProperty( pathToTestProperties, "hive2_principal", hivePrincipal );
-  //                  PropertyHandler.setProperty( pathToTestProperties, "impala_KrbRealm", hivePrincipalTemp2[ 1 ] );
-  //                  PropertyHandler.setProperty( pathToTestProperties, "impala_KrbHostFQDN", hiveServerNode );
-  //                  PropertyHandler.setProperty( pathToTestProperties, "impala_KrbServiceName",
-  // impalaKrbServiceName );
-  //              } else {
-  //                  String ambariCluster = new String( RestClient.callRest( "http://" + ShimValues.getRestHost() +
-  //   ":8080/api/v1/clusters/",
-  //                          RestClient.HttpMethod.HTTP_METHOD_GET,
-  //                          ShimValues.getRestUser(), ShimValues.getRestPassword(), null, null, null ) );
-  //                  String cluster = "";
-  //                  try {
-  //                      JSONObject obj = new JSONObject( ambariCluster );
-  //                      cluster =
-  //                              obj.getJSONArray( "items" ).getJSONObject( 0 ).getJSONObject( "Clusters" ).getString(
-  //   "cluster_name" );
-  //                  } catch ( JSONException e ) {
-  //                      logger.error( "JSON exception: " + e );
-  //                  }
-  //
-  //                  String ambariHive = new String( RestClient.callRest( "http://" + ShimValues.getRestHost() +
-  //   ":8080/api/v1/clusters/"
-  //                                  + cluster + "/configurations/service_config_versions?service_name.in(HIVE)
-  //   &is_current=true",
-  //                          RestClient.HttpMethod.HTTP_METHOD_GET,
-  //                          ShimValues.getRestUser(), ShimValues.getRestPassword(), null, null, null ) );
-  //
-  //                  String ambariPrincipal = "";
-  //                  try {
-  //                      JSONObject obj = new JSONObject( ambariHive );
-  //                      JSONArray arr = obj.getJSONArray( "items" ).getJSONObject( 0 ).getJSONArray(
-  // "configurations" );
-  //                      for ( int i = 0; i < arr.length(); i++ ) {
-  //                          if ( arr.getJSONObject( i ).getString( "type" ).equalsIgnoreCase( "hive-site" ) ) {
-  //                              JSONObject obj2 = arr.getJSONObject( i ).getJSONObject( "properties" );
-  //                              ambariPrincipal = obj2.getString( "hive.metastore.kerberos.principal" );
-  //                              break;
-  //                          }
-  //                      }
-  //                  } catch ( JSONException e ) {
-  //                      logger.error( "JSON exception: " + e );
-  //                  }
-  //
-  //                  String[] hivePrincipalTemp1 = ambariPrincipal.split( "/" );
-  //                  String[] hivePrincipalTemp2 = hivePrincipalTemp1[ 1 ].split( "@" );
-  //                  String hivePrincipal = hivePrincipalTemp1[ 0 ] + "/" + hiveServerNode + "@" + hivePrincipalTemp2[
-  //   1 ];
-  //
-  //                  PropertyHandler.setProperty( pathToTestProperties, "hive2_option", "principal" );
-  //                  PropertyHandler.setProperty( pathToTestProperties, "hive2_principal", hivePrincipal );
-  //
-  //              }
-  //          } else {
-  //              PropertyHandler.setProperty( pathToTestProperties, "hive2_option", "" );
-  //              PropertyHandler.setProperty( pathToTestProperties, "hive2_principal", "" );
-  //              PropertyHandler.setProperty( pathToTestProperties, "impala_KrbRealm", "" );
-  //              PropertyHandler.setProperty( pathToTestProperties, "impala_KrbHostFQDN", "" );
-  //              PropertyHandler.setProperty( pathToTestProperties, "impala_KrbServiceName", "" );
-  //          }
-  //      }
+  // determine hive host and set all values for it
+  //TODO: Refactor this and other methods - need to create interface(abstract class?) for different hadoop vendors
+  private static void setHiveHost( String pathToTestProperties, String hosts,
+                                   LoadConfigsManager.ClusterType clusterType,
+                                   boolean isSecure, String pathToShim ) {
+    String hiveServerNode = "";
+    try {
+      for ( String node : hosts.split( "," ) ) {
+        if ( CommonUtilHolder.sshCommonUtilInstance().executeCommand( new SshCredentials(), node, 22,
+          "ps aux | grep HiveServer2" ).contains( "org.apache.hive.service.server.HiveServer2" ) ) {
+          hiveServerNode = node;
+        }
+      }
+      if ( !hiveServerNode.isEmpty() ) {
+        PropertyHandler.setProperty( pathToTestProperties, "hive2_hostname", hiveServerNode );
+        //If vendor is cdh - adding Impala properties, same as for hive
+        if ( clusterType.equals( LoadConfigsManager.ClusterType.CDH ) ) {
+          PropertyHandler.setProperty( pathToTestProperties, "impala_hostname", hiveServerNode );
+        }
+      } else {
+        logger.error( "Hive node was not determined!!!" );
+      }
+      //if secured - add hive principal
+      if ( isSecure ) {
+        if ( clusterType.equals( LoadConfigsManager.ClusterType.CDH ) ) {
+
+          String[] hivePrincipalTemp1 = XmlPropertyHandler.readXmlPropertyValue( pathToShim + "hive-site.xml",
+            "hive.metastore.kerberos.principal" ).split( "/" );
+
+          String[] hivePrincipalTemp2 = hivePrincipalTemp1[ 1 ].split( "@" );
+          String hivePrincipal = hivePrincipalTemp1[ 0 ] + "/" + hiveServerNode + "@" + hivePrincipalTemp2[
+            1 ];
+          //                  String fullImpalaConfig =
+          //                    new String( RestClient.callRest( "http://" + ShimValues.getRestHost() +
+          //                        ":7180/api/v10/clusters/" + cluster
+          //                        + "/services/impala/config?view=FULL", RestClient.HttpMethod
+          //                        .HTTP_METHOD_GET,
+          //                      ShimValues.getRestUser(), ShimValues.getRestPassword(), null, null,
+          //                      null ) );
+          //
+          //                  String impalaKrbServiceName = "";
+          //                  try {
+          //                    JSONObject obj = new JSONObject( fullImpalaConfig );
+          //                    JSONArray arr = obj.getJSONArray( "items" );
+          //                    for ( int i = 0; i < arr.length(); i++ ) {
+          //                      if ( arr.getJSONObject( i ).getString( "name" ).equalsIgnoreCase(
+          // "kerberos_princ_name" )
+          //                        ) {
+          //                        JSONObject obj2 = arr.getJSONObject( i );
+          //                        impalaKrbServiceName = obj2.getString( "default" );
+          //                        break;
+          //                      }
+          //                    }
+          //                  } catch ( JSONException e ) {
+          //                    logger.error( "JSON exception: " + e );
+          //                  }
+
+          PropertyHandler.setProperty( pathToTestProperties, "hive2_option", "principal" );
+          PropertyHandler.setProperty( pathToTestProperties, "hive2_principal", hivePrincipal );
+          PropertyHandler.setProperty( pathToTestProperties, "impala_KrbRealm", hivePrincipalTemp2[ 1 ] );
+          PropertyHandler.setProperty( pathToTestProperties, "impala_KrbHostFQDN", hiveServerNode );
+          //                  PropertyHandler.setProperty( pathToTestProperties, "impala_KrbServiceName",
+          //                    impalaKrbServiceName );
+        } else {
+          String[] hivePrincipalTemp1 = XmlPropertyHandler.readXmlPropertyValue( pathToShim + "hive-site.xml",
+            "hive.metastore.kerberos.principal" ).split( "/" );
+          String[] hivePrincipalTemp2 = hivePrincipalTemp1[ 1 ].split( "@" );
+          String hivePrincipal = hivePrincipalTemp1[ 0 ] + "/" + hiveServerNode + "@" + hivePrincipalTemp2[
+            1 ];
+
+          PropertyHandler.setProperty( pathToTestProperties, "hive2_option", "principal" );
+          PropertyHandler.setProperty( pathToTestProperties, "hive2_principal", hivePrincipal );
+
+        }
+      } else {
+        PropertyHandler.setProperty( pathToTestProperties, "hive2_option", "" );
+        PropertyHandler.setProperty( pathToTestProperties, "hive2_principal", "" );
+        PropertyHandler.setProperty( pathToTestProperties, "impala_KrbRealm", "" );
+        PropertyHandler.setProperty( pathToTestProperties, "impala_KrbHostFQDN", "" );
+        PropertyHandler.setProperty( pathToTestProperties, "impala_KrbServiceName", "" );
+      }
+    } catch ( CommonUtilException e ) {
+      logger.error( e.getMessage() );
+    }
+  }
 
   // add zookeeper host and port
   //for hdp it can be taken from "hadoop.registry.zk.quorum" property
@@ -282,58 +205,60 @@ public class ModifyTestProperties {
     PropertyHandler.setProperty( pathToTestProperties, "oozie_server", oozieHost );
   }
 
-  //    //find and set spark-assembly jar
-  //    private static void setSpark( String pathToTestProperties ) {
-  //        String[] findSparkAssembly =
-  //                SSHUtils.getCommandResponseBySSH( ShimValues.getSshUser(), ShimValues.getSshHost(), ShimValues
-  //                                .getSshPassword(),
-  //                        "find / -name 'spark-assembly*'" ).split( "\\r|\\n" );
-  //        String localSparkAssemblyPath = "";
-  //        loopForSpark:
-  //        for ( String a : findSparkAssembly ) {
-  //            if ( a.contains( "spark-assembly-" ) ) {
-  //                localSparkAssemblyPath = a;
-  //                break loopForSpark;
-  //            }
-  //        }
-  //        // copy spark-assembly jar to hdfs and set spark_yarn_jar property
-  //        SSHUtils.getCommandResponseBySSH( ShimValues.getSshUser(), ShimValues.getSshHost(), ShimValues
-  // .getSshPassword(),
-  //                ( "hadoop fs -copyFromLocal " + localSparkAssemblyPath + " /opt/pentaho" ) );
-  //        File f = new File( localSparkAssemblyPath );
-  //        String sparkAssemblyName = f.getName();
-  //        PropertyHandler
-  //                .setProperty( pathToTestProperties, "spark_yarn_jar", "${hdfsUrl}/opt/pentaho/" +
-  // sparkAssemblyName );
-  //        // if it is hdp cluster - 2 more properties are needed
-  //        if ( ShimValues.getHadoopVendor().equalsIgnoreCase( "hdp" ) ) {
-  //            String hdpVersion = SSHUtils.getCommandResponseBySSH(
-  //                    ShimValues.getSshUser(), ShimValues.getSshHost(), ShimValues.getSshPassword(),
-  //                    "hdp-select versions" ).replaceAll( "\\r|\\n", "" );
-  //            PropertyHandler
-  //                    .setProperty( pathToTestProperties, "spark_driver_extraJavaOptions", "-Dhdp.version=" +
-  // hdpVersion );
-  //            PropertyHandler
-  //                    .setProperty( pathToTestProperties, "spark_yarn_am_extraJavaOptions", "-Dhdp.version=" +
-  // hdpVersion );
-  //        } else {
-  //            PropertyHandler
-  //                    .setProperty( pathToTestProperties, "spark_driver_extraJavaOptions", "" );
-  //            PropertyHandler
-  //                    .setProperty( pathToTestProperties, "spark_yarn_am_extraJavaOptions", "" );
-  //        }
-  //    }
+  //find and set spark-assembly jar
+  private static void setSpark( String pathToTestProperties, String host, LoadConfigsManager.ClusterType clusterType ) {
+    try {
+      String[] findSparkAssembly =
+        CommonUtilHolder.sshCommonUtilInstance().executeCommand( new SshCredentials(), host, 22,
+          "find / -name 'spark-assembly*'" ).split( "\\r|\\n" );
+      String localSparkAssemblyPath = Arrays.stream( findSparkAssembly )
+        .filter( singleFindSparkAssembly -> singleFindSparkAssembly.contains( "spark-assembly-" ) )
+        .findFirst().orElse( StringUtils.EMPTY );
+      // copy spark-assembly jar to hdfs and set spark_yarn_jar property
+      CommonUtilHolder.sshCommonUtilInstance().executeCommand( new SshCredentials(), host, 22,
+        ( "hadoop fs -copyFromLocal " + localSparkAssemblyPath + " /opt/pentaho" ) );
+      File f = new File( localSparkAssemblyPath );
+      String sparkAssemblyName = f.getName();
+      PropertyHandler
+        .setProperty( pathToTestProperties, "spark_yarn_jar", "${hdfsUrl}/opt/pentaho/" +
+          sparkAssemblyName );
+      // if it is hdp cluster - 2 more properties are needed
+      if ( clusterType.equals( LoadConfigsManager.ClusterType.HDP ) ) {
+        String hdpVersion = CommonUtilHolder.sshCommonUtilInstance().executeCommand(
+          new SshCredentials(), host, 22,
+          "hdp-select versions" ).replaceAll( "\\r|\\n", "" );
+        PropertyHandler
+          .setProperty( pathToTestProperties, "spark_driver_extraJavaOptions", "-Dhdp.version=" +
+            hdpVersion );
+        PropertyHandler
+          .setProperty( pathToTestProperties, "spark_yarn_am_extraJavaOptions", "-Dhdp.version=" +
+            hdpVersion );
+      } else {
+        PropertyHandler
+          .setProperty( pathToTestProperties, "spark_driver_extraJavaOptions", "" );
+        PropertyHandler
+          .setProperty( pathToTestProperties, "spark_yarn_am_extraJavaOptions", "" );
+      }
+    } catch ( CommonUtilException e ) {
+      logger.error( e.getMessage() );
+    }
 
-  //    // TODO: determine if this is really needed
-  //    private static void setHdpVersion() {
-  //        String configPropertiesFile = ShimValues.getPathToShim() + File.separator + "config.properties";
-  //        if ( ShimValues.getHadoopVendor().equalsIgnoreCase( "hdp" ) ) {
-  //            String hdpVersion = SSHUtils.getCommandResponseBySSH(
-  //                    ShimValues.getSshUser(), ShimValues.getSshHost(), ShimValues.getSshPassword(),
-  //                    "hdp-select versions" ).replaceAll( "\\r|\\n", "" );
-  //            PropertyHandler.setProperty( configPropertiesFile, "java.system.hdp.version", hdpVersion );
-  //        }
-  //    }
+  }
+
+  // TODO: determine if this is really needed
+  private static void setHdpVersion( String pathToShim, LoadConfigsManager.ClusterType clusterType, String host ) {
+    String configPropertiesFile = pathToShim + File.separator + "config.properties";
+    if ( clusterType.equals( LoadConfigsManager.ClusterType.HDP ) ) {
+      try {
+        String hdpVersion = CommonUtilHolder.sshCommonUtilInstance().executeCommand(
+          new SshCredentials(), host, 22,
+          "hdp-select versions" ).replaceAll( "\\r|\\n", "" );
+        PropertyHandler.setProperty( configPropertiesFile, "java.system.hdp.version", hdpVersion );
+      } catch ( CommonUtilException e ) {
+        logger.error( e.getMessage() );
+      }
+    }
+  }
 
   //    //modifying allow_text_splitter value
   //    private static void setTextSplitter( String pathToTestProperties ) {

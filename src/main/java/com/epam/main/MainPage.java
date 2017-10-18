@@ -1,6 +1,7 @@
 package com.epam.main;
 
 import com.epam.loader.ClusterConfigLoader;
+import com.epam.loader.config.credentials.EmrCredentials;
 import com.epam.loader.config.credentials.HttpCredentials;
 import com.epam.loader.config.credentials.Krb5Credentials;
 import com.epam.loader.config.credentials.LoadConfigs;
@@ -61,6 +62,10 @@ public class MainPage {
   @FXML
   TextField newProfile;
   @FXML
+  TextField emrAccessKey;
+  @FXML
+  TextField emrSecretKey;
+  @FXML
   Button profileSave;
   @FXML
   Button profileLoad;
@@ -72,6 +77,8 @@ public class MainPage {
   Label dfsInstallDirLabel;
   @FXML
   TextArea output;
+  @FXML
+  Label emrKeys;
   @FXML
   Label pemFileLabel;
   @FXML
@@ -136,6 +143,8 @@ public class MainPage {
       restPassword.setText( profile.getHttpCredentials().getPassword() );
       dfsInstallDir.setText( profile.getDfsInstallDir() );
       clusterType.setValue( profile.getClusterType().toString() );
+      emrSecretKey.setText( profile.getEmrCredentials().getSecretKey() );
+      emrAccessKey.setText( profile.getEmrCredentials().getAccessKey() );
     } catch ( IOException e ) {
       e.printStackTrace();
     }
@@ -148,7 +157,8 @@ public class MainPage {
       new HttpCredentials( restUser.getText(), restPassword.getText() ),
       LoadConfigsManager.ClusterType.valueOf( clusterType.getValue() ),
       pathToSave.getText(), dfsInstallDir.getText(),
-      cluster_node_FQDN.getText().trim(), newProfile.getText() );
+      cluster_node_FQDN.getText().trim(), newProfile.getText(),
+      new EmrCredentials( emrAccessKey.getText(), emrSecretKey.getText() ) );
 
     try {
       profileBuilder.saveProfile( profile );
@@ -223,6 +233,12 @@ public class MainPage {
       pathToPemFile.setText( "" );
     }
     pathToPemFile.setVisible( isPemNeeded );
+    emrKeys.setVisible( isPemNeeded );
+    emrAccessKey.setVisible( isPemNeeded );
+    emrSecretKey.setVisible( isPemNeeded );
+    kerberosLabel.setVisible( !isPemNeeded );
+    kerberosPassword.setVisible( !isPemNeeded );
+    kerberosUser.setVisible( !isPemNeeded );
   }
 
   private void buttonStartAction() {
@@ -237,19 +253,26 @@ public class MainPage {
           .loadConfigs( new LoadConfigs( new HttpCredentials( restUser.getText(), restPassword.getText() ),
             new Krb5Credentials( kerberosUser.getText(), kerberosPassword.getText() ),
             new SshCredentials( sshUser.getText(), sshPassword.getText(), pathToPemFile.getText() ),
-            cluster_node_FQDN.getText().trim(), pathToSave.getText(),
+            modifyHosts( cluster_node_FQDN.getText().trim() ), pathToSave.getText(),
             LoadConfigsManager.ClusterType.valueOf( clusterType.getValue() ) ) );
 
         if ( isDownloaded ) {
           ShimDependentConfigurator.configureShimProperties( new ModifierConfiguration( pathToSave.getText(),
-            dfsInstallDir.getText(), pathToTestProperties.getText(), false,
-            LoadConfigsManager.ClusterType.valueOf( clusterType.getValue() ), cluster_node_FQDN.getText().trim() ) );
+              dfsInstallDir.getText(), pathToTestProperties.getText(), false,
+              LoadConfigsManager.ClusterType.valueOf( clusterType.getValue() ),
+              modifyHosts( cluster_node_FQDN.getText().trim() ) ),
+            new EmrCredentials( emrAccessKey.getText(), emrSecretKey.getText() ) );
         }
         buttonStart.setDisable( false );
       } );
 
       thread.start();
     }
+  }
+
+  private String modifyHosts( String host ) {
+    return host.contains( "svqxbdcn6" ) ? host + "," + host.replace( "n1", "n2" )
+      + "," + host.replace( "n1", "n3" ) : host;
   }
 
   private void buttonOpenShimAction() {
