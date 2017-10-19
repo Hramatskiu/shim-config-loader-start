@@ -9,49 +9,55 @@ import com.epam.shim.configurator.config.ModifierConfiguration;
 import com.epam.shim.configurator.util.NamedClusterPropertyExtractingUtil;
 import com.epam.shim.configurator.util.PropertyHandler;
 import com.epam.shim.configurator.xml.XmlPropertyHandler;
+import com.epam.spring.security.BaseSecurityContextHandler;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Arrays;
 
-public class ModifyTestProperties {
+public class ModifyTestProperties extends BaseSecurityContextHandler {
 
   private final static Logger logger = Logger.getLogger( ModifyTestProperties.class );
-
-  private static ArrayList<String> allClusterNodes = new ArrayList<String>();
 
   public static void modifyAllTestProperties( ModifierConfiguration modifierConfiguration ) throws IOException {
     setSecuredValue( modifierConfiguration.getPathToTestProperties() + File.separator,
       modifierConfiguration.isSecure() );
     setShimActive( modifierConfiguration.getPathToTestProperties() + File.separator,
       modifierConfiguration.getPathToShim() + File.separator );
-    //        setSshSeverUserPassword( modifierConfiguration.getPathToTestProperties() + File.separator );
-    setHdfsServerProtoPortUrl( modifierConfiguration.getPathToTestProperties() + File.separator,
-      modifierConfiguration.getPathToShim() + File.separator );
-    setJobTrackerServer( modifierConfiguration.getPathToTestProperties() + File.separator,
-      modifierConfiguration.getPathToShim() + File.separator );
-    setHiveHost( modifierConfiguration.getPathToTestProperties() + File.separator,
-      modifierConfiguration.getHosts(), modifierConfiguration.getClusterType(),
-      modifierConfiguration.isSecure(), modifierConfiguration.getPathToShim() + File.separator );
-    setZookeeper( modifierConfiguration.getPathToTestProperties() + File.separator,
-      modifierConfiguration.getPathToShim() + File.separator );
-    setOozie( modifierConfiguration.getPathToShim() + File.separator, modifierConfiguration.getHosts() );
-    setSpark( modifierConfiguration.getPathToShim() + File.separator,
-      modifierConfiguration.getHosts().split( "," )[ 0 ].trim(),
-      modifierConfiguration.getClusterType() );
-    setHdpVersion( modifierConfiguration.getPathToShim(), modifierConfiguration.getClusterType(),
-      modifierConfiguration.getHosts().split( "," )[ 0 ].trim() );
-    //        setTextSplitter( modifierConfiguration.getPathToShim() + File.separator );
-    setSqoopSecureLibjarPath( modifierConfiguration.getPathToTestProperties() + File.separator,
-      modifierConfiguration.getPathToShim() + File.separator, modifierConfiguration.isSecure() );
-    setHiveWarehouseDir( modifierConfiguration.getPathToTestProperties() + File.separator,
-      modifierConfiguration.getPathToShim() + File.separator );
+    setSshSeverUserPassword( modifierConfiguration.getPathToTestProperties() + File.separator,
+      modifierConfiguration.getHosts() );
+    if ( modifierConfiguration.getClusterType().equals( LoadConfigsManager.ClusterType.CDH )
+      || modifierConfiguration.getClusterType().equals( LoadConfigsManager.ClusterType.HDP ) ) {
+      setHdfsServerProtoPortUrl( modifierConfiguration.getPathToTestProperties() + File.separator,
+        modifierConfiguration.getPathToShim() + File.separator );
+      setJobTrackerServer( modifierConfiguration.getPathToTestProperties() + File.separator,
+        modifierConfiguration.getPathToShim() + File.separator );
+      setHiveHost( modifierConfiguration.getPathToTestProperties() + File.separator,
+        modifierConfiguration.getHosts(), modifierConfiguration.getClusterType(),
+        modifierConfiguration.isSecure(), modifierConfiguration.getPathToShim() + File.separator );
+      setZookeeper( modifierConfiguration.getPathToTestProperties() + File.separator,
+        modifierConfiguration.getPathToShim() + File.separator );
+      setOozie( modifierConfiguration.getPathToTestProperties() + File.separator, modifierConfiguration.getHosts() );
+      setSpark( modifierConfiguration.getPathToTestProperties() + File.separator,
+        modifierConfiguration.getHosts().split( "," )[ 0 ].trim(),
+        modifierConfiguration.getClusterType() );
+      setTextSplitter( modifierConfiguration.getPathToTestProperties() + File.separator,
+        setHdpVersion( modifierConfiguration.getPathToTestProperties(), modifierConfiguration.getClusterType(),
+          modifierConfiguration.getHosts().split( "," )[ 0 ].trim() ), modifierConfiguration.getClusterType() );
+      setSqoopSecureLibjarPath( modifierConfiguration.getPathToTestProperties() + File.separator,
+        modifierConfiguration.getPathToShim() + File.separator, modifierConfiguration.isSecure() );
+      setHiveWarehouseDir( modifierConfiguration.getPathToTestProperties() + File.separator,
+        modifierConfiguration.getPathToShim() + File.separator );
+    }
   }
 
 
@@ -70,12 +76,14 @@ public class ModifyTestProperties {
     PropertyHandler.setProperty( pathToTestProperties, "shim_active", shimFoldersTree[ shimFoldersTree.length - 1 ] );
   }
 
-  //    // set sshServer, sshUser, sshPassword
-  //    private static void setSshSeverUserPassword( String pathToTestProperties ) {
-  //        PropertyHandler.setProperty( pathToTestProperties, "sshServer", ShimValues.getSshHost() );
-  //        PropertyHandler.setProperty( pathToTestProperties, "sshUser", ShimValues.getSshUser() );
-  //        PropertyHandler.setProperty( pathToTestProperties, "sshPassword", ShimValues.getSshPassword() );
-  //    }
+  // set sshServer, sshUser, sshPassword
+  private static void setSshSeverUserPassword( String pathToTestProperties, String hosts ) {
+    PropertyHandler.setProperty( pathToTestProperties, "sshServer", hosts.split( "," )[ 0 ].trim() );
+    PropertyHandler.setProperty( pathToTestProperties, "sshUser",
+      getCredentialsFromSecurityContext().getSshCredentials().getUsername() );
+    PropertyHandler.setProperty( pathToTestProperties, "sshPassword",
+      getCredentialsFromSecurityContext().getSshCredentials().getPassword() );
+  }
 
   // set hdfsServer, hdfsProto, hdfsPort, hdfsUrl values
   private static void setHdfsServerProtoPortUrl( String pathToTestProperties, String pathToShim ) {
@@ -135,37 +143,35 @@ public class ModifyTestProperties {
           String[] hivePrincipalTemp2 = hivePrincipalTemp1[ 1 ].split( "@" );
           String hivePrincipal = hivePrincipalTemp1[ 0 ] + "/" + hiveServerNode + "@" + hivePrincipalTemp2[
             1 ];
-          //                  String fullImpalaConfig =
-          //                    new String( RestClient.callRest( "http://" + ShimValues.getRestHost() +
-          //                        ":7180/api/v10/clusters/" + cluster
-          //                        + "/services/impala/config?view=FULL", RestClient.HttpMethod
-          //                        .HTTP_METHOD_GET,
-          //                      ShimValues.getRestUser(), ShimValues.getRestPassword(), null, null,
-          //                      null ) );
-          //
-          //                  String impalaKrbServiceName = "";
-          //                  try {
-          //                    JSONObject obj = new JSONObject( fullImpalaConfig );
-          //                    JSONArray arr = obj.getJSONArray( "items" );
-          //                    for ( int i = 0; i < arr.length(); i++ ) {
-          //                      if ( arr.getJSONObject( i ).getString( "name" ).equalsIgnoreCase(
-          // "kerberos_princ_name" )
-          //                        ) {
-          //                        JSONObject obj2 = arr.getJSONObject( i );
-          //                        impalaKrbServiceName = obj2.getString( "default" );
-          //                        break;
-          //                      }
-          //                    }
-          //                  } catch ( JSONException e ) {
-          //                    logger.error( "JSON exception: " + e );
-          //                  }
+          String impalaKrbServiceName = "";
+          try {
+            String fullImpalaConfig =
+              new String( IOUtils.toByteArray( CommonUtilHolder.httpCommonUtilInstance().createHttpClient()
+                .execute( CommonUtilHolder.httpCommonUtilInstance()
+                  .createHttpUriRequest( "http://" + hosts.split( "," )[ 0 ].trim()
+                    + ":7180/api/v10/clusters/cluster/services/impala/config?view=FULL" ) )
+                .getEntity().getContent() ) );
+            JSONObject obj = new JSONObject( fullImpalaConfig );
+            JSONArray arr = obj.getJSONArray( "items" );
+            for ( int i = 0; i < arr.length(); i++ ) {
+              if ( arr.getJSONObject( i ).getString( "name" ).equalsIgnoreCase(
+                "kerberos_princ_name" )
+                ) {
+                JSONObject obj2 = arr.getJSONObject( i );
+                impalaKrbServiceName = obj2.getString( "default" );
+                break;
+              }
+            }
+          } catch ( JSONException | IOException e ) {
+            logger.error( "JSON exception: " + e );
+          }
 
           PropertyHandler.setProperty( pathToTestProperties, "hive2_option", "principal" );
           PropertyHandler.setProperty( pathToTestProperties, "hive2_principal", hivePrincipal );
           PropertyHandler.setProperty( pathToTestProperties, "impala_KrbRealm", hivePrincipalTemp2[ 1 ] );
           PropertyHandler.setProperty( pathToTestProperties, "impala_KrbHostFQDN", hiveServerNode );
-          //                  PropertyHandler.setProperty( pathToTestProperties, "impala_KrbServiceName",
-          //                    impalaKrbServiceName );
+          PropertyHandler.setProperty( pathToTestProperties, "impala_KrbServiceName",
+            impalaKrbServiceName );
         } else {
           String[] hivePrincipalTemp1 = XmlPropertyHandler.readXmlPropertyValue( pathToShim + "hive-site.xml",
             "hive.metastore.kerberos.principal" ).split( "/" );
@@ -220,19 +226,19 @@ public class ModifyTestProperties {
       File f = new File( localSparkAssemblyPath );
       String sparkAssemblyName = f.getName();
       PropertyHandler
-        .setProperty( pathToTestProperties, "spark_yarn_jar", "${hdfsUrl}/opt/pentaho/" +
-          sparkAssemblyName );
+        .setProperty( pathToTestProperties, "spark_yarn_jar", "${hdfsUrl}/opt/pentaho/"
+          + sparkAssemblyName );
       // if it is hdp cluster - 2 more properties are needed
       if ( clusterType.equals( LoadConfigsManager.ClusterType.HDP ) ) {
         String hdpVersion = CommonUtilHolder.sshCommonUtilInstance().executeCommand(
           new SshCredentials(), host, 22,
           "hdp-select versions" ).replaceAll( "\\r|\\n", "" );
         PropertyHandler
-          .setProperty( pathToTestProperties, "spark_driver_extraJavaOptions", "-Dhdp.version=" +
-            hdpVersion );
+          .setProperty( pathToTestProperties, "spark_driver_extraJavaOptions", "-Dhdp.version="
+            + hdpVersion );
         PropertyHandler
-          .setProperty( pathToTestProperties, "spark_yarn_am_extraJavaOptions", "-Dhdp.version=" +
-            hdpVersion );
+          .setProperty( pathToTestProperties, "spark_yarn_am_extraJavaOptions", "-Dhdp.version="
+            + hdpVersion );
       } else {
         PropertyHandler
           .setProperty( pathToTestProperties, "spark_driver_extraJavaOptions", "" );
@@ -246,11 +252,12 @@ public class ModifyTestProperties {
   }
 
   // TODO: determine if this is really needed
-  private static void setHdpVersion( String pathToShim, LoadConfigsManager.ClusterType clusterType, String host ) {
+  private static String setHdpVersion( String pathToShim, LoadConfigsManager.ClusterType clusterType, String host ) {
     String configPropertiesFile = pathToShim + File.separator + "config.properties";
+    String hdpVersion = StringUtils.EMPTY;
     if ( clusterType.equals( LoadConfigsManager.ClusterType.HDP ) ) {
       try {
-        String hdpVersion = CommonUtilHolder.sshCommonUtilInstance().executeCommand(
+        hdpVersion = CommonUtilHolder.sshCommonUtilInstance().executeCommand(
           new SshCredentials(), host, 22,
           "hdp-select versions" ).replaceAll( "\\r|\\n", "" );
         PropertyHandler.setProperty( configPropertiesFile, "java.system.hdp.version", hdpVersion );
@@ -258,21 +265,23 @@ public class ModifyTestProperties {
         logger.error( e.getMessage() );
       }
     }
+
+    return hdpVersion;
   }
 
-  //    //modifying allow_text_splitter value
-  //    private static void setTextSplitter( String pathToTestProperties ) {
-  //        if ( ShimValues.getHadoopVendor().equalsIgnoreCase( "hdp" )
-  //                && Integer.valueOf( ShimValues.getHadoopVendorVersion() ) > 24 ) {
-  //            PropertyHandler.setProperty( pathToTestProperties, "allow_text_splitter", "org.apache.sqoop.splitter
-  // .allow_text_splitter" );
-  //            PropertyHandler.setProperty( pathToTestProperties, "allow_text_splitter_value", "true" );
-  //        }
-  //        else {
-  //            PropertyHandler.setProperty( pathToTestProperties, "allow_text_splitter", "" );
-  //            PropertyHandler.setProperty( pathToTestProperties, "allow_text_splitter_value", "" );
-  //        }
-  //    }
+  //modifying allow_text_splitter value
+  private static void setTextSplitter( String pathToTestProperties, String hdpVersion,
+                                       LoadConfigsManager.ClusterType clusterType ) {
+    if ( clusterType.equals( LoadConfigsManager.ClusterType.HDP )
+      && Integer.valueOf( hdpVersion ) > 24 ) {
+      PropertyHandler
+        .setProperty( pathToTestProperties, "allow_text_splitter", "org.apache.sqoop.splitter.allow_text_splitter" );
+      PropertyHandler.setProperty( pathToTestProperties, "allow_text_splitter_value", "true" );
+    } else {
+      PropertyHandler.setProperty( pathToTestProperties, "allow_text_splitter", "" );
+      PropertyHandler.setProperty( pathToTestProperties, "allow_text_splitter_value", "" );
+    }
+  }
 
   //set sqoop_secure_libjar_path
   private static void setSqoopSecureLibjarPath( String pathToTestProperties, String pathToShim, boolean isSecure )

@@ -145,6 +145,8 @@ public class MainPage {
       clusterType.setValue( profile.getClusterType().toString() );
       emrSecretKey.setText( profile.getEmrCredentials().getSecretKey() );
       emrAccessKey.setText( profile.getEmrCredentials().getAccessKey() );
+      pathToTestProperties.setText( profile.getPathToTestProperties() );
+      newProfile.setText( profile.getName() );
     } catch ( IOException e ) {
       e.printStackTrace();
     }
@@ -158,7 +160,8 @@ public class MainPage {
       LoadConfigsManager.ClusterType.valueOf( clusterType.getValue() ),
       pathToSave.getText(), dfsInstallDir.getText(),
       cluster_node_FQDN.getText().trim(), newProfile.getText(),
-      new EmrCredentials( emrAccessKey.getText(), emrSecretKey.getText() ) );
+      new EmrCredentials( emrAccessKey.getText(), emrSecretKey.getText() ),
+      pathToTestProperties.getText() );
 
     try {
       profileBuilder.saveProfile( profile );
@@ -236,9 +239,6 @@ public class MainPage {
     emrKeys.setVisible( isPemNeeded );
     emrAccessKey.setVisible( isPemNeeded );
     emrSecretKey.setVisible( isPemNeeded );
-    kerberosLabel.setVisible( !isPemNeeded );
-    kerberosPassword.setVisible( !isPemNeeded );
-    kerberosUser.setVisible( !isPemNeeded );
   }
 
   private void buttonStartAction() {

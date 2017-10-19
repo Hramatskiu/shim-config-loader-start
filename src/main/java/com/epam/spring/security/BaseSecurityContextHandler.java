@@ -7,7 +7,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 public abstract class BaseSecurityContextHandler {
-  protected final ConfigLoadCredentials getCredentialsFromSecurityContext() throws AuthenticationException {
+  protected static ConfigLoadCredentials getCredentialsFromSecurityContext() throws AuthenticationException {
     Authentication loggedAuthentication = SecurityContextHolder.getContext().getAuthentication();
     if ( loggedAuthentication instanceof ConfigLoadCredentials ) {
       return (ConfigLoadCredentials) loggedAuthentication;

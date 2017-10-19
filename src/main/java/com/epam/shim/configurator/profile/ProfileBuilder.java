@@ -36,7 +36,8 @@ public class ProfileBuilder {
       extractDfsInstallDir( profilePath.toAbsolutePath().toString() ),
       extractHosts( profilePath.toAbsolutePath().toString() ),
       extractProfileName( profilePath.toAbsolutePath().toString() ),
-      extractEmrCredentials( profilePath.toAbsolutePath().toString() ) );
+      extractEmrCredentials( profilePath.toAbsolutePath().toString() ),
+      extractPathToTestProperties( profilePath.toAbsolutePath().toString() ) );
   }
 
   public Path getProfilePath( String profileName ) throws IOException {
@@ -56,6 +57,11 @@ public class ProfileBuilder {
     saveHosts( profilePath, profile.getHosts() );
     saveClusterName( profilePath, profile.getClusterType().toString() );
     saveEmrCredentials( profilePath, profile.getEmrCredentials() );
+    savePathToTestProperties( profilePath, profile.getPathToTestProperties() );
+  }
+
+  private void savePathToTestProperties( String profilePath, String pathToTestProperties ) {
+    PropertyHandler.setProperty( profilePath, "pathToTestProperties", pathToTestProperties );
   }
 
   private void saveEmrCredentials( String profilePath, EmrCredentials emrCredentials ) {
@@ -119,6 +125,10 @@ public class ProfileBuilder {
 
     return ( Files.find( Paths.get( profilesFolder ), 1, ( p, bfa ) -> bfa.isRegularFile()
       && p.getFileName().toString().matches( ".*\\.properties" ) ).collect( Collectors.toList() ) );
+  }
+
+  private String extractPathToTestProperties( String pathtoFile ) {
+    return PropertyHandler.getPropertyFromFile( pathtoFile, "pathToTestProperties" );
   }
 
   private EmrCredentials extractEmrCredentials( String pathToFile ) {

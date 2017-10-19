@@ -25,9 +25,9 @@ public class CopyDriversUtil {
   public static void copyImpalaSimbaDriver( String pathToShim ) {
     try {
       copyDriverFileToShimLib( "ImpalaJDBC41.jar", pathToShim );
-      logger.info( "ImpalaSimbaDriver copy successful to " +
-        Paths.get( pathToShim + File.separator + "lib" +
-          File.separator + "ImpalaJDBC41.jar" ) );
+      logger.info( "ImpalaSimbaDriver copy successful to "
+        + Paths.get( pathToShim + File.separator + "lib"
+        + File.separator + "ImpalaJDBC41.jar" ) );
     } catch ( NoSuchElementException nsee ) {
       logger.warn( "Impala Simba Driver was not found in ShimConfig folder" );
     } catch ( FileAlreadyExistsException ee ) {
@@ -83,8 +83,8 @@ public class CopyDriversUtil {
       for ( String f : filesToCopy ) {
         copyDriverFileToShimLib( f, pathToShim );
       }
-      logger.info( "SparkSQL Driver copy successful to " +
-        Paths.get( pathToShim + File.separator ) + "lib/*" );
+      logger.info( "SparkSQL Driver copy successful to "
+        + Paths.get( pathToShim + File.separator ) + File.pathSeparator + "lib" + File.pathSeparator );
     } catch ( NoSuchElementException nse ) {
       logger.warn( "SparkSQL Driver was not found in ShimConfig folder" );
     } catch ( FileAlreadyExistsException ee ) {
@@ -117,13 +117,13 @@ public class CopyDriversUtil {
   private static void copyDriverFileToShimLib( String driverFile, String pathToShim ) throws Exception {
     Path driverPath = findFileInThisUtilityFolder( driverFile );
     if ( Files.exists( driverPath ) ) {
-      Files.copy( driverPath, Paths.get( pathToShim + File.separator + "lib" +
-        File.separator + driverPath.getFileName() ) );
+      Files.copy( driverPath, Paths.get( pathToShim + File.separator + "lib"
+        + File.separator + driverPath.getFileName() ) );
     }
   }
 
   private static Path findFileInThisUtilityFolder( String regex )
-    throws NoSuchElementException, FileAlreadyExistsException, IOException, Exception {
+    throws Exception {
     return Files.find( Paths.get( getRootUtilityFolder() ), 3, ( p, bfa ) -> bfa.isRegularFile()
       && p.getFileName().toString().matches( regex ) ).findFirst().get();
   }

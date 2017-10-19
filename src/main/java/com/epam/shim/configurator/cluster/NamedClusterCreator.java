@@ -38,6 +38,8 @@ public class NamedClusterCreator {
         setSecureJobTrackerServer( namedCluster, modifierConfiguration.getPathToShim() + File.separator );
       }
       setHdfsServerProtoPortUrl( namedCluster, modifierConfiguration.getPathToShim() + File.separator );
+    } else {
+      namedCluster.setMapr( true );
     }
 
     setOozie( namedCluster, modifierConfiguration.getHosts() );
