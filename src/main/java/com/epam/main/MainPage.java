@@ -8,19 +8,23 @@ import com.epam.loader.config.credentials.LoadConfigs;
 import com.epam.loader.config.credentials.SshCredentials;
 import com.epam.loader.plan.manager.LoadConfigsManager;
 import com.epam.logger.TextAreaAppender;
+import com.epam.shim.configurator.Krb5Configurator;
 import com.epam.shim.configurator.ShimDependentConfigurator;
 import com.epam.shim.configurator.config.ModifierConfiguration;
 import com.epam.shim.configurator.profile.Profile;
 import com.epam.shim.configurator.profile.ProfileBuilder;
+import com.epam.shim.configurator.util.CopyDriversUtil;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.apache.log4j.Logger;
 
@@ -70,6 +74,10 @@ public class MainPage {
   @FXML
   Button profileLoad;
   @FXML
+  Button buttonOpenPemFile;
+  @FXML
+  Button buttonOpenTestProperties;
+  @FXML
   ComboBox profiles;
   @FXML
   Label testPathLabel;
@@ -89,9 +97,16 @@ public class MainPage {
   Label kerberosLabel;
   @FXML
   ComboBox<String> clusterType;
+  @FXML CheckBox configureMapr;
+  @FXML CheckBox downloadKrb5;
+  @FXML CheckBox copyDrivers;
 
-  private ClusterConfigLoader clusterConfigLoader;
+  private static ClusterConfigLoader clusterConfigLoader;
   private ProfileBuilder profileBuilder;
+
+  public static void setClusterConfigLoader( ClusterConfigLoader newClusterConfigLoader ) {
+    clusterConfigLoader = newClusterConfigLoader;
+  }
 
   @FXML
   void buttonInit( ActionEvent event ) {
@@ -236,6 +251,7 @@ public class MainPage {
       pathToPemFile.setText( "" );
     }
     pathToPemFile.setVisible( isPemNeeded );
+    buttonOpenPemFile.setVisible( isPemNeeded );
     emrKeys.setVisible( isPemNeeded );
     emrAccessKey.setVisible( isPemNeeded );
     emrSecretKey.setVisible( isPemNeeded );
@@ -249,9 +265,10 @@ public class MainPage {
       buttonStart.setDisable( true );
 
       Thread thread = new Thread( () -> {
+        additionalPane();
         boolean isDownloaded = clusterConfigLoader
           .loadConfigs( new LoadConfigs( new HttpCredentials( restUser.getText(), restPassword.getText() ),
-            new Krb5Credentials( kerberosUser.getText(), kerberosPassword.getText() ),
+            createKrb5Configs(),
             new SshCredentials( sshUser.getText(), sshPassword.getText(), pathToPemFile.getText() ),
             modifyHosts( cluster_node_FQDN.getText().trim() ), pathToSave.getText(),
             LoadConfigsManager.ClusterType.valueOf( clusterType.getValue() ) ) );
@@ -260,19 +277,44 @@ public class MainPage {
           ShimDependentConfigurator.configureShimProperties( new ModifierConfiguration( pathToSave.getText(),
               dfsInstallDir.getText(), pathToTestProperties.getText(), false,
               LoadConfigsManager.ClusterType.valueOf( clusterType.getValue() ),
-              modifyHosts( cluster_node_FQDN.getText().trim() ) ),
+              modifyHosts( cluster_node_FQDN.getText().trim() ), configureMapr.isSelected() ),
             new EmrCredentials( emrAccessKey.getText(), emrSecretKey.getText() ) );
         }
+        logger.info( "All done!" );
         buttonStart.setDisable( false );
       } );
 
-      thread.start();
+      try {
+        thread.start();
+      } catch ( Exception ex ) {
+        logger.fatal( ex );
+        buttonStart.setDisable( false );
+      }
+
+    }
+  }
+
+  private void additionalPane() {
+    if ( downloadKrb5.isSelected() ) {
+      Krb5Configurator.downloadKrb5FromCluster( cluster_node_FQDN.getText(),
+        new SshCredentials( sshUser.getText(), sshPassword.getText(), pathToPemFile.getText() ) );
+    }
+
+    if ( copyDrivers.isSelected() ) {
+      CopyDriversUtil
+        .copyAllDrivers( pathToSave.getText(), LoadConfigsManager.ClusterType.valueOf( clusterType.getValue() ) );
     }
   }
 
   private String modifyHosts( String host ) {
     return host.contains( "svqxbdcn6" ) ? host + "," + host.replace( "n1", "n2" )
       + "," + host.replace( "n1", "n3" ) : host;
+  }
+
+  private Krb5Credentials createKrb5Configs() {
+    return cluster_node_FQDN.getText().contains( "sn" ) || cluster_node_FQDN.getText().contains( "secn" )
+      ? new Krb5Credentials( kerberosUser.getText(), kerberosPassword.getText() )
+      : new Krb5Credentials();
   }
 
   private void buttonOpenShimAction() {
@@ -282,6 +324,28 @@ public class MainPage {
     File file = directoryChooser.showDialog( stage );
     if ( file != null ) {
       pathToSave.setText( file.getAbsolutePath() );
+    }
+  }
+
+  @FXML
+  void buttonOpenTestPropertiesAction( ActionEvent event ) {
+    Stage stage = new Stage();
+    FileChooser fileChooser = new FileChooser();
+    fileChooser.setTitle( "Choose test.properties file" );
+    File file = fileChooser.showOpenDialog( stage );
+    if ( file != null ) {
+      pathToTestProperties.setText( file.getAbsolutePath() );
+    }
+  }
+
+  @FXML
+  void buttonOpenPemFileAction( ActionEvent event ) {
+    Stage stage = new Stage();
+    FileChooser fileChooser = new FileChooser();
+    fileChooser.setTitle( "Choose test.properties file" );
+    File file = fileChooser.showOpenDialog( stage );
+    if ( file != null ) {
+      pathToPemFile.setText( file.getAbsolutePath() );
     }
   }
 }

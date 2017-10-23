@@ -20,16 +20,18 @@ public class SshSecurityAspect extends BaseSecurityContextHandler {
   @Around( "addSshSecurity()" )
   public String setHttpSecurityToClientBuilder( ProceedingJoinPoint joinPoint ) throws Throwable {
     Object[] args = joinPoint.getArgs();
-    setupSecurityArgs( args, getCredentialsFromSecurityContext().getSshCredentials() );
+    setupSecurityArgs( args );
 
     return (String) joinPoint.proceed( args );
   }
 
   //Change to dto wrapping
-  private void setupSecurityArgs( Object[] args, SshCredentials sshCredentials ) {
+  private void setupSecurityArgs( Object[] args ) {
     Object credentials =
       Arrays.stream( args ).filter( arg -> arg instanceof SshCredentials ).findFirst().orElse( null );
-    if ( credentials != null ) {
+    if ( credentials != null && !( !( (SshCredentials) credentials ).getUsername().isEmpty()
+      || !( (SshCredentials) credentials ).getIdentityPath().isEmpty() ) ) {
+      SshCredentials sshCredentials = getCredentialsFromSecurityContext().getSshCredentials();
       ( (SshCredentials) credentials ).setUsername( sshCredentials.getUsername() );
       ( (SshCredentials) credentials ).setPassword( sshCredentials.getPassword() );
       ( (SshCredentials) credentials ).setIdentityPath( sshCredentials.getIdentityPath() );

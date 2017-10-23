@@ -1,58 +1,98 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.text.*?>
 <?import java.lang.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
 
 <AnchorPane prefHeight="1000.0" prefWidth="1175.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.epam.main.MainPage">
-   <children>
-      <Button id="buttonOpenShim" fx:id="buttonOpenShim" layoutX="482.0" layoutY="15.0" mnemonicParsing="false" onAction="#buttonInit" text="Open..." />
-      <TextField id="pathToShim" fx:id="pathToSave" layoutX="29.0" layoutY="15.0" prefHeight="31.0" prefWidth="417.0" promptText="path to download location" />
-      <TextField id="cluster_node_FQDN" fx:id="cluster_node_FQDN" layoutX="29.0" layoutY="60.0" prefHeight="31.0" prefWidth="417.0" promptText="host (example: svqxbdcn6cdh59n1.pentahoqa.com )" />
-      <TextField id="kerberosUser" fx:id="kerberosUser" layoutX="22.0" layoutY="279.0" prefHeight="31.0" prefWidth="244.0" promptText="kerberos user" text="devuser" />
-      <PasswordField id="kerberosPassword" fx:id="kerberosPassword" layoutX="22.0" layoutY="336.0" prefHeight="31.0" prefWidth="244.0" promptText="kerberos password " text="password" />
-      <TextField id="restUser" fx:id="restUser" layoutX="296.0" layoutY="279.0" prefHeight="31.0" prefWidth="244.0" promptText="REST user " text="admin" />
-      <PasswordField id="restPassword" fx:id="restPassword" layoutX="296.0" layoutY="336.0" prefHeight="31.0" prefWidth="244.0" promptText="REST password " text="admin" />
-      <Button id="buttonStart" fx:id="buttonStart" layoutX="382.0" layoutY="378.0" mnemonicParsing="false" onAction="#buttonInit" prefHeight="31.0" prefWidth="75.0" text="Start" />
-      <TextArea id="output" fx:id="output" editable="false" focusTraversable="false" layoutX="44.0" layoutY="419.0" prefHeight="363.0" prefWidth="803.0" scrollTop="5000.0" AnchorPane.bottomAnchor="30.0" AnchorPane.leftAnchor="34.0" AnchorPane.rightAnchor="30.0" AnchorPane.topAnchor="409.0" />
-      <ComboBox id="clusterType" fx:id="clusterType" layoutX="467.0" layoutY="63.0" onShowing="#compoBoxOnShowing" prefWidth="150.0" />
-      <PasswordField id="sshPassword" fx:id="sshPassword" layoutX="574.0" layoutY="336.0" prefHeight="31.0" prefWidth="244.0" promptText="Ssh password" text="password" />
-      <TextField id="sshUser" fx:id="sshUser" layoutX="574.0" layoutY="279.0" prefHeight="31.0" prefWidth="244.0" promptText="Ssh user " text="mapr" />
-      <TextField id="pathToPemFile" fx:id="pathToPemFile" layoutX="188.0" layoutY="207.0" prefHeight="31.0" prefWidth="636.0" promptText="path to pem file" text="D:\backup\testcluster1.pem" />
-      <Label fx:id="kerberosLabel" layoutX="31.0" layoutY="249.0" prefHeight="17.0" prefWidth="232.0" text="Kerberos" />
-      <Label fx:id="restLabel" layoutX="303.0" layoutY="249.0" prefHeight="17.0" prefWidth="232.0" text="REST" />
-      <Label fx:id="sshLabel" layoutX="580.0" layoutY="249.0" prefHeight="17.0" prefWidth="232.0" text="SSH" />
-      <Label fx:id="pemFileLabel" layoutX="28.0" layoutY="214.0" prefHeight="17.0" prefWidth="136.0" text=".pem file location">
+  <children>
+    <Button id="buttonOpenShim" fx:id="buttonOpenShim" layoutX="674.0" layoutY="15.0" mnemonicParsing="false" onAction="#buttonInit" prefHeight="31.0" prefWidth="156.0" text="Open..." />
+    <TextField id="pathToShim" fx:id="pathToSave" layoutX="188.0" layoutY="15.0" prefHeight="31.0" prefWidth="477.0" promptText="path to download location" />
+    <TextField id="cluster_node_FQDN" fx:id="cluster_node_FQDN" layoutX="188.0" layoutY="60.0" prefHeight="31.0" prefWidth="477.0" promptText="host (example: svqxbdcn6cdh59n1.pentahoqa.com )" />
+    <TextField id="kerberosUser" fx:id="kerberosUser" layoutX="22.0" layoutY="279.0" prefHeight="31.0" prefWidth="244.0" promptText="kerberos user" text="devuser" />
+    <PasswordField id="kerberosPassword" fx:id="kerberosPassword" layoutX="22.0" layoutY="336.0" prefHeight="31.0" prefWidth="244.0" promptText="kerberos password " text="password" />
+    <TextField id="restUser" fx:id="restUser" layoutX="296.0" layoutY="279.0" prefHeight="31.0" prefWidth="244.0" promptText="REST user " text="admin" />
+    <PasswordField id="restPassword" fx:id="restPassword" layoutX="296.0" layoutY="336.0" prefHeight="31.0" prefWidth="244.0" promptText="REST password " text="admin" />
+    <Button id="buttonStart" fx:id="buttonStart" layoutX="382.0" layoutY="378.0" mnemonicParsing="false" onAction="#buttonInit" prefHeight="31.0" prefWidth="75.0" text="Start" />
+    <TextArea id="output" fx:id="output" editable="false" focusTraversable="false" layoutX="54.0" layoutY="452.0" prefHeight="518.0" prefWidth="1091.0" scrollTop="5000.0" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="44.0" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="442.0" />
+    <ComboBox id="clusterType" fx:id="clusterType" layoutX="674.0" layoutY="60.0" onShowing="#compoBoxOnShowing" prefHeight="31.0" prefWidth="156.0" />
+    <PasswordField id="sshPassword" fx:id="sshPassword" layoutX="574.0" layoutY="336.0" prefHeight="31.0" prefWidth="244.0" promptText="Ssh password" text="password" />
+    <TextField id="sshUser" fx:id="sshUser" layoutX="574.0" layoutY="279.0" prefHeight="31.0" prefWidth="244.0" promptText="Ssh user " text="mapr" />
+    <TextField id="pathToPemFile" fx:id="pathToPemFile" layoutX="188.0" layoutY="207.0" prefHeight="31.0" prefWidth="477.0" promptText="path to pem file" text="D:\backup\testcluster1.pem" />
+    <Label fx:id="kerberosLabel" layoutX="31.0" layoutY="249.0" prefHeight="17.0" prefWidth="232.0" text="Kerberos" />
+    <Label fx:id="restLabel" layoutX="303.0" layoutY="249.0" prefHeight="17.0" prefWidth="232.0" text="REST" />
+    <Label fx:id="sshLabel" layoutX="580.0" layoutY="249.0" prefHeight="17.0" prefWidth="232.0" text="SSH" />
+    <Label fx:id="pemFileLabel" layoutX="28.0" layoutY="214.0" prefHeight="17.0" prefWidth="136.0" text=".pem file location">
+      <font>
+        <Font size="14.0" />
+      </font>
+    </Label>
+    <TextField id="cluster_node_FQDN" fx:id="dfsInstallDir" layoutX="188.0" layoutY="159.0" prefHeight="31.0" prefWidth="642.0" promptText="will be added to /opt/pentaho/mapreduce_yours" />
+    <Label fx:id="dfsInstallDirLabel" layoutX="28.0" layoutY="165.0" prefHeight="17.0" prefWidth="136.0" text="DFS install dir">
+      <font>
+        <Font size="14.0" />
+      </font>
+    </Label>
+    <Label fx:id="testPathLabel" layoutX="29.0" layoutY="119.0" prefHeight="20.0" prefWidth="156.0" text="Path to test.properties">
+      <font>
+        <Font size="14.0" />
+      </font>
+    </Label>
+    <TextField id="cluster_node_FQDN" fx:id="pathToTestProperties" layoutX="189.0" layoutY="113.0" prefHeight="31.0" prefWidth="477.0" promptText="path to test.properties" />
+    <Label id="emrKeys" fx:id="emrKeys" layoutX="302.0" layoutY="251.0" prefHeight="17.0" prefWidth="232.0" text="EMR keys" />
+    <TextField id="emrAccessKey" fx:id="emrAccessKey" layoutX="296.0" layoutY="281.0" prefHeight="31.0" prefWidth="244.0" promptText="emr access key" />
+    <TextField id="emrSecretKey" fx:id="emrSecretKey" layoutX="296.0" layoutY="338.0" prefHeight="31.0" prefWidth="244.0" promptText="emr secret access key" />
+    <Button id="buttonOpenTestProperties" fx:id="buttonOpenTestProperties" layoutX="674.0" layoutY="113.0" mnemonicParsing="false" onAction="#buttonOpenTestPropertiesAction" prefHeight="31.0" prefWidth="156.0" text="Open..." />
+    <Button id="buttonOpenPemFile" fx:id="buttonOpenPemFile" layoutX="674.0" layoutY="207.0" mnemonicParsing="false" onAction="#buttonOpenPemFileAction" prefHeight="31.0" prefWidth="156.0" text="Open..." />
+      <TitledPane animated="false" layoutX="851.0" layoutY="281.0" prefHeight="151.0" prefWidth="264.0" text="Additional setup">
+        <content>
+          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+               <children>
+                  <CheckBox fx:id="downloadKrb5" layoutX="24.0" layoutY="14.0" mnemonicParsing="false" prefHeight="17.0" prefWidth="211.0" text="Download krb5.conf" />
+                  <CheckBox fx:id="configureMapr" layoutX="24.0" layoutY="46.0" mnemonicParsing="false" prefHeight="17.0" prefWidth="224.0" text="Configure mapr client(experimental)" />
+                  <CheckBox fx:id="copyDrivers" layoutX="24.0" layoutY="75.0" mnemonicParsing="false" prefHeight="17.0" prefWidth="202.0" text="Copy drivers" />
+               </children>
+            </AnchorPane>
+        </content>
+      </TitledPane>
+      <TitledPane animated="false" layoutX="851.0" layoutY="10.0" text="Profile use">
+        <content>
+          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="238.0" prefWidth="200.0">
+               <children>
+                <Label layoutX="71.0" text="Profile" />
+                <ComboBox id="profiles" fx:id="profiles" layoutX="13.0" layoutY="25.0" onShowing="#compoBoxOnShowing" prefHeight="25.0" prefWidth="177.0" />
+                <Button id="profileLoad" fx:id="profileLoad" layoutX="11.0" layoutY="69.0" mnemonicParsing="false" onAction="#loadProfile" prefHeight="25.0" prefWidth="181.0" text="Load" />
+                <TextField id="newProfile" fx:id="newProfile" layoutX="19.0" layoutY="147.0" prefHeight="25.0" prefWidth="170.0" />
+                <Label layoutX="68.0" layoutY="119.0" prefHeight="17.0" prefWidth="64.0" text="New profile" />
+                <Button id="profileSav" fx:id="profileSave" layoutX="19.0" layoutY="186.0" mnemonicParsing="false" onAction="#saveProfile" prefHeight="25.0" prefWidth="169.0" text="Save" />
+               </children>
+            </AnchorPane>
+        </content>
+      </TitledPane>
+      <Label fx:id="testPathLabel1" layoutX="29.0" layoutY="66.0" prefHeight="20.0" prefWidth="156.0" text="First cluster node">
          <font>
             <Font size="14.0" />
          </font>
       </Label>
-      <TextField id="cluster_node_FQDN" fx:id="dfsInstallDir" layoutX="188.0" layoutY="159.0" prefHeight="31.0" prefWidth="636.0" promptText="will be added to /opt/pentaho/mapreduce_yours" />
-      <Label fx:id="dfsInstallDirLabel" layoutX="28.0" layoutY="165.0" prefHeight="17.0" prefWidth="136.0" text="DFS install dir">
+      <Label fx:id="testPathLabel2" layoutX="29.0" layoutY="21.0" prefHeight="20.0" prefWidth="156.0" text="Path to shim">
          <font>
             <Font size="14.0" />
          </font>
       </Label>
-      <Label fx:id="testPathLabel" layoutX="29.0" layoutY="119.0" prefHeight="20.0" prefWidth="156.0" text="Path to test.properties">
-         <font>
-            <Font size="14.0" />
-         </font>
-      </Label>
-      <TextField id="cluster_node_FQDN" fx:id="pathToTestProperties" layoutX="189.0" layoutY="113.0" prefHeight="31.0" prefWidth="636.0" promptText="path to test.properties" />
-      <Label layoutX="896.0" layoutY="38.0" text="Profile" />
-      <ComboBox id="profiles" fx:id="profiles" layoutX="838.0" layoutY="63.0" onShowing="#compoBoxOnShowing" prefWidth="150.0" />
-      <Button id="profileSav" fx:id="profileSave" layoutX="850.0" layoutY="210.0" mnemonicParsing="false" onAction="#saveProfile" prefHeight="25.0" prefWidth="127.0" text="Save" />
-      <Button id="profileLoad" fx:id="profileLoad" layoutX="850.0" layoutY="107.0" mnemonicParsing="false" onAction="#loadProfile" prefHeight="25.0" prefWidth="127.0" text="Load" />
-      <TextField id="newProfile" fx:id="newProfile" layoutX="839.0" layoutY="173.0" />
-      <Label layoutX="882.0" layoutY="144.0" prefHeight="17.0" prefWidth="64.0" text="New profile" />
-      <Label id="emrKeys" fx:id="emrKeys" layoutX="302.0" layoutY="251.0" prefHeight="17.0" prefWidth="232.0" text="EMR keys" />
-      <TextField id="emrAccessKey" fx:id="emrAccessKey" layoutX="296.0" layoutY="281.0" prefHeight="31.0" prefWidth="244.0" promptText="emr access key" />
-      <TextField id="emrSecretKey" fx:id="emrSecretKey" layoutX="296.0" layoutY="338.0" prefHeight="31.0" prefWidth="244.0" promptText="emr secret access key" />
 
-   </children>
-   <padding>
-      <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-   </padding>
+  </children>
+  <padding>
+    <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+  </padding>
 </AnchorPane>

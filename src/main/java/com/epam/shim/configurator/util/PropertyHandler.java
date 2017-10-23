@@ -10,9 +10,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-/**
- * Created by Ihar_Chekan on 10/19/2016.
- */
 public class PropertyHandler {
 
   private final static Logger logger = Logger.getLogger( PropertyHandler.class );

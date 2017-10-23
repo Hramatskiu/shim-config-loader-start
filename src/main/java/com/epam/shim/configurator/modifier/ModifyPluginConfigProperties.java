@@ -1,5 +1,6 @@
 package com.epam.shim.configurator.modifier;
 
+import com.epam.loader.common.util.CheckingParamsUtil;
 import com.epam.loader.common.util.CommonUtilException;
 import com.epam.loader.common.util.CommonUtilHolder;
 import com.epam.loader.config.credentials.EmrCredentials;
@@ -10,9 +11,14 @@ import com.epam.shim.configurator.config.ModifierConfiguration;
 import com.epam.shim.configurator.util.LocalProccessCommandExecutor;
 import com.epam.shim.configurator.util.PropertyHandler;
 import com.epam.shim.configurator.xml.XmlPropertyHandler;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
@@ -43,6 +49,16 @@ public class ModifyPluginConfigProperties {
           addMaprSecureIdToCoreSiteFile( modifierConfiguration.getHosts().split( "," )[ 0 ].trim(),
             modifierConfiguration.getPathToShim() + File.separator + "core-site.xml" );
         }
+
+        if ( modifierConfiguration.isConfigureMapr() ) {
+          configureMaprClient(
+            modifierConfiguration.isSecure() || modifierConfiguration.getHosts().split( "," )[ 0 ].trim()
+              .contains( "sn" ) || modifierConfiguration.getHosts().split( "," )[ 0 ].trim().contains( "secn" ),
+            modifierConfiguration.getHosts(),
+            modifierConfiguration.getPathToShim() + File.separator + "mapred-site.xml" );
+          copyMaprConfigFilesToMaprClient( modifierConfiguration.getPathToShim() );
+        }
+
       } else {
         PropertyHandler.setProperty( configPropertiesFile, "pentaho.oozie.proxy.user", "devuser" );
         setCdhAndHdpSecurity( configPropertiesFile, modifierConfiguration.isSecure() );
@@ -54,31 +70,89 @@ public class ModifyPluginConfigProperties {
     }
   }
 
+  private void copyMaprConfigFilesToMaprClient( String pathToShim ) {
+    String maprHome = getMaprHome();
+    if ( CheckingParamsUtil.checkParamsWithNullAndEmpty( maprHome ) ) {
+      try {
+        Files.copy( Paths.get( pathToShim + File.separator + "mapred-site.xml" ),
+          Paths.get( getMaprHadoopConfHome( maprHome ) + File.separator + "mapred-site.xml" ),
+          StandardCopyOption.REPLACE_EXISTING );
+        Files.copy( Paths.get( pathToShim + File.separator + "yarn-site.xml" ),
+          Paths.get( getMaprHadoopConfHome( maprHome ) + File.separator + "yarn-site.xml" ),
+          StandardCopyOption.REPLACE_EXISTING );
+        Files.copy( Paths.get( pathToShim + File.separator + "core-site.xml" ),
+          Paths.get( getMaprHadoopConfHome( maprHome ) + File.separator + "core-site.xml" ),
+          StandardCopyOption.REPLACE_EXISTING );
+        Files.copy( Paths.get( pathToShim + File.separator + "hdfs-site.xml" ),
+          Paths.get( getMaprHadoopConfHome( maprHome ) + File.separator + "hdfs-site.xml" ),
+          StandardCopyOption.REPLACE_EXISTING );
+        Files.copy( Paths.get( pathToShim + File.separator + "ssl_truststore" ),
+          Paths.get( maprHome + File.separator + "conf" + File.separator + "ssl_truststore" ),
+          StandardCopyOption.REPLACE_EXISTING );
+      } catch ( IOException e ) {
+        logger.error( e );
+      }
+    } else {
+      logger.warn( "MAPR_HOME not set. See - http://doc.mapr.com/display/MapR/Setting+Up+the+Client ." );
+    }
+  }
+
   private void addMaprClasspath( String configPropertiesFile, String pathToShim ) {
     if ( System.getProperty( "os.name" ).startsWith( "Windows" ) ) {
-      String hadoopClasspath = LocalProccessCommandExecutor
-        .executeCommand( "cmd /c %MAPR_HOME%\\hadoop\\hadoop-2.7.0\\bin\\hadoop.cmd classpath" );
-      String maprHome = LocalProccessCommandExecutor
-        .executeCommand( "cmd /c echo %MAPR_HOME%" );
-      hadoopClasspath += ";" + maprHome + "\\lib" + ";" + pathToShim;
-      String modifiedHadoopClasspath =
-        Arrays.stream( hadoopClasspath.split( ";" ) )
-          .map( line -> "file:///" + line )
-          .map( line -> line.replace( "\\", "/" ) )
-          .map( line -> line.replace( "*", "" ) )
-          .collect( Collectors.joining( "," ) );
-      PropertyHandler.setProperty( configPropertiesFile, "windows.classpath", modifiedHadoopClasspath );
+      String maprHome = getMaprHome();
+      if ( CheckingParamsUtil.checkParamsWithNullAndEmpty( maprHome ) ) {
+        String hadoopClasspath = LocalProccessCommandExecutor
+          .executeCommand(
+            "cmd /c %MAPR_HOME%\\hadoop\\" + findMaprHadoopHome( maprHome ) + "\\bin\\hadoop.cmd classpath" );
+
+        hadoopClasspath += ";" + maprHome + "\\lib" + ";" + pathToShim;
+        String modifiedHadoopClasspath =
+          Arrays.stream( hadoopClasspath.split( ";" ) )
+            .map( line -> "file:///" + line )
+            .map( line -> line.replace( "\\", "/" ) )
+            .map( line -> line.replace( "*", "" ) )
+            .collect( Collectors.joining( "," ) );
+        PropertyHandler.setProperty( configPropertiesFile, "windows.classpath", modifiedHadoopClasspath );
+      } else {
+        logger.warn( "MAPR_HOME not set. See - http://doc.mapr.com/display/MapR/Setting+Up+the+Client ." );
+      }
     } else if ( System.getProperty( "os.name" ).startsWith( "Linux" ) ) {
+      String maprHome = "/opt/mapr";
       String hadoopClasspath = LocalProccessCommandExecutor
-        .executeCommand( "/opt/mapr/hadoop/hadoop-2.7.0/bin/hadoop classpath" );
-      String maprHome = LocalProccessCommandExecutor
-        .executeCommand( "echo /opt/mapr" );
+        .executeCommand( "/opt/mapr/hadoop/" + findMaprHadoopHome( maprHome ) + "/bin/hadoop classpath" );
       hadoopClasspath += "," + maprHome + "/lib" + "," + pathToShim;
       String modifiedHadoopClasspath =
         Arrays.stream( hadoopClasspath.split( "," ) ).filter( line -> !line.isEmpty() )
           .map( line -> line.replace( "*", "" ) ).collect( Collectors.joining( "," ) );
       PropertyHandler.setProperty( configPropertiesFile, "linux.classpath", modifiedHadoopClasspath );
     }
+  }
+
+  private String getMaprHome() {
+    return System.getProperty( "os.name" ).startsWith( "Windows" )
+      ? System.getenv( "MAPR_HOME" ) != null
+      ? System.getenv( "MAPR_HOME" ) : StringUtils.EMPTY
+      : "/opt/mapr";
+  }
+
+  private String getMaprHadoopConfHome( String maprHome ) {
+    return maprHome + File.separator + "hadoop"
+      + File.separator + findMaprHadoopHome( maprHome )
+      + File.separator + "etc"
+      + File.separator + "hadoop" + File.separator;
+  }
+
+  @SuppressWarnings( "ConstantConditions" )
+  private String findMaprHadoopHome( String maprHome ) {
+    return Arrays.stream( new File( maprHome + File.separator + "hadoop" )
+      .listFiles( File::isDirectory ) ).map( File::getName )
+      .filter( file -> !file.contains( "hadoop-0" ) && file.matches( "hadoop-\\d.*" ) ).findFirst()
+      .orElse( "hadoop-2.7.0" );
+  }
+
+  private void configureMaprClient( boolean isSecure, String hosts, String pathToMapredFile ) {
+    MaprConfigurator maprConfigurator = new MaprConfigurator();
+    maprConfigurator.configureMaprClient( isSecure, hosts, pathToMapredFile );
   }
 
   private void setMaprSecureConfig( String configPropertiesFile ) {
@@ -176,6 +250,10 @@ public class ModifyPluginConfigProperties {
       .addPropertyToFile( pathToShim + File.separator + "core-site.xml", "fs.s3n.awsAccessKeyId", accessKey );
     XmlPropertyHandler
       .addPropertyToFile( pathToShim + File.separator + "core-site.xml", "fs.s3n.awsSecretAccessKey", secretKey );
+    XmlPropertyHandler
+      .addPropertyToFile( pathToShim + File.separator + "core-site.xml", "fs.s3a.access.key", accessKey );
+    XmlPropertyHandler
+      .addPropertyToFile( pathToShim + File.separator + "core-site.xml", "fs.s3a.secret.key", secretKey );
   }
 
   private void setEmrFsImpl( String pathToShim ) {
@@ -183,5 +261,7 @@ public class ModifyPluginConfigProperties {
       "fs.s3.impl", "org.apache.hadoop.fs.s3.S3FileSystem" );
     XmlPropertyHandler.modifyPropertyInFile( pathToShim + File.separator + "core-site.xml",
       "fs.s3n.impl", "org.apache.hadoop.fs.s3native.NativeS3FileSystem" );
+    XmlPropertyHandler.modifyPropertyInFile( pathToShim + File.separator + "core-site.xml",
+      "fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem" );
   }
 }

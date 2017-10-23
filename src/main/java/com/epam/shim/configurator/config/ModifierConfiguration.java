@@ -9,21 +9,24 @@ public class ModifierConfiguration {
   private String pathToTestProperties;
   private String dfsInstallDir;
   private String hosts;
+  private boolean isConfigureMapr;
   private LoadConfigsManager.ClusterType clusterType;
 
   public ModifierConfiguration( String pathToShim, String dfsInstallDir, String pathToTestProperties,
-                                boolean isSecure, LoadConfigsManager.ClusterType clusterType, String hosts ) {
+                                boolean isSecure, LoadConfigsManager.ClusterType clusterType, String hosts,
+                                boolean isConfigureMapr ) {
     this.dfsInstallDir = dfsInstallDir;
     this.pathToShim = pathToShim;
     this.pathToTestProperties = pathToTestProperties;
     this.isSecure = isSecure;
     this.clusterType = clusterType;
     this.hosts = hosts;
+    this.isConfigureMapr = isConfigureMapr;
   }
 
   public ModifierConfiguration( String pathToShim, String dfsInstallDir, String pathToTestProperties,
                                 LoadConfigsManager.ClusterType clusterType, String hosts ) {
-    this( pathToShim, dfsInstallDir, pathToTestProperties, false, clusterType, hosts );
+    this( pathToShim, dfsInstallDir, pathToTestProperties, false, clusterType, hosts, false );
   }
 
   public String getPathToTestProperties() {
@@ -51,7 +54,7 @@ public class ModifierConfiguration {
   }
 
   public ModifierConfiguration( String pathToShim, LoadConfigsManager.ClusterType clusterType, String hosts ) {
-    this( pathToShim, StringUtils.EMPTY, StringUtils.EMPTY, false, clusterType, hosts );
+    this( pathToShim, StringUtils.EMPTY, StringUtils.EMPTY, false, clusterType, hosts, false );
   }
 
   public boolean isSecure() {
@@ -76,5 +79,13 @@ public class ModifierConfiguration {
 
   public void setDfsInstallDir( String dfsInstallDir ) {
     this.dfsInstallDir = dfsInstallDir;
+  }
+
+  public boolean isConfigureMapr() {
+    return isConfigureMapr;
+  }
+
+  public void setConfigureMapr( boolean configureMapr ) {
+    isConfigureMapr = configureMapr;
   }
 }

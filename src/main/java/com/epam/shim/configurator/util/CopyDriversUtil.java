@@ -1,5 +1,6 @@
 package com.epam.shim.configurator.util;
 
+import com.epam.loader.plan.manager.LoadConfigsManager;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -15,8 +16,10 @@ public class CopyDriversUtil {
 
   private static String rootUtilityFolder;
 
-  public static void copyAllDrivers( String pathToShim ) {
-    copyImpalaSimbaDriver( pathToShim );
+  public static void copyAllDrivers( String pathToShim, LoadConfigsManager.ClusterType clusterType ) {
+    if ( clusterType.equals( LoadConfigsManager.ClusterType.CDH ) ) {
+      copyImpalaSimbaDriver( pathToShim );
+    }
     copyMySqlDriver( pathToShim );
     copySparkSqlDriver( pathToShim );
   }
@@ -25,6 +28,7 @@ public class CopyDriversUtil {
   public static void copyImpalaSimbaDriver( String pathToShim ) {
     try {
       copyDriverFileToShimLib( "ImpalaJDBC41.jar", pathToShim );
+      //copyDriverFileToShimLib( "SimbaApacheSparkJDBCDriver.lic", pathToShim );
       logger.info( "ImpalaSimbaDriver copy successful to "
         + Paths.get( pathToShim + File.separator + "lib"
         + File.separator + "ImpalaJDBC41.jar" ) );

@@ -40,7 +40,7 @@ public class ModifyTestProperties extends BaseSecurityContextHandler {
       setHdfsServerProtoPortUrl( modifierConfiguration.getPathToTestProperties() + File.separator,
         modifierConfiguration.getPathToShim() + File.separator );
       setJobTrackerServer( modifierConfiguration.getPathToTestProperties() + File.separator,
-        modifierConfiguration.getPathToShim() + File.separator );
+        modifierConfiguration.getPathToShim() + File.separator, modifierConfiguration.getHosts() );
       setHiveHost( modifierConfiguration.getPathToTestProperties() + File.separator,
         modifierConfiguration.getHosts(), modifierConfiguration.getClusterType(),
         modifierConfiguration.isSecure(), modifierConfiguration.getPathToShim() + File.separator );
@@ -50,16 +50,25 @@ public class ModifyTestProperties extends BaseSecurityContextHandler {
       setSpark( modifierConfiguration.getPathToTestProperties() + File.separator,
         modifierConfiguration.getHosts().split( "," )[ 0 ].trim(),
         modifierConfiguration.getClusterType() );
+      setHdpVersion( modifierConfiguration.getPathToShim(), modifierConfiguration.getClusterType(),
+        modifierConfiguration.getHosts().split( "," )[ 0 ].trim() );
       setTextSplitter( modifierConfiguration.getPathToTestProperties() + File.separator,
-        setHdpVersion( modifierConfiguration.getPathToTestProperties(), modifierConfiguration.getClusterType(),
-          modifierConfiguration.getHosts().split( "," )[ 0 ].trim() ), modifierConfiguration.getClusterType() );
+        getShimVersion( modifierConfiguration.getPathToShim(),
+          modifierConfiguration.getClusterType().toString().toLowerCase() ), modifierConfiguration.getClusterType() );
       setSqoopSecureLibjarPath( modifierConfiguration.getPathToTestProperties() + File.separator,
         modifierConfiguration.getPathToShim() + File.separator, modifierConfiguration.isSecure() );
       setHiveWarehouseDir( modifierConfiguration.getPathToTestProperties() + File.separator,
         modifierConfiguration.getPathToShim() + File.separator );
     }
+
+    setKettleProperties( modifierConfiguration.getPathToTestProperties() );
   }
 
+  private static void setKettleProperties( String pathToTestProperties ) {
+    PropertyHandler.setProperty(
+      System.getProperty( "user.home" ) + File.separator + ".kettle" + File.separator + "kettle.properties",
+      "SHIMS_DATA", Paths.get( pathToTestProperties ).getParent().toAbsolutePath().toString() );
+  }
 
   // set secured value
   private static void setSecuredValue( String pathToTestProperties, boolean isSecure ) {
@@ -102,12 +111,28 @@ public class ModifyTestProperties extends BaseSecurityContextHandler {
     }
   }
 
+  private static String getRMNode( String hosts ) {
+    for ( String node : hosts.split( "," ) ) {
+      try {
+        if ( CommonUtilHolder.sshCommonUtilInstance().executeCommand( new SshCredentials(), node, 22,
+          "ps aux | grep ResourceManager" )
+          .contains( "org.apache.hadoop.yarn.server.resourcemanager.ResourceManager" ) ) {
+          return node;
+        }
+      } catch ( CommonUtilException e ) {
+        logger.error( e.getMessage() );
+      }
+    }
+
+    return StringUtils.EMPTY;
+  }
+
   //add jobTrackerServer / jobTrackerPort
   //for hdp we take it from yarn.resourcemanager.address property
-  private static void setJobTrackerServer( String pathToTestProperties, String pathToShim ) {
+  private static void setJobTrackerServer( String pathToTestProperties, String pathToShim, String hosts ) {
     NamedClusterProperty jobTrackerProperties =
       NamedClusterPropertyExtractingUtil.extractJobTrackerServer( pathToShim );
-    PropertyHandler.setProperty( pathToTestProperties, "jobTrackerServer", jobTrackerProperties.getHost() );
+    PropertyHandler.setProperty( pathToTestProperties, "jobTrackerServer", getRMNode( hosts ) );
     PropertyHandler.setProperty( pathToTestProperties, "jobTrackerPort", jobTrackerProperties.getPort() );
   }
 
@@ -270,10 +295,10 @@ public class ModifyTestProperties extends BaseSecurityContextHandler {
   }
 
   //modifying allow_text_splitter value
-  private static void setTextSplitter( String pathToTestProperties, String hdpVersion,
+  private static void setTextSplitter( String pathToTestProperties, int hdpVersion,
                                        LoadConfigsManager.ClusterType clusterType ) {
     if ( clusterType.equals( LoadConfigsManager.ClusterType.HDP )
-      && Integer.valueOf( hdpVersion ) > 24 ) {
+      && hdpVersion > 24 ) {
       PropertyHandler
         .setProperty( pathToTestProperties, "allow_text_splitter", "org.apache.sqoop.splitter.allow_text_splitter" );
       PropertyHandler.setProperty( pathToTestProperties, "allow_text_splitter_value", "true" );
@@ -281,6 +306,11 @@ public class ModifyTestProperties extends BaseSecurityContextHandler {
       PropertyHandler.setProperty( pathToTestProperties, "allow_text_splitter", "" );
       PropertyHandler.setProperty( pathToTestProperties, "allow_text_splitter_value", "" );
     }
+  }
+
+  private static int getShimVersion( String pathToShim, String shimName ) {
+    String[] shimFoldersTree = pathToShim.replace( File.separator, ":" ).split( ":" );
+    return Integer.valueOf( shimFoldersTree[ shimFoldersTree.length - 1 ].replace( shimName, "" ) );
   }
 
   //set sqoop_secure_libjar_path

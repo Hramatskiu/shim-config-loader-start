@@ -36,7 +36,6 @@ public class AutheticationManagerImpl implements AuthenticationManager {
       return makeAuthentication( (BaseConfigLoadAuthentication) auth );
     }
 
-    //change on own exception extends AuthenticationException
     throw new BadCredentialsException( "Can't authenticate" );
   }
 
@@ -104,7 +103,6 @@ public class AutheticationManagerImpl implements AuthenticationManager {
     }
   }
 
-  //Think about
   private SshCredentials createSshCredentials( SshCredentials sshCredentials ) throws AuthenticationException {
     return sshCredentials;
   }
