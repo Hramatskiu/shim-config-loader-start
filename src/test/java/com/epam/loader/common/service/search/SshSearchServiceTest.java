@@ -1,12 +1,12 @@
 package com.epam.loader.common.service.search;
 
-import com.epam.loader.config.condition.DownloadableFile;
-import com.epam.loader.config.credentials.SshCredentials;
-import com.epam.loader.common.util.CommonUtilException;
 import com.epam.loader.common.service.ServiceException;
-import com.epam.loader.plan.strategy.SearchStrategy;
+import com.epam.loader.common.util.CommonUtilException;
 import com.epam.loader.common.util.CommonUtilHolder;
 import com.epam.loader.common.util.SshCommonUtil;
+import com.epam.loader.config.condition.DownloadableFile;
+import com.epam.loader.config.credentials.SshCredentials;
+import com.epam.loader.plan.strategy.SearchStrategy;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -32,7 +32,7 @@ public class SshSearchServiceTest {
 
     Mockito.when( CommonUtilHolder.sshCommonUtilInstance() ).thenReturn( sshCommonUtil );
     Mockito.when( sshCommonUtil.executeCommand( Mockito.any( SshCredentials.class ),
-      Mockito.anyString(), Mockito.anyInt(),  Mockito.anyString() ) )
+      Mockito.anyString(), Mockito.anyInt(), Mockito.anyString() ) )
       .thenThrow( CommonUtilException.class );
     Mockito.when( searchStrategy.getStrategyCommand( Mockito.anyList() ) ).thenReturn( "some" );
 

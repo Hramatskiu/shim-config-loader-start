@@ -1,12 +1,12 @@
 package com.epam.loader.common.service.search;
 
-import com.epam.loader.config.condition.DownloadableFile;
-import com.epam.loader.common.util.CommonUtilException;
 import com.epam.loader.common.service.ServiceException;
-import com.epam.loader.plan.strategy.SearchStrategy;
-import com.epam.loader.plan.strategy.impl.HdpSearchStrategy;
+import com.epam.loader.common.util.CommonUtilException;
 import com.epam.loader.common.util.CommonUtilHolder;
 import com.epam.loader.common.util.HttpCommonUtil;
+import com.epam.loader.config.condition.DownloadableFile;
+import com.epam.loader.plan.strategy.SearchStrategy;
+import com.epam.loader.plan.strategy.impl.HdpSearchStrategy;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;

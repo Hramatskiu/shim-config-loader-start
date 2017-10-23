@@ -11,6 +11,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,11 +21,21 @@ public class LoadConfigsManager {
   @Autowired
   private AuthenticationManager authenticationManager;
   private Map<ClusterType, DownloadPlan> downloadPlanMap;
+  @Autowired
+  @Qualifier( "HDP" )
+  private DownloadPlan hdpDownloadPlan;
+  @Autowired
+  @Qualifier( "CDH" )
+  private DownloadPlan cdhDownloadPlan;
+  @Autowired
+  @Qualifier( "MAPR" )
+  private DownloadPlan maprDownloadPlan;
+  @Autowired
+  @Qualifier( "EMR" )
+  private DownloadPlan emrDownloadPlan;
 
-  public LoadConfigsManager( @Autowired @Qualifier( "HDP" ) DownloadPlan hdpDownloadPlan,
-                             @Autowired @Qualifier( "CDH" ) DownloadPlan cdhDownloadPlan,
-                             @Autowired @Qualifier( "MAPR" ) DownloadPlan maprDownloadPlan,
-                             @Autowired @Qualifier( "EMR" ) DownloadPlan emrDownloadPlan ) {
+  @PostConstruct
+  public void init() {
     downloadPlanMap = new HashMap<>();
     downloadPlanMap.put( ClusterType.HDP, hdpDownloadPlan );
     downloadPlanMap.put( ClusterType.CDH, cdhDownloadPlan );

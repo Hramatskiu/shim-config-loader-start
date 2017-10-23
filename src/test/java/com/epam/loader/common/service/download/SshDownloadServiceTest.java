@@ -1,12 +1,12 @@
 package com.epam.loader.common.service.download;
 
-import com.epam.loader.config.credentials.SshCredentials;
-import com.epam.loader.common.util.CommonUtilException;
 import com.epam.loader.common.delegating.executor.DelegatingExecutorService;
-import com.epam.loader.plan.plan.DownloadPlan;
+import com.epam.loader.common.util.CommonUtilException;
 import com.epam.loader.common.util.CommonUtilHolder;
 import com.epam.loader.common.util.FileCommonUtil;
 import com.epam.loader.common.util.SshCommonUtil;
+import com.epam.loader.config.credentials.SshCredentials;
+import com.epam.loader.plan.plan.DownloadPlan;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;

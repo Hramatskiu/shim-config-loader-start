@@ -42,6 +42,6 @@ public class ShimDependentConfigurator {
     }
 
     NamedClusterCreator.createNamedCluster( modifierConfiguration );
-    CopyDriversUtil.copyAllDrivers( modifierConfiguration.getPathToShim() );
+    CopyDriversUtil.copyAllDrivers( modifierConfiguration.getPathToShim(), modifierConfiguration.getClusterType() );
   }
 }

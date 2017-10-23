@@ -21,6 +21,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.apache.log4j.Logger;
 
@@ -70,6 +71,10 @@ public class MainPage {
   @FXML
   Button profileLoad;
   @FXML
+  Button buttonOpenPemFile;
+  @FXML
+  Button buttonOpenTestProperties;
+  @FXML
   ComboBox profiles;
   @FXML
   Label testPathLabel;
@@ -90,8 +95,12 @@ public class MainPage {
   @FXML
   ComboBox<String> clusterType;
 
-  private ClusterConfigLoader clusterConfigLoader;
+  private static ClusterConfigLoader clusterConfigLoader;
   private ProfileBuilder profileBuilder;
+
+  public static void setClusterConfigLoader( ClusterConfigLoader newClusterConfigLoader ) {
+    clusterConfigLoader = newClusterConfigLoader;
+  }
 
   @FXML
   void buttonInit( ActionEvent event ) {
@@ -236,6 +245,7 @@ public class MainPage {
       pathToPemFile.setText( "" );
     }
     pathToPemFile.setVisible( isPemNeeded );
+    buttonOpenPemFile.setVisible( isPemNeeded );
     emrKeys.setVisible( isPemNeeded );
     emrAccessKey.setVisible( isPemNeeded );
     emrSecretKey.setVisible( isPemNeeded );
@@ -251,7 +261,7 @@ public class MainPage {
       Thread thread = new Thread( () -> {
         boolean isDownloaded = clusterConfigLoader
           .loadConfigs( new LoadConfigs( new HttpCredentials( restUser.getText(), restPassword.getText() ),
-            new Krb5Credentials( kerberosUser.getText(), kerberosPassword.getText() ),
+            createKrb5Configs(),
             new SshCredentials( sshUser.getText(), sshPassword.getText(), pathToPemFile.getText() ),
             modifyHosts( cluster_node_FQDN.getText().trim() ), pathToSave.getText(),
             LoadConfigsManager.ClusterType.valueOf( clusterType.getValue() ) ) );
@@ -275,6 +285,12 @@ public class MainPage {
       + "," + host.replace( "n1", "n3" ) : host;
   }
 
+  private Krb5Credentials createKrb5Configs() {
+    return cluster_node_FQDN.getText().contains( "sn" ) || cluster_node_FQDN.getText().contains( "secn" )
+      ? new Krb5Credentials( kerberosUser.getText(), kerberosPassword.getText() )
+      : new Krb5Credentials();
+  }
+
   private void buttonOpenShimAction() {
     Stage stage = new Stage();
     DirectoryChooser directoryChooser = new DirectoryChooser();
@@ -282,6 +298,28 @@ public class MainPage {
     File file = directoryChooser.showDialog( stage );
     if ( file != null ) {
       pathToSave.setText( file.getAbsolutePath() );
+    }
+  }
+
+  @FXML
+  void buttonOpenTestPropertiesAction( ActionEvent event ) {
+    Stage stage = new Stage();
+    FileChooser fileChooser = new FileChooser();
+    fileChooser.setTitle( "Choose test.properties file" );
+    File file = fileChooser.showOpenDialog( stage );
+    if ( file != null ) {
+      pathToTestProperties.setText( file.getAbsolutePath() );
+    }
+  }
+
+  @FXML
+  void buttonOpenPemFileAction( ActionEvent event ) {
+    Stage stage = new Stage();
+    FileChooser fileChooser = new FileChooser();
+    fileChooser.setTitle( "Choose test.properties file" );
+    File file = fileChooser.showOpenDialog( stage );
+    if ( file != null ) {
+      pathToPemFile.setText( file.getAbsolutePath() );
     }
   }
 }

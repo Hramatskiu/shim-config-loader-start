@@ -50,9 +50,11 @@ public class ModifyTestProperties extends BaseSecurityContextHandler {
       setSpark( modifierConfiguration.getPathToTestProperties() + File.separator,
         modifierConfiguration.getHosts().split( "," )[ 0 ].trim(),
         modifierConfiguration.getClusterType() );
+      setHdpVersion( modifierConfiguration.getPathToShim(), modifierConfiguration.getClusterType(),
+        modifierConfiguration.getHosts().split( "," )[ 0 ].trim() );
       setTextSplitter( modifierConfiguration.getPathToTestProperties() + File.separator,
-        setHdpVersion( modifierConfiguration.getPathToTestProperties(), modifierConfiguration.getClusterType(),
-          modifierConfiguration.getHosts().split( "," )[ 0 ].trim() ), modifierConfiguration.getClusterType() );
+        getShimVersion( modifierConfiguration.getPathToShim(),
+          modifierConfiguration.getClusterType().toString().toLowerCase() ), modifierConfiguration.getClusterType() );
       setSqoopSecureLibjarPath( modifierConfiguration.getPathToTestProperties() + File.separator,
         modifierConfiguration.getPathToShim() + File.separator, modifierConfiguration.isSecure() );
       setHiveWarehouseDir( modifierConfiguration.getPathToTestProperties() + File.separator,
@@ -270,10 +272,10 @@ public class ModifyTestProperties extends BaseSecurityContextHandler {
   }
 
   //modifying allow_text_splitter value
-  private static void setTextSplitter( String pathToTestProperties, String hdpVersion,
+  private static void setTextSplitter( String pathToTestProperties, int hdpVersion,
                                        LoadConfigsManager.ClusterType clusterType ) {
     if ( clusterType.equals( LoadConfigsManager.ClusterType.HDP )
-      && Integer.valueOf( hdpVersion ) > 24 ) {
+      && hdpVersion > 24 ) {
       PropertyHandler
         .setProperty( pathToTestProperties, "allow_text_splitter", "org.apache.sqoop.splitter.allow_text_splitter" );
       PropertyHandler.setProperty( pathToTestProperties, "allow_text_splitter_value", "true" );
@@ -281,6 +283,11 @@ public class ModifyTestProperties extends BaseSecurityContextHandler {
       PropertyHandler.setProperty( pathToTestProperties, "allow_text_splitter", "" );
       PropertyHandler.setProperty( pathToTestProperties, "allow_text_splitter_value", "" );
     }
+  }
+
+  private static int getShimVersion( String pathToShim, String shimName ) {
+    String[] shimFoldersTree = pathToShim.replace( File.separator, ":" ).split( ":" );
+    return Integer.valueOf( shimFoldersTree[ shimFoldersTree.length - 1 ].replace( shimName, "" ) );
   }
 
   //set sqoop_secure_libjar_path

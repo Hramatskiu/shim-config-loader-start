@@ -14,13 +14,25 @@ import org.springframework.stereotype.Component;
 import java.util.Arrays;
 import java.util.Collections;
 
-@Component( "EMR" )
+@Component()
+@Qualifier( "EMR" )
 @Scope( "prototype" )
 public class EMRDownloadPlan extends DownloadPlan {
-  public EMRDownloadPlan( @Autowired @Qualifier( "ssh-download-function" ) DownloadFunction downloadFunction,
-                          @Autowired @Qualifier( "emr-default-strategy" ) SearchStrategy searchStrategy,
-                          @Autowired @Qualifier( "hadoop-classpath-strategy" ) SearchStrategy searchStrategy1 ) {
-    super( downloadFunction, searchStrategy, searchStrategy1 );
+  @Autowired
+  @Qualifier( "ssh-download-function" )
+  private DownloadFunction downloadFunction;
+  @Autowired
+  @Qualifier( "emr-default-strategy" )
+  private SearchStrategy searchStrategy;
+  @Autowired
+  @Qualifier( "hadoop-classpath-strategy" )
+  private SearchStrategy searchStrategy1;
+
+  @Override public DownloadConfigsCondition downloadConfigs( String hostName, String destPrefix,
+                                                             DownloadConfigsCondition downloadConfigsCondition ) {
+    setDownloadFunction( this.downloadFunction );
+    setupSearchStrategies( this.searchStrategy );
+    return super.downloadConfigs( hostName, destPrefix, downloadConfigsCondition );
   }
 
   @Override protected LoadPathConfig createLoadPathConfig( String hostName, String destPrefix ) {

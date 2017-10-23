@@ -5,12 +5,14 @@ import com.epam.loader.plan.strategy.SearchStrategy;
 import com.epam.loader.plan.strategy.StrategyException;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 import java.util.List;
 
-@Component( "hdp-rest-strategy" )
+@Component()
+@Qualifier( "hdp-rest-strategy" )
 public class HdpSearchStrategy implements SearchStrategy {
   @Override
   public String getStrategyCommand( List<DownloadableFile> searchableServiceNames ) {

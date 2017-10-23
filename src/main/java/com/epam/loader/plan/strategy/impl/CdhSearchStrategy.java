@@ -7,12 +7,14 @@ import com.epam.loader.plan.strategy.StrategyException;
 import org.apache.commons.lang.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 import java.util.List;
 
-@Component( "cdh-rest-strategy" )
+@Component()
+@Qualifier( "cdh-rest-strategy" )
 public class CdhSearchStrategy implements SearchStrategy {
   @Override
   public String getStrategyCommand( List<DownloadableFile> searchableServiceNames ) {

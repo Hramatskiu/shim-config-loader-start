@@ -14,13 +14,25 @@ import org.springframework.stereotype.Component;
 import java.util.Arrays;
 import java.util.Collections;
 
-@Component( "MAPR" )
+@Component()
+@Qualifier( "MAPR" )
 @Scope( "prototype" )
 public class MAPRDownloadPlan extends DownloadPlan {
-  protected MAPRDownloadPlan( @Autowired @Qualifier( "ssh-download-function" ) DownloadFunction downloadFunction,
-                              @Autowired @Qualifier( "mapr-default-strategy" ) SearchStrategy searchStrategy,
-                              @Autowired @Qualifier( "hadoop-classpath-strategy" ) SearchStrategy searchStrategy1 ) {
-    super( downloadFunction, searchStrategy1, searchStrategy );
+  @Autowired
+  @Qualifier( "ssh-download-function" )
+  private DownloadFunction downloadFunction;
+  @Autowired
+  @Qualifier( "mapr-default-strategy" )
+  private SearchStrategy searchStrategy;
+  @Autowired
+  @Qualifier( "hadoop-classpath-strategy" )
+  private SearchStrategy searchStrategy1;
+
+  @Override public DownloadConfigsCondition downloadConfigs( String hostName, String destPrefix,
+                                                             DownloadConfigsCondition downloadConfigsCondition ) {
+    setDownloadFunction( this.downloadFunction );
+    setupSearchStrategies( this.searchStrategy );
+    return super.downloadConfigs( hostName, destPrefix, downloadConfigsCondition );
   }
 
   @Override

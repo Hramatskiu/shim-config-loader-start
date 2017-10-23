@@ -52,7 +52,7 @@ public class DelegatingSshSession implements Closeable {
 
     try {
       channel = session.openChannel( "exec" );
-      ( (ChannelExec) channel ).setCommand( command );
+      ( (ChannelExec) channel ).setCommand( command.trim() );
 
       channel.setInputStream( null );
       ( (ChannelExec) channel ).setErrStream( System.err );

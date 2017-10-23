@@ -17,11 +17,6 @@ public abstract class DownloadPlan {
   private Deque<SearchStrategy> searchStrategies;
   private final Logger logger = Logger.getLogger( DownloadPlan.class );
 
-  protected DownloadPlan( DownloadFunction downloadFunction, SearchStrategy... searchStrategies ) {
-    this.downloadFunction = downloadFunction;
-    setupSearchStrategies( searchStrategies );
-  }
-
   public DownloadConfigsCondition downloadConfigs( String hostName, String destPrefix,
                                                    DownloadConfigsCondition downloadConfigsCondition ) {
     if ( downloadConfigsCondition == null ) {
@@ -42,7 +37,11 @@ public abstract class DownloadPlan {
 
   protected abstract DownloadConfigsCondition createDownloadConfigsCondition();
 
-  private void setupSearchStrategies( SearchStrategy[] searchStrategies ) {
+  protected void setDownloadFunction( DownloadFunction downloadFunction ) {
+    this.downloadFunction = downloadFunction;
+  }
+
+  protected void setupSearchStrategies( SearchStrategy... searchStrategies ) {
     this.searchStrategies = new ArrayDeque<>();
     Arrays.stream( searchStrategies ).forEach( this.searchStrategies::push );
   }

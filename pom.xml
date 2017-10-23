@@ -6,7 +6,9 @@
 
     <groupId>com.epam</groupId>
     <artifactId>google-guice-start</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0</version>
+    <name>ConfigLoader</name>
+    <packaging>bundle</packaging>
 
     <properties>
         <hadoop.version>2.7.3</hadoop.version>
@@ -15,11 +17,12 @@
         <maven-assembly-plugin.version>3.1.0</maven-assembly-plugin.version>
         <maven-dependency-plugin.version>3.0.1</maven-dependency-plugin.version>
         <maven-jar-plugin.version>3.0.2</maven-jar-plugin.version>
-        <org.springframework.version>4.3.10.RELEASE</org.springframework.version>
-        <org.springframework.security.version>4.2.3.RELEASE</org.springframework.security.version>
+        <org.springframework.version>3.2.11.RELEASE</org.springframework.version>
+        <org.springframework.security.version>3.2.8.RELEASE</org.springframework.security.version>
         <junit.version>4.11</junit.version>
         <mockito.version>1.9.5</mockito.version>
         <org.powermock.version>1.5.6</org.powermock.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <dependencies>
@@ -28,54 +31,63 @@
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
             <version>20090211</version>
+            <scope>compile</scope>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-compress -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
             <version>1.14</version>
+            <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
             <version>4.5</version>
+            <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
             <version>${org.springframework.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-aop</artifactId>
             <version>${org.springframework.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-core</artifactId>
             <version>${org.springframework.security.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjrt</artifactId>
-            <version>1.8.10</version>
+            <version>1.7.4</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjweaver</artifactId>
-            <version>1.8.10</version>
+            <version>1.7.4</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
             <version>1.2.17</version>
+            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.commons</groupId>
@@ -92,6 +104,7 @@
             <groupId>com.jcraft</groupId>
             <artifactId>jsch</artifactId>
             <version>0.1.54</version>
+            <scope>compile</scope>
         </dependency>
 
         <dependency>
@@ -124,34 +137,34 @@
             <groupId>apache-lang</groupId>
             <artifactId>commons-lang</artifactId>
             <version>2.1</version>
+            <scope>compile</scope>
         </dependency>
         <!-- https://mvnrepository.com/artifact/commons-configuration/commons-configuration -->
         <dependency>
             <groupId>commons-configuration</groupId>
             <artifactId>commons-configuration</artifactId>
             <version>1.10</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>2.4</version>
+            <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-mapreduce-client-core</artifactId>
+            <artifactId>hadoop-common</artifactId>
             <version>${hadoop.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-client</artifactId>
-            <version>${hadoop.version}</version>
+            <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>pentaho</groupId>
             <artifactId>pentaho-big-data-legacy</artifactId>
-            <version>8.0-SNAPSHOT</version>
+            <version>8.0-QAT-328</version>
+            <scope>compile</scope>
             <exclusions>
                 <exclusion>
                     <groupId>org.pentaho</groupId>
@@ -318,7 +331,8 @@
         <dependency>
             <groupId>pentaho</groupId>
             <artifactId>metastore</artifactId>
-            <version>8.0-SNAPSHOT</version>
+            <version>8.0-QAT-328</version>
+            <scope>compile</scope>
             <exclusions>
                 <exclusion>
                     <groupId>commons-codec</groupId>
@@ -345,7 +359,8 @@
         <dependency>
             <groupId>pentaho-kettle</groupId>
             <artifactId>kettle-core</artifactId>
-            <version>8.0-SNAPSHOT</version>
+            <version>8.0-QAT-328</version>
+            <scope>compile</scope>
             <exclusions>
                 <exclusion>
                     <groupId>commons-beanutils</groupId>
@@ -510,10 +525,18 @@
             </exclusions>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/javax.xml/jaxp-api -->
+        <dependency>
+            <groupId>javax.xml</groupId>
+            <artifactId>jaxp-api</artifactId>
+            <version>1.4</version>
+            <scope>compile</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
-        <finalName>config-test</finalName>
+        <finalName>${groupId}.${artifactId}-${version}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -522,6 +545,38 @@
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <version>2.4.0</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <instructions>
+                        <Bundle-Name>${name} ${version}</Bundle-Name>
+                        <Bundle-SymbolicName>${groupId}.${artifactId}</Bundle-SymbolicName>
+                        <Export-Package>com.epam.loader</Export-Package>
+                        <Import-Package>
+                            org.aspectj.lang;version="[1.6, 1.8)",
+                            org.aspectj.lang.annotation;version="[1.6, 1.8)",
+                            org.aopalliance.aop,
+                            org.springframework.aop;version="[3.0,4.0)",
+                            org.springframework.aop.framework;version="[3.0,4.0)",
+                            org.springframework.aop.aspectj.annotation;version="[3.0,4.0)",
+                            org.springframework.security;version="[3.0,4.0)",
+                            org.springframework.security.core;version="[3.0,4.0)",
+                            org.springframework.security.authentication;version="[3.0,4.0)",
+                            org.springframework.cglib.proxy;version="[3.0,4.0)",
+                            org.springframework.cglib;version="[3.0,4.0)",
+                            org.springframework.cglib.core;version="[3.0,4.0)",
+                            org.springframework.cglib.reflect;version="[3.0,4.0)",
+                            javax.security.auth.login,
+                            org.springframework.beans.factory.annotation
+                        </Import-Package>
+                        <Embed-Dependency>scope=compile</Embed-Dependency>
+                        <Embed-Transitive>true</Embed-Transitive>
+                    </instructions>
                 </configuration>
             </plugin>
             <!--plugin>
@@ -555,28 +610,65 @@
                     </execution>
                 </executions>
             </plugin-->
-            <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <mainClass>com.epam.main.ShimConfigMain</mainClass>
-                        </manifest>
-                    </archive>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>make-assembly</id> <!-- this is used for inheritance merges -->
-                        <phase>package</phase> <!-- bind to the packaging phase -->
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+            <!--<plugin>-->
+                <!--<artifactId>maven-assembly-plugin</artifactId>-->
+                <!--<configuration>-->
+                    <!--<archive>-->
+                        <!--<manifest>-->
+                            <!--<mainClass>com.epam.main.ShimConfigMain</mainClass>-->
+                        <!--</manifest>-->
+                    <!--</archive>-->
+                    <!--<descriptorRefs>-->
+                        <!--<descriptorRef>jar-with-dependencies</descriptorRef>-->
+                    <!--</descriptorRefs>-->
+                <!--</configuration>-->
+                <!--<executions>-->
+                    <!--<execution>-->
+                        <!--<id>make-assembly</id> &lt;!&ndash; this is used for inheritance merges &ndash;&gt;-->
+                        <!--<phase>package</phase> &lt;!&ndash; bind to the packaging phase &ndash;&gt;-->
+                        <!--<goals>-->
+                            <!--<goal>single</goal>-->
+                        <!--</goals>-->
+                    <!--</execution>-->
+                <!--</executions>-->
+            <!--</plugin>-->
+            <!--<plugin>-->
+                <!--<groupId>org.apache.maven.plugins</groupId>-->
+                <!--<artifactId>maven-assembly-plugin</artifactId>-->
+                <!--<version>2.5.1</version>-->
+                <!--<configuration>-->
+                    <!--&lt;!&ndash; Configures the used assembly descriptor &ndash;&gt;-->
+                    <!--<descriptors>-->
+                        <!--<descriptor>src/main/assembly/assembly.xml</descriptor>-->
+                    <!--</descriptors>-->
+                <!--</configuration>-->
+            <!--</plugin>-->
+            <!--&lt;!&ndash;-->
+                <!--The configuration of Maven Jar plugin that packages our application-->
+                <!--into a jar file.-->
+            <!--&ndash;&gt;-->
+            <!--<plugin>-->
+                <!--<groupId>org.apache.maven.plugins</groupId>-->
+                <!--<artifactId>maven-jar-plugin</artifactId>-->
+                <!--<version>2.5</version>-->
+                <!--<configuration>-->
+                    <!--&lt;!&ndash; Configures the created archive &ndash;&gt;-->
+                    <!--<archive>-->
+                        <!--&lt;!&ndash; Configures the content of the created manifest &ndash;&gt;-->
+                        <!--<manifest>-->
+                            <!--&lt;!&ndash; Adds the classpath to the created manifest &ndash;&gt;-->
+                            <!--<addClasspath>true</addClasspath>-->
+                            <!--&lt;!&ndash;-->
+                                <!--Specifies that all dependencies of our application are found-->
+                                <!--from the lib directory.-->
+                            <!--&ndash;&gt;-->
+                            <!--<classpathPrefix>lib/</classpathPrefix>-->
+                            <!--&lt;!&ndash; Configures the main class of the application &ndash;&gt;-->
+                            <!--<mainClass>com.epam.main.ShimConfigMain</mainClass>-->
+                        <!--</manifest>-->
+                    <!--</archive>-->
+                <!--</configuration>-->
+            <!--</plugin>-->
         </plugins>
     </build>
 

@@ -5,6 +5,7 @@ import com.epam.loader.config.condition.constant.DownloadableFileConstants;
 import com.epam.loader.plan.strategy.SearchStrategy;
 import com.epam.loader.plan.strategy.StrategyException;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -12,7 +13,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@Component( "mapr-default-strategy" )
+@Component()
+@Qualifier( "mapr-default-strategy" )
 public class MaprDefaultSearchStrategy implements SearchStrategy {
   @Override
   public String getStrategyCommand( List<DownloadableFile> searchableServiceNames ) {

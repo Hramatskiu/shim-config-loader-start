@@ -15,15 +15,24 @@ import org.springframework.stereotype.Component;
 import java.util.Arrays;
 import java.util.Collections;
 
-@Component( "CDH" )
+@Component()
+@Qualifier( "CDH" )
 @Scope( "prototype" )
 public class CDHDownloadPlan extends DownloadPlan {
   private static final String HTTP_POSTFIX = ":7180/api/v10/";
   private static final FileExtractingService.ExtractFormats EXTRACT_FORMATS = FileExtractingService.ExtractFormats.ZIP;
+  @Autowired
+  @Qualifier( "http-download-function" )
+  private DownloadFunction downloadFunction;
+  @Autowired
+  @Qualifier( "cdh-rest-strategy" )
+  private SearchStrategy searchStrategy;
 
-  protected CDHDownloadPlan( @Autowired @Qualifier( "http-download-function" ) DownloadFunction downloadFunction,
-                             @Autowired @Qualifier( "cdh-rest-strategy" ) SearchStrategy searchStrategy ) {
-    super( downloadFunction, searchStrategy );
+  @Override public DownloadConfigsCondition downloadConfigs( String hostName, String destPrefix,
+                                                             DownloadConfigsCondition downloadConfigsCondition ) {
+    setDownloadFunction( this.downloadFunction );
+    setupSearchStrategies( this.searchStrategy );
+    return super.downloadConfigs( hostName, destPrefix, downloadConfigsCondition );
   }
 
   @Override

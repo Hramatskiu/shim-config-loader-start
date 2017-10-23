@@ -6,11 +6,13 @@ import com.epam.loader.config.condition.constant.DownloadableFileConstants;
 import com.epam.loader.plan.strategy.SearchStrategy;
 import com.epam.loader.plan.strategy.StrategyException;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-@Component( "emr-default-strategy" )
+@Component()
+@Qualifier( "emr-default-strategy" )
 public class EmrDefaultSearchStrategy implements SearchStrategy {
   private static final String HADOOP_DEFAULT_HOME = "/etc/hadoop/conf/";
   private static final String EMR_DEFAULT_HOME = "/usr/share/aws/emr/emrfs/conf/";

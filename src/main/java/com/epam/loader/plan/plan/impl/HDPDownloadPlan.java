@@ -15,15 +15,24 @@ import org.springframework.stereotype.Component;
 import java.util.Arrays;
 import java.util.Collections;
 
-@Component( "HDP" )
+@Component()
+@Qualifier( "HDP" )
 @Scope( "prototype" )
 public class HDPDownloadPlan extends DownloadPlan {
+  @Autowired
+  @Qualifier( "http-download-function" )
+  private DownloadFunction downloadFunction;
+  @Autowired
+  @Qualifier( "hdp-rest-strategy" )
+  private SearchStrategy searchStrategy;
   private static final String HTTP_POSTFIX = ":8080/api/v1/";
   private static final FileExtractingService.ExtractFormats EXTRACT_FORMATS = FileExtractingService.ExtractFormats.TAR;
 
-  public HDPDownloadPlan( @Autowired @Qualifier( "http-download-function" ) DownloadFunction downloadFunction,
-                          @Autowired @Qualifier( "hdp-rest-strategy" ) SearchStrategy searchStrategy ) {
-    super( downloadFunction, searchStrategy );
+  @Override public DownloadConfigsCondition downloadConfigs( String hostName, String destPrefix,
+                                                             DownloadConfigsCondition downloadConfigsCondition ) {
+    setDownloadFunction( this.downloadFunction );
+    setupSearchStrategies( this.searchStrategy );
+    return super.downloadConfigs( hostName, destPrefix, downloadConfigsCondition );
   }
 
   protected LoadPathConfig createLoadPathConfig( String hostName, String destPrefix ) {

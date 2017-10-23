@@ -8,10 +8,20 @@ public class CommonUtilHolder {
   private static HttpCommonUtil httpCommonUtil;
   private static SshCommonUtil sshCommonUtil;
 
+  //  @Autowired
+  //  public CommonUtilHolder( HttpCommonUtil httpCommonUtil, SshCommonUtil sshCommonUtil ) {
+  //    CommonUtilHolder.httpCommonUtil = httpCommonUtil;
+  //    CommonUtilHolder.sshCommonUtil = sshCommonUtil;
+  //  }
+
   @Autowired
-  public CommonUtilHolder( HttpCommonUtil httpCommonUtil, SshCommonUtil sshCommonUtil ) {
-    CommonUtilHolder.httpCommonUtil = httpCommonUtil;
+  public void setSshCommonUtil( SshCommonUtil sshCommonUtil ) {
     CommonUtilHolder.sshCommonUtil = sshCommonUtil;
+  }
+
+  @Autowired
+  public void setHttpCommonUtil( HttpCommonUtil httpCommonUtil ) {
+    CommonUtilHolder.httpCommonUtil = httpCommonUtil;
   }
 
   public static HttpCommonUtil httpCommonUtilInstance() {

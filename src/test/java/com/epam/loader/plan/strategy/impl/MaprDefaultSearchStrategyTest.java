@@ -11,7 +11,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class MaprDefaultSearchStrategyTest {
-  @Test(expected = StrategyException.class)
+  @Test( expected = StrategyException.class )
   public void resolveCommandResultWhenCommandResultIsEmptyStringShouldRaiseStrategyException() throws Exception {
     MaprDefaultSearchStrategy maprDefaultSearchStrategy = new MaprDefaultSearchStrategy();
 
@@ -22,20 +22,23 @@ public class MaprDefaultSearchStrategyTest {
   public void resolveCommandResultForHDFSWhenCommandResultNotEmptyShouldModifyDownloadableFileList() throws Exception {
     MaprDefaultSearchStrategy maprDefaultSearchStrategy = new MaprDefaultSearchStrategy();
 
-    List<DownloadableFile> actualDownloadableFiles = maprDefaultSearchStrategy.resolveCommandResult( "Hadoop 2.7.0-mapr-1607\n/opt/mapr",
-      Collections.singletonList( new DownloadableFile( DownloadableFileConstants.ServiceName.HDFS,
-        Collections.singletonList( DownloadableFileConstants.ServiceFileName.HDFS ) ) ) );
+    List<DownloadableFile> actualDownloadableFiles =
+      maprDefaultSearchStrategy.resolveCommandResult( "Hadoop 2.7.0-mapr-1607\n/opt/mapr",
+        Collections.singletonList( new DownloadableFile( DownloadableFileConstants.ServiceName.HDFS,
+          Collections.singletonList( DownloadableFileConstants.ServiceFileName.HDFS ) ) ) );
 
-    Assert.assertEquals( "/opt/mapr/hadoop/hadoop-2.7.0/etc/hadoop/", actualDownloadableFiles.get( 0 ).getDownloadPath() );
+    Assert
+      .assertEquals( "/opt/mapr/hadoop/hadoop-2.7.0/etc/hadoop/", actualDownloadableFiles.get( 0 ).getDownloadPath() );
   }
 
   @Test
   public void resolveCommandResultForHBASEWhenCommandResultNotEmptyShouldModifyDownloadableFileList() throws Exception {
     MaprDefaultSearchStrategy maprDefaultSearchStrategy = new MaprDefaultSearchStrategy();
 
-    List<DownloadableFile> actualDownloadableFiles = maprDefaultSearchStrategy.resolveCommandResult( "hbase-1.1.1\n/opt/mapr",
-      Collections.singletonList( new DownloadableFile( DownloadableFileConstants.ServiceName.HBASE,
-        Collections.singletonList( DownloadableFileConstants.ServiceFileName.HBASE ) ) ) );
+    List<DownloadableFile> actualDownloadableFiles =
+      maprDefaultSearchStrategy.resolveCommandResult( "hbase-1.1.1\n/opt/mapr",
+        Collections.singletonList( new DownloadableFile( DownloadableFileConstants.ServiceName.HBASE,
+          Collections.singletonList( DownloadableFileConstants.ServiceFileName.HBASE ) ) ) );
 
     Assert.assertEquals( "/opt/mapr/hbase/hbase-1.1.1/conf/", actualDownloadableFiles.get( 0 ).getDownloadPath() );
   }
@@ -44,9 +47,10 @@ public class MaprDefaultSearchStrategyTest {
   public void resolveCommandResultForHIVEWhenCommandResultNotEmptyShouldModifyDownloadableFileList() throws Exception {
     MaprDefaultSearchStrategy maprDefaultSearchStrategy = new MaprDefaultSearchStrategy();
 
-    List<DownloadableFile> actualDownloadableFiles = maprDefaultSearchStrategy.resolveCommandResult( "hive-1.2\n/opt/mapr",
-      Collections.singletonList( new DownloadableFile( DownloadableFileConstants.ServiceName.HIVE,
-        Collections.singletonList( DownloadableFileConstants.ServiceFileName.HIVE ) ) ) );
+    List<DownloadableFile> actualDownloadableFiles =
+      maprDefaultSearchStrategy.resolveCommandResult( "hive-1.2\n/opt/mapr",
+        Collections.singletonList( new DownloadableFile( DownloadableFileConstants.ServiceName.HIVE,
+          Collections.singletonList( DownloadableFileConstants.ServiceFileName.HIVE ) ) ) );
 
     Assert.assertEquals( "/opt/mapr/hive/hive-1.2/conf/", actualDownloadableFiles.get( 0 ).getDownloadPath() );
   }
@@ -62,7 +66,8 @@ public class MaprDefaultSearchStrategyTest {
   public void extractHadoopVersionFromCommandResultWhenCommandResultContainsMaprPrefixShouldReturnHadoopVersion() {
     MaprDefaultSearchStrategy maprDefaultSearchStrategy = new MaprDefaultSearchStrategy();
 
-    Assert.assertEquals( "2.7.0", maprDefaultSearchStrategy.extractHadoopVersionFromCommandResult( "Hadoop 2.7.0-mapr-1607" ) );
+    Assert.assertEquals( "2.7.0",
+      maprDefaultSearchStrategy.extractHadoopVersionFromCommandResult( "Hadoop 2.7.0-mapr-1607" ) );
   }
 
   @Test
@@ -90,6 +95,7 @@ public class MaprDefaultSearchStrategyTest {
   public void extractHbaseHomeFromCommandResultWhenCommandResultContainsHbasePrefixShouldReturnHadoopVersion() {
     MaprDefaultSearchStrategy maprDefaultSearchStrategy = new MaprDefaultSearchStrategy();
 
-    Assert.assertEquals( "hbase-1.1.1", maprDefaultSearchStrategy.extractHbaseHomeDirFromCommandResult( "hbase-1.1.1" ) );
+    Assert
+      .assertEquals( "hbase-1.1.1", maprDefaultSearchStrategy.extractHbaseHomeDirFromCommandResult( "hbase-1.1.1" ) );
   }
 }

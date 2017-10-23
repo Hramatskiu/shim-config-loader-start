@@ -10,6 +10,7 @@ import com.epam.loader.plan.plan.DownloadPlan;
 import com.epam.loader.plan.strategy.SearchStrategy;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -17,7 +18,8 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-@Component( "ssh-download-function" )
+@Component()
+@Qualifier( "ssh-download-function" )
 public class SshDownloadFunction extends DownloadFunction {
   @Autowired
   private SshDownloadService downloadService;
