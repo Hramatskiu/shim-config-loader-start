@@ -14,7 +14,7 @@ import java.io.IOException;
 
 public class ShimDependentConfigurator {
   public static void configureShimProperties( ModifierConfiguration modifierConfiguration,
-                                              EmrCredentials emrCredentials ) {
+                                              EmrCredentials emrCredentials, String namedClusterName ) {
     if ( System.getProperty( "os.name" ).startsWith( "Windows" ) ) {
       AddCrossPlatform addCrossPlatform = new AddCrossPlatform();
       addCrossPlatform.addCrossPlatform( modifierConfiguration.getPathToShim() + File.separator + "mapred-site.xml" );
@@ -40,6 +40,6 @@ public class ShimDependentConfigurator {
       }
     }
 
-    NamedClusterCreator.createNamedCluster( modifierConfiguration );
+    NamedClusterCreator.createNamedCluster( modifierConfiguration, namedClusterName );
   }
 }

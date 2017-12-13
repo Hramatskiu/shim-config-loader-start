@@ -1,7 +1,9 @@
 package com.epam.shim.configurator.util;
 
 import com.epam.loader.plan.manager.LoadConfigsManager;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.pentaho.di.core.Const;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,19 +11,39 @@ import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.FileAttribute;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
+import java.util.HashSet;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 public class CopyDriversUtil {
   final static Logger logger = Logger.getLogger( CopyDriversUtil.class );
 
   private static String rootUtilityFolder;
 
+  public static String createDestConfigPath( String destFolder ) {
+    try {
+      createConfigPropertiesFile( getPathToSaveConfigs( destFolder ) );
+      return getPathToSaveConfigs( destFolder );
+    } catch ( IOException e ) {
+      logger.error( "Can't create/get dest folder - " + Const.getUserHomeDirectory() + ".pentaho" + File.separator
+        + "metastore" + File.separator + "pentaho" + File.separator + "NamedCluster" + File.separator + "Configs"
+        + File.separator + destFolder, e );
+    }
+
+    return StringUtils.EMPTY;
+  }
+
   public static void copyAllDrivers( String pathToShim, LoadConfigsManager.ClusterType clusterType ) {
     if ( clusterType.equals( LoadConfigsManager.ClusterType.CDH ) ) {
       copyImpalaSimbaDriver( pathToShim );
     }
     copyMySqlDriver( pathToShim );
-    copySparkSqlDriver( pathToShim );
+    if ( clusterType.equals( LoadConfigsManager.ClusterType.HDP ) ) {
+      copySparkSqlDriver( pathToShim );
+    }
   }
 
   //Copy impala simba driver to appropriate place
@@ -46,26 +68,47 @@ public class CopyDriversUtil {
   //Copy mysql driver to appropriate place
   public static void copyMySqlDriver( String pathToShimLocation ) {
     try {
-      Path mysqlDriverPath = findFileInThisUtilityFolder( "mysql-connector-java-.+?-bin.jar" );
+      Path mysqlDriverPath = findFileInThisUtilityFolder( "mysql-connector-java-.+?.jar" );
       if ( Files.exists( mysqlDriverPath ) ) {
         Path pathToShim = Paths.get( pathToShimLocation );
         if ( pathToShim.getParent().getParent().getParent().getParent().getFileName().toString().
           equalsIgnoreCase( "data-integration" ) ) {
-          Files.copy( mysqlDriverPath, Paths.get( pathToShim.getParent().getParent().getParent().getParent()
-            + File.separator + "lib" + File.separator + mysqlDriverPath.getFileName() ) );
-          logger.info( "MySQL Driver copy successful to " + Paths.get( pathToShim.
-            getParent().getParent().getParent().getParent()
-            + File.separator + "lib" + File.separator + mysqlDriverPath.getFileName() ) );
+          try {
+            Files.copy( mysqlDriverPath, Paths.get( pathToShim.getParent().getParent().getParent().getParent()
+              + File.separator + "lib" + File.separator + mysqlDriverPath.getFileName() ) );
+            logger.info( "MySQL Driver copy successful to " + Paths.get( pathToShim.
+              getParent().getParent().getParent().getParent()
+              + File.separator + "lib" + File.separator + mysqlDriverPath.getFileName() ) );
+          } catch ( NoSuchElementException nse ) {
+            logger.warn( "MySQL Driver was not found in ShimConfig folder." );
+          } catch ( FileAlreadyExistsException ee ) {
+            logger.info( "MySQL driver already exists in the destination folder" );
+          } catch ( IOException e ) {
+            logger.error( "IOexception while copying MySQL driver" + e );
+          } catch ( Exception e ) {
+            logger.error( e );
+          }
+        }
+        if ( pathToShim.getParent().getParent().getParent().getParent().getParent().getFileName().toString().
+          equalsIgnoreCase( "design-tools" ) ) {
+          Files.copy( mysqlDriverPath,
+            Paths.get( pathToShim.getParent().getParent().getParent().getParent().getParent().getParent()
+              + File.separator + "server" + File.separator + "pentaho-server" + File.separator + "tomcat"
+              + File.separator + "lib" + File.separator + mysqlDriverPath.getFileName() ) );
+          logger.info( "MySQL Driver copy successful to " + Paths
+            .get( pathToShim.getParent().getParent().getParent().getParent().getParent().getParent()
+              + File.separator + "server" + File.separator + "pentaho-server" + File.separator + "tomcat"
+              + File.separator + "lib" + File.separator + mysqlDriverPath.getFileName() ) );
         }
         if ( pathToShim.getParent().getParent().getParent().getParent().getFileName().toString().
           equalsIgnoreCase( "kettle" ) ) {
           Files.copy( mysqlDriverPath, Paths.get( pathToShim.getParent().getParent().getParent().getParent().getParent()
             .getParent().getParent() + File.separator + "tomcat" + File.separator + "lib"
             + File.separator + mysqlDriverPath.getFileName() ) );
-          logger.info( "MySQL Driver copy successful to " +
-            Paths.get( pathToShim.getParent().getParent().getParent().getParent().getParent()
-              .getParent().getParent() + File.separator + "tomcat" + File.separator + "lib"
-              + File.separator + mysqlDriverPath.getFileName() ) );
+          logger.info( "MySQL Driver copy successful to "
+            + Paths.get( pathToShim.getParent().getParent().getParent().getParent().getParent()
+            .getParent().getParent() + File.separator + "tomcat" + File.separator + "lib"
+            + File.separator + mysqlDriverPath.getFileName() ) );
         }
       }
     } catch ( NoSuchElementException nse ) {
@@ -116,6 +159,41 @@ public class CopyDriversUtil {
     } catch ( Exception use ) {
       logger.error( use );
     }
+  }
+
+  private static String createConfigPropertiesFile( String path ) throws IOException {
+    if ( !Files.exists( Paths.get( path + File.separator + "config.properties" ) ) ) {
+      Files.createFile( Paths.get( path + File.separator + "config.properties" ) );
+    }
+
+    return path + File.separator + "config.properties";
+  }
+
+  private static String getPathToSaveConfigs( String destFolder ) throws IOException {
+    Path pathToSave = Paths.get( Const.getUserHomeDirectory() + File.separator + ".pentaho" + File.separator
+      + "metastore" + File.separator + "pentaho" + File.separator + "NamedCluster" + File.separator + "Configs"
+      + File.separator + destFolder );
+
+    if ( !Files.exists( pathToSave ) ) {
+      Files.createDirectory( pathToSave );
+    }
+
+    return pathToSave.toAbsolutePath().toString();
+  }
+
+  private static FileAttribute create777FileAttribute() {
+    Set<PosixFilePermission> filePermissions = new HashSet<>();
+    filePermissions.add( PosixFilePermission.OWNER_READ );
+    filePermissions.add( PosixFilePermission.OWNER_WRITE );
+    filePermissions.add( PosixFilePermission.OWNER_EXECUTE );
+    filePermissions.add( PosixFilePermission.GROUP_READ );
+    filePermissions.add( PosixFilePermission.GROUP_WRITE );
+    filePermissions.add( PosixFilePermission.GROUP_EXECUTE );
+    filePermissions.add( PosixFilePermission.OTHERS_READ );
+    filePermissions.add( PosixFilePermission.OTHERS_WRITE );
+    filePermissions.add( PosixFilePermission.OTHERS_EXECUTE );
+
+    return PosixFilePermissions.asFileAttribute( filePermissions );
   }
 
   private static void copyDriverFileToShimLib( String driverFile, String pathToShim ) throws Exception {

@@ -14,12 +14,12 @@ import java.io.File;
 public class NamedClusterCreator {
   private static final Logger logger = Logger.getLogger( NamedClusterCreator.class );
 
-  public static void createNamedCluster( ModifierConfiguration modifierConfiguration ) {
+  public static void createNamedCluster( ModifierConfiguration modifierConfiguration, String namedClusterName ) {
     NamedClusterManager namedClusterManager = NamedClusterManager.getInstance();
     try {
-      logger.info( "Start setup named cluster!" );
+      logger.info( "Start setup named cluster with name - " + namedClusterName );
       NamedCluster namedCluster = new NamedCluster();
-      setupNamedCluster( namedCluster, modifierConfiguration );
+      setupNamedCluster( namedCluster, modifierConfiguration, namedClusterName );
       namedClusterManager
         .create( namedCluster, new XmlMetaStore( System.getProperty( "user.home" ) + File.separator + ".pentaho" ) );
     } catch ( MetaStoreException e ) {
@@ -27,8 +27,10 @@ public class NamedClusterCreator {
     }
   }
 
-  private static void setupNamedCluster( NamedCluster namedCluster, ModifierConfiguration modifierConfiguration ) {
-    namedCluster.setName( modifierConfiguration.getHosts().split( "," )[ 0 ] );
+  private static void setupNamedCluster( NamedCluster namedCluster, ModifierConfiguration modifierConfiguration,
+                                         String namedClusterName ) {
+    namedCluster.setName( namedClusterName != null && !namedClusterName.isEmpty()
+      ? namedClusterName : modifierConfiguration.getHosts().split( "," )[ 0 ] );
 
     if ( !modifierConfiguration.getClusterType().equals( LoadConfigsManager.ClusterType.MAPR ) ) {
       if ( !modifierConfiguration.isSecure() ) {

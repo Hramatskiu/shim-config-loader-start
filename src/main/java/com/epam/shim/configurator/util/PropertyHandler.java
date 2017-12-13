@@ -36,8 +36,6 @@ public class PropertyHandler {
 
   public static void setProperty( String file, String property, String value ) {
     try ( InputStream inputStream = new FileInputStream( file ) ) {
-      //            System.out.println( "property \"" + property + "\" is trying to set to value \"" + value + "\" in
-      // file \"" + file + "\"" );
       PropertiesConfiguration prop = new PropertiesConfiguration();
       prop.load( inputStream );
       prop.setProperty( property, value );
@@ -50,7 +48,6 @@ public class PropertyHandler {
       }
     } catch ( IOException | ConfigurationException ex ) {
       logger.error( "IOException: " + ex );
-      //ex.printStackTrace( );
     }
   }
 }

@@ -4,6 +4,7 @@ import com.epam.kerberos.HadoopKerberosUtil;
 import com.epam.loader.config.credentials.HttpCredentials;
 import com.epam.loader.config.credentials.Krb5Credentials;
 import com.epam.loader.config.credentials.SshCredentials;
+import com.epam.shim.configurator.Krb5Configurator;
 import com.epam.spring.security.authenticate.impl.BaseConfigLoadAuthentication;
 import com.epam.spring.security.authenticate.impl.ConfigLoadCredentials;
 import org.apache.http.auth.AuthScope;
@@ -13,6 +14,7 @@ import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.config.AuthSchemes;
 import org.apache.http.client.params.AuthPolicy;
 import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.log4j.Logger;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
@@ -27,6 +29,8 @@ import java.util.List;
 
 @Component
 public class AutheticationManagerImpl implements AuthenticationManager {
+  private static final Logger logger = Logger.getLogger( AutheticationManagerImpl.class );
+
   public Authentication authenticate( Authentication auth ) throws AuthenticationException {
     if ( auth instanceof ConfigLoadCredentials && auth.isAuthenticated() ) {
       return auth;
@@ -43,15 +47,11 @@ public class AutheticationManagerImpl implements AuthenticationManager {
     throws AuthenticationException {
     ConfigLoadCredentials configLoadCredentials = new ConfigLoadCredentials();
 
-    if ( !authentication.getKrb5Credentials().getUsername().isEmpty() ) {
-      loginWithKerberos( authentication.getKrb5Credentials() );
-    }
-
     configLoadCredentials
       .setCredentialsProvider( createHttpCredentialsProvider( authentication.getHttpCredentials() ) );
     configLoadCredentials.setAuthShemes( createAuthShemesList() );
     configLoadCredentials.setSshCredentials( createSshCredentials( authentication.getSshCredentials() ) );
-    configLoadCredentials.setKerberosAuth( !authentication.getKrb5Credentials().getUsername().isEmpty() );
+    configLoadCredentials.setKerberosAuth( loginWithKerberos( authentication.getKrb5Credentials() ) );
 
     // Necessary?
     configLoadCredentials.setAuthenticated( true );
@@ -90,17 +90,32 @@ public class AutheticationManagerImpl implements AuthenticationManager {
     return authShemes;
   }
 
-  private void loginWithKerberos( Krb5Credentials krb5Credentials ) throws AuthenticationException {
-    try {
-      if ( krb5Credentials.getKeytabLocation() != null && !krb5Credentials.getKeytabLocation().isEmpty() ) {
-        HadoopKerberosUtil.doLoginWithKeytab( krb5Credentials.getUsername(), krb5Credentials.getKeytabLocation() );
-      } else {
-        HadoopKerberosUtil
-          .doLoginWithPrincipalAndPassword( krb5Credentials.getUsername(), krb5Credentials.getPassword() );
+  private boolean loginWithKerberos( Krb5Credentials krb5Credentials ) throws AuthenticationException {
+    String krb5Location = Krb5Configurator.getKrb5LocalPath();
+
+    if ( !krb5Location.isEmpty() && !krb5Credentials.getUsername().isEmpty() ) {
+      System.setProperty( "java.security.krb5.conf", krb5Location );
+      logger.info(
+        "Keberos authentication from krb5 file - " + krb5Location + " . With credentials: username - " + krb5Credentials
+          .getUsername()
+          + " password - " + krb5Credentials.getPassword() );
+      try {
+        if ( krb5Credentials.getKeytabLocation() != null && !krb5Credentials.getKeytabLocation().isEmpty() ) {
+          HadoopKerberosUtil.doLoginWithKeytab( krb5Credentials.getUsername(), krb5Credentials.getKeytabLocation() );
+        } else {
+          HadoopKerberosUtil
+            .doLoginWithPrincipalAndPassword( krb5Credentials.getUsername(), krb5Credentials.getPassword() );
+        }
+
+        return true;
+      } catch ( IOException | LoginException ex ) {
+        throw new BadCredentialsException( "Bad kerberos credentials", ex );
       }
-    } catch ( IOException | LoginException ex ) {
-      throw new BadCredentialsException( "Bad kerberos credentials", ex );
     }
+
+    logger.info( "Keberos auth unnecessary. Krb5 location - " + krb5Location );
+
+    return false;
   }
 
   private SshCredentials createSshCredentials( SshCredentials sshCredentials ) throws AuthenticationException {

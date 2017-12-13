@@ -34,9 +34,10 @@ public class ModifyPluginConfigProperties {
     String configPropertiesFile = modifierConfiguration.getPathToShim() + File.separator + "config.properties";
 
     if ( modifierConfiguration.getDfsInstallDir() != null && !"".equals( modifierConfiguration.getDfsInstallDir() ) ) {
-      PropertyHandler.setProperty( pluginPropertiesFile, "pmr.kettle.dfs.install.dir",
+      PropertyHandler.setProperty( configPropertiesFile, "pmr.kettle.dfs.install.dir",
         "/opt/pentaho/mapreduce_" + modifierConfiguration.getDfsInstallDir() );
     }
+
     PropertyHandler.setProperty( pluginPropertiesFile, "active.hadoop.configuration", shimFolder );
 
     if ( !modifierConfiguration.getClusterType().equals( LoadConfigsManager.ClusterType.EMR ) ) {
@@ -67,6 +68,7 @@ public class ModifyPluginConfigProperties {
       setEmrSecureProperties( modifierConfiguration.getPathToShim(),
         emrCredentials.getSecretKey(), emrCredentials.getAccessKey() );
       setEmrFsImpl( modifierConfiguration.getPathToShim() );
+      removeEmrCodecs( modifierConfiguration.getPathToShim() );
     }
   }
 
@@ -100,7 +102,10 @@ public class ModifyPluginConfigProperties {
   private void addMaprClasspath( String configPropertiesFile, String pathToShim ) {
     if ( System.getProperty( "os.name" ).startsWith( "Windows" ) ) {
       String maprHome = getMaprHome();
-      if ( CheckingParamsUtil.checkParamsWithNullAndEmpty( maprHome ) ) {
+      if ( CheckingParamsUtil.checkParamsWithNullAndEmpty( maprHome )
+        && Files.exists( Paths.get(
+        maprHome + File.separator + "hadoop" + File.separator + findMaprHadoopHome( maprHome )
+          + "\\bin\\hadoop.cmd" ) ) ) {
         String hadoopClasspath = LocalProccessCommandExecutor
           .executeCommand(
             "cmd /c %MAPR_HOME%\\hadoop\\" + findMaprHadoopHome( maprHome ) + "\\bin\\hadoop.cmd classpath" );
@@ -118,13 +123,15 @@ public class ModifyPluginConfigProperties {
       }
     } else if ( System.getProperty( "os.name" ).startsWith( "Linux" ) ) {
       String maprHome = "/opt/mapr";
-      String hadoopClasspath = LocalProccessCommandExecutor
-        .executeCommand( "/opt/mapr/hadoop/" + findMaprHadoopHome( maprHome ) + "/bin/hadoop classpath" );
-      hadoopClasspath += "," + maprHome + "/lib" + "," + pathToShim;
-      String modifiedHadoopClasspath =
-        Arrays.stream( hadoopClasspath.split( "," ) ).filter( line -> !line.isEmpty() )
-          .map( line -> line.replace( "*", "" ) ).collect( Collectors.joining( "," ) );
-      PropertyHandler.setProperty( configPropertiesFile, "linux.classpath", modifiedHadoopClasspath );
+      if ( Files.exists( Paths.get( "/opt/mapr/hadoop/" + findMaprHadoopHome( maprHome ) + "/bin/hadoop" ) ) ) {
+        String hadoopClasspath = LocalProccessCommandExecutor
+          .executeCommand( "/opt/mapr/hadoop/" + findMaprHadoopHome( maprHome ) + "/bin/hadoop classpath" );
+        hadoopClasspath += "," + maprHome + "/lib" + "," + pathToShim;
+        String modifiedHadoopClasspath =
+          Arrays.stream( hadoopClasspath.split( "," ) ).filter( line -> !line.isEmpty() )
+            .map( line -> line.replace( "*", "" ) ).collect( Collectors.joining( "," ) );
+        PropertyHandler.setProperty( configPropertiesFile, "linux.classpath", modifiedHadoopClasspath );
+      }
     }
   }
 
@@ -144,10 +151,12 @@ public class ModifyPluginConfigProperties {
 
   @SuppressWarnings( "ConstantConditions" )
   private String findMaprHadoopHome( String maprHome ) {
-    return Arrays.stream( new File( maprHome + File.separator + "hadoop" )
+    return Files.exists( Paths.get( maprHome + File.separator + "hadoop" ) )
+      ? Arrays.stream( new File( maprHome + File.separator + "hadoop" )
       .listFiles( File::isDirectory ) ).map( File::getName )
       .filter( file -> !file.contains( "hadoop-0" ) && file.matches( "hadoop-\\d.*" ) ).findFirst()
-      .orElse( "hadoop-2.7.0" );
+      .orElse( "hadoop-2.7.0" )
+      : StringUtils.EMPTY;
   }
 
   private void configureMaprClient( boolean isSecure, String hosts, String pathToMapredFile ) {
@@ -250,10 +259,22 @@ public class ModifyPluginConfigProperties {
       .addPropertyToFile( pathToShim + File.separator + "core-site.xml", "fs.s3n.awsAccessKeyId", accessKey );
     XmlPropertyHandler
       .addPropertyToFile( pathToShim + File.separator + "core-site.xml", "fs.s3n.awsSecretAccessKey", secretKey );
-    XmlPropertyHandler
-      .addPropertyToFile( pathToShim + File.separator + "core-site.xml", "fs.s3a.access.key", accessKey );
-    XmlPropertyHandler
-      .addPropertyToFile( pathToShim + File.separator + "core-site.xml", "fs.s3a.secret.key", secretKey );
+    if ( XmlPropertyHandler.readXmlPropertyValue( pathToShim + File.separator + "core-site.xml", "fs.s3a.access.key" )
+      != null ) {
+      XmlPropertyHandler
+        .modifyPropertyInFile( pathToShim + File.separator + "core-site.xml", "fs.s3a.access.key", accessKey );
+    } else {
+      XmlPropertyHandler
+        .addPropertyToFile( pathToShim + File.separator + "core-site.xml", "fs.s3a.access.key", accessKey );
+    }
+    if ( XmlPropertyHandler.readXmlPropertyValue( pathToShim + File.separator + "core-site.xml", "fs.s3a.secret.key" )
+      != null ) {
+      XmlPropertyHandler
+        .modifyPropertyInFile( pathToShim + File.separator + "core-site.xml", "fs.s3a.secret.key", secretKey );
+    } else {
+      XmlPropertyHandler
+        .addPropertyToFile( pathToShim + File.separator + "core-site.xml", "fs.s3a.secret.key", secretKey );
+    }
   }
 
   private void setEmrFsImpl( String pathToShim ) {
@@ -261,7 +282,19 @@ public class ModifyPluginConfigProperties {
       "fs.s3.impl", "org.apache.hadoop.fs.s3.S3FileSystem" );
     XmlPropertyHandler.modifyPropertyInFile( pathToShim + File.separator + "core-site.xml",
       "fs.s3n.impl", "org.apache.hadoop.fs.s3native.NativeS3FileSystem" );
-    XmlPropertyHandler.modifyPropertyInFile( pathToShim + File.separator + "core-site.xml",
-      "fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem" );
+    if ( XmlPropertyHandler.readXmlPropertyValue( pathToShim + File.separator + "core-site.xml", "fs.s3a.impl" )
+      != null ) {
+      XmlPropertyHandler.modifyPropertyInFile( pathToShim + File.separator + "core-site.xml",
+        "fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem" );
+    } else {
+      XmlPropertyHandler.addPropertyToFile( pathToShim + File.separator + "core-site.xml",
+        "fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem" );
+    }
+  }
+
+  private void removeEmrCodecs( String pathToShim ) {
+    XmlPropertyHandler.deletePropertyInFile( pathToShim + File.separator + "core-site.xml", "io.compression.codecs" );
+    XmlPropertyHandler
+      .deletePropertyInFile( pathToShim + File.separator + "core-site.xml", "io.compression.codec.lzo.class" );
   }
 }

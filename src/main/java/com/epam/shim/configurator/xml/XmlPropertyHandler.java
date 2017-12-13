@@ -25,9 +25,7 @@ public class XmlPropertyHandler {
 
   public static String readXmlPropertyValue( String pathToFile, String property ) {
     // Read *-site.xml file and return property value, return null if property was not found
-
     try {
-      //FileCommonUtil.deleteCommentsFromXmlFile( pathToFile );
       NodeList list = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse( pathToFile )
         .getElementsByTagName( "property" );
       for ( int i = 0; i < list.getLength(); i++ ) {
@@ -61,6 +59,7 @@ public class XmlPropertyHandler {
       DOMSource source = new DOMSource( doc );
       StreamResult result = new StreamResult( new File( pathToFile ) );
       transformer.transform( source, result );
+      logger.info( "Add property - " + name + " value -  " + value + " . To file - " + pathToFile );
     } catch ( ParserConfigurationException | TransformerException | IOException | SAXException pce ) {
       pce.printStackTrace();
     }
@@ -85,6 +84,32 @@ public class XmlPropertyHandler {
       DOMSource source = new DOMSource( doc );
       StreamResult result = new StreamResult( new File( pathToFile ) );
       transformer.transform( source, result );
+      logger.info( "Modify property - " + name + " value -  " + value + " . To file - " + pathToFile );
+    } catch ( ParserConfigurationException | IOException | SAXException | TransformerException pce ) {
+      logger.error( pce );
+    }
+  }
+
+  public static void deletePropertyInFile( String pathToFile, String name ) {
+    try {
+      Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse( pathToFile );
+      NodeList list = doc.getElementsByTagName( "property" );
+      for ( int i = 0; i < list.getLength(); i++ ) {
+        Node node = list.item( i );
+
+        int itemNumber = findPropertyIndex( node );
+        if ( itemNumber != -1 && name
+          .equals( node.getChildNodes().item( itemNumber ).getFirstChild().getNodeValue() ) ) {
+          doc.getElementsByTagName( "configuration" ).item( 0 ).removeChild( node );
+        }
+      }
+
+      Transformer transformer = TransformerFactory.newInstance().newTransformer();
+      transformer.setOutputProperty( OutputKeys.INDENT, "yes" );
+      DOMSource source = new DOMSource( doc );
+      StreamResult result = new StreamResult( new File( pathToFile ) );
+      transformer.transform( source, result );
+      logger.info( "Remove property - " + name + " . From file - " + pathToFile );
     } catch ( ParserConfigurationException | IOException | SAXException | TransformerException pce ) {
       logger.error( pce );
     }
@@ -121,5 +146,4 @@ public class XmlPropertyHandler {
 
     return i;
   }
-
 }

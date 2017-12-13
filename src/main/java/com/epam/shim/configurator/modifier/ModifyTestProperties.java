@@ -321,7 +321,7 @@ public class ModifyTestProperties extends BaseSecurityContextHandler {
         // todo: add try/catch to check if this file exists
         String filename = Files.find( Paths.get( pathToShim + File.separator + "lib" ), 1,
           ( p, bfa ) -> bfa.isRegularFile() && p.getFileName().toString()
-            .matches( "pentaho-hadoop-shims-.+?-security-.+?\\.jar" ) ).findFirst()
+            .matches( "pentaho-hadoop-shims-.*-security-.*\\.jar" ) ).findFirst()
           .get().toAbsolutePath().normalize().toUri().toString();
 
         PropertyHandler.setProperty( pathToTestProperties, "sqoop_secure_libjar_path", filename );

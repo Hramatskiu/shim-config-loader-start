@@ -17,6 +17,7 @@ public class Profile {
   private String name;
   private EmrCredentials emrCredentials;
   private String pathToTestProperties;
+  private String namedClusterName;
 
   public EmrCredentials getEmrCredentials() {
     return emrCredentials;
@@ -29,7 +30,8 @@ public class Profile {
   public Profile( Krb5Credentials krb5Credentials, SshCredentials sshCredentials,
                   HttpCredentials httpCredentials,
                   LoadConfigsManager.ClusterType clusterType, String pathToShim, String dfsInstallDir,
-                  String hosts, String name, EmrCredentials emrCredentials, String pathToTestProperties ) {
+                  String hosts, String name, EmrCredentials emrCredentials, String pathToTestProperties,
+                  String namedClusterName ) {
     this.krb5Credentials = krb5Credentials;
     this.sshCredentials = sshCredentials;
     this.httpCredentials = httpCredentials;
@@ -40,6 +42,7 @@ public class Profile {
     this.name = name;
     this.emrCredentials = emrCredentials;
     this.pathToTestProperties = pathToTestProperties;
+    this.namedClusterName = namedClusterName;
   }
 
   public String getPathToTestProperties() {
@@ -112,5 +115,13 @@ public class Profile {
 
   public void setHosts( String hosts ) {
     this.hosts = hosts;
+  }
+
+  public String getNamedClusterName() {
+    return namedClusterName;
+  }
+
+  public void setNamedClusterName( String namedClusterName ) {
+    this.namedClusterName = namedClusterName;
   }
 }

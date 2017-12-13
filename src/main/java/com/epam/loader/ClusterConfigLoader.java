@@ -8,6 +8,7 @@ import com.epam.spring.config.SpringAppConfig;
 import org.apache.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.security.core.AuthenticationException;
 
 import java.util.concurrent.CompletionException;
 
@@ -36,7 +37,7 @@ public class ClusterConfigLoader {
 
         downloadResult =
           downloadConfigsCondition != null && downloadConfigsCondition.getUnloadedConfigsList().isEmpty();
-      } catch ( CompletionException | ServiceException ex ) {
+      } catch ( CompletionException | ServiceException | AuthenticationException ex ) {
         logger.error( ex );
       }
     }

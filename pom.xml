@@ -6,7 +6,7 @@
 
     <groupId>com.epam</groupId>
     <artifactId>google-guice-start</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0</version>
 
     <properties>
         <hadoop.version>2.7.3</hadoop.version>
@@ -152,7 +152,7 @@
         <dependency>
             <groupId>pentaho</groupId>
             <artifactId>pentaho-big-data-legacy</artifactId>
-            <version>8.0-QAT-328</version>
+            <version>8.0.0.0-1</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.pentaho</groupId>
@@ -319,7 +319,7 @@
         <dependency>
             <groupId>pentaho</groupId>
             <artifactId>metastore</artifactId>
-            <version>8.0-QAT-328</version>
+            <version>8.0.0.0-1</version>
             <exclusions>
                 <exclusion>
                     <groupId>commons-codec</groupId>
@@ -346,175 +346,13 @@
         <dependency>
             <groupId>pentaho-kettle</groupId>
             <artifactId>kettle-core</artifactId>
-            <version>8.0-QAT-328</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>commons-beanutils</groupId>
-                    <artifactId>commons-beanutils</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-codec</groupId>
-                    <artifactId>commons-codec</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-logging</groupId>
-                    <artifactId>commons-logging</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.google.guava</groupId>
-                    <artifactId>guava</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.owasp.encoder</groupId>
-                    <artifactId>encoder</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.xmlgraphics</groupId>
-                    <artifactId>batik-bridge</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.xmlgraphics</groupId>
-                    <artifactId>batik-css</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.xmlgraphics</groupId>
-                    <artifactId>batik-dom</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.xmlgraphics</groupId>
-                    <artifactId>batik-gvt</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.xmlgraphics</groupId>
-                    <artifactId>batik-svg-dom</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.xmlgraphics</groupId>
-                    <artifactId>batik-transcoder</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.xmlgraphics</groupId>
-                    <artifactId>batik-codec</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.xmlgraphics</groupId>
-                    <artifactId>batik-util</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.xmlgraphics</groupId>
-                    <artifactId>batik-ext</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.xmlgraphics</groupId>
-                    <artifactId>batik-xml</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.xmlgraphics</groupId>
-                    <artifactId>batik-anim</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.xmlgraphics</groupId>
-                    <artifactId>batik-parser</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.xmlgraphics</groupId>
-                    <artifactId>batik-script</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.xmlgraphics</groupId>
-                    <artifactId>batik-awt-util</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>xml-apis</groupId>
-                    <artifactId>xml-apis-ext</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-collections</groupId>
-                    <artifactId>commons-collections</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-lang</groupId>
-                    <artifactId>commons-lang</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.httpcomponents</groupId>
-                    <artifactId>httpclient</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.httpcomponents</groupId>
-                    <artifactId>httpcore</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.commons</groupId>
-                    <artifactId>commons-vfs2</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-io</groupId>
-                    <artifactId>commons-io</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-dbcp</groupId>
-                    <artifactId>commons-dbcp</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-pool</groupId>
-                    <artifactId>commons-pool</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.commons</groupId>
-                    <artifactId>commons-compress</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>dom4j</groupId>
-                    <artifactId>dom4j</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.eclipse.jetty</groupId>
-                    <artifactId>jetty-util</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>jug-lgpl</groupId>
-                    <artifactId>jug-lgpl</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.jcraft</groupId>
-                    <artifactId>jsch</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>ognl</groupId>
-                    <artifactId>ognl</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>net.sf.scannotation</groupId>
-                    <artifactId>scannotation</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.wcohen</groupId>
-                    <artifactId>com.wcohen.secondstring</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.javassist</groupId>
-                    <artifactId>javassist</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.samba.jcifs</groupId>
-                    <artifactId>jcifs</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.karaf</groupId>
-                    <artifactId>org.apache.karaf.main</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.codehaus.woodstox</groupId>
-                    <artifactId>wstx-asl</artifactId>
-                </exclusion>
-            </exclusions>
+            <version>8.0.0.0-1</version>
         </dependency>
 
     </dependencies>
 
     <build>
-        <finalName>config-test</finalName>
+        <finalName>shim-config-loader-${project.version}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

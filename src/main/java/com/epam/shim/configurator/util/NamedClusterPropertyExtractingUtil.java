@@ -51,7 +51,7 @@ public class NamedClusterPropertyExtractingUtil {
         "hbase.zookeeper.property.clientPort" );
     }
 
-    return new NamedClusterProperty( zkQuorumRes, zkPort );
+    return new NamedClusterProperty( zkQuorumRes, zkPort != null ? zkPort : "2181" );
   }
 
   public static NamedClusterProperty extractJobTrackerServer( String pathToShim ) {

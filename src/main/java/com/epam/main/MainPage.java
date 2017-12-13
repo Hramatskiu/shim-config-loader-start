@@ -96,6 +96,10 @@ public class MainPage {
   @FXML
   Label kerberosLabel;
   @FXML
+  Label namedClusterNameLabel;
+  @FXML
+  TextField namedClusterNameText;
+  @FXML
   ComboBox<String> clusterType;
   @FXML CheckBox configureMapr;
   @FXML CheckBox downloadKrb5;
@@ -103,6 +107,7 @@ public class MainPage {
 
   private static ClusterConfigLoader clusterConfigLoader;
   private ProfileBuilder profileBuilder;
+  private Thread runningThread;
 
   public static void setClusterConfigLoader( ClusterConfigLoader newClusterConfigLoader ) {
     clusterConfigLoader = newClusterConfigLoader;
@@ -130,6 +135,7 @@ public class MainPage {
     clusterConfigLoader = new ClusterConfigLoader();
     clusterConfigLoader.init();
     initClusterComboBox();
+    runningThread = null;
   }
 
   private void initClusterComboBox() {
@@ -138,6 +144,7 @@ public class MainPage {
     clusterTypes.add( LoadConfigsManager.ClusterType.CDH.toString() );
     clusterTypes.add( LoadConfigsManager.ClusterType.MAPR.toString() );
     clusterTypes.add( LoadConfigsManager.ClusterType.EMR.toString() );
+    clusterTypes.add( LoadConfigsManager.ClusterType.HDI.toString() );
 
     clusterType.getItems().setAll( clusterTypes );
     clusterType.setValue( LoadConfigsManager.ClusterType.HDP.toString() );
@@ -146,7 +153,8 @@ public class MainPage {
   @FXML
   private void loadProfile( ActionEvent event ) {
     try {
-      Profile profile = profileBuilder.buildProfile( profileBuilder.getProfilePath( profiles.getValue().toString() ) );
+      Profile profile = profileBuilder.buildProfile(
+        profileBuilder.getProfilePath( profiles.getValue().toString() + ProfileBuilder.PROFILE_EXTENSION ) );
       pathToSave.setText( profile.getPathToShim() );
       cluster_node_FQDN.setText( profile.getHosts() );
       kerberosUser.setText( profile.getKrb5Credentials().getUsername() );
@@ -162,6 +170,7 @@ public class MainPage {
       emrAccessKey.setText( profile.getEmrCredentials().getAccessKey() );
       pathToTestProperties.setText( profile.getPathToTestProperties() );
       newProfile.setText( profile.getName() );
+      namedClusterNameText.setText( profile.getNamedClusterName() );
     } catch ( IOException e ) {
       e.printStackTrace();
     }
@@ -176,12 +185,14 @@ public class MainPage {
       pathToSave.getText(), dfsInstallDir.getText(),
       cluster_node_FQDN.getText().trim(), newProfile.getText(),
       new EmrCredentials( emrAccessKey.getText(), emrSecretKey.getText() ),
-      pathToTestProperties.getText() );
+      pathToTestProperties.getText(), namedClusterNameText.getText() );
 
     try {
       profileBuilder.saveProfile( profile );
-      if ( !profiles.getItems().contains( profile.getName() + ".properties" ) ) {
-        profiles.getItems().add( profile.getName() + ".properties" );
+      if ( !profiles.getItems().contains( profile.getName() ) ) {
+        profiles.getItems().add( profile.getName() );
+      } else {
+        logger.warn( "Duplicate profile name. Override existing." );
       }
 
     } catch ( IOException e ) {
@@ -219,11 +230,17 @@ public class MainPage {
         break;
       case "CDH":
       case "HDP":
+      case "HDI":
         setVisibilityForPemFileInput( false );
         setVisibilityForAuth( false );
         break;
       default:
     }
+  }
+
+  private void setUpStandartSshFields() {
+    sshUser.setText( "devuser" );
+    sshPassword.setText( "password" );
   }
 
   private void setUpEMRFields() {
@@ -264,7 +281,7 @@ public class MainPage {
       //output.setText( "" );
       buttonStart.setDisable( true );
 
-      Thread thread = new Thread( () -> {
+      runningThread = new Thread( () -> {
         additionalPane();
         boolean isDownloaded = clusterConfigLoader
           .loadConfigs( new LoadConfigs( new HttpCredentials( restUser.getText(), restPassword.getText() ),
@@ -278,20 +295,25 @@ public class MainPage {
               dfsInstallDir.getText(), pathToTestProperties.getText(), false,
               LoadConfigsManager.ClusterType.valueOf( clusterType.getValue() ),
               modifyHosts( cluster_node_FQDN.getText().trim() ), configureMapr.isSelected() ),
-            new EmrCredentials( emrAccessKey.getText(), emrSecretKey.getText() ) );
+            new EmrCredentials( emrAccessKey.getText(), emrSecretKey.getText() ), getNamedClusterName() );
         }
         logger.info( "All done!" );
         buttonStart.setDisable( false );
       } );
 
       try {
-        thread.start();
+        runningThread.start();
       } catch ( Exception ex ) {
         logger.fatal( ex );
         buttonStart.setDisable( false );
       }
 
     }
+  }
+
+  private String getNamedClusterName() {
+    return namedClusterNameText.getText() != null && !namedClusterNameText.getText().isEmpty()
+      ? namedClusterNameText.getText().trim() : cluster_node_FQDN.getText().trim();
   }
 
   private void additionalPane() {
@@ -342,7 +364,7 @@ public class MainPage {
   void buttonOpenPemFileAction( ActionEvent event ) {
     Stage stage = new Stage();
     FileChooser fileChooser = new FileChooser();
-    fileChooser.setTitle( "Choose test.properties file" );
+    fileChooser.setTitle( "Choose .pem file" );
     File file = fileChooser.showOpenDialog( stage );
     if ( file != null ) {
       pathToPemFile.setText( file.getAbsolutePath() );

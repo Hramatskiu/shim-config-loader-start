@@ -24,16 +24,18 @@ public class LoadConfigsManager {
   public LoadConfigsManager( @Autowired @Qualifier( "HDP" ) DownloadPlan hdpDownloadPlan,
                              @Autowired @Qualifier( "CDH" ) DownloadPlan cdhDownloadPlan,
                              @Autowired @Qualifier( "MAPR" ) DownloadPlan maprDownloadPlan,
-                             @Autowired @Qualifier( "EMR" ) DownloadPlan emrDownloadPlan ) {
+                             @Autowired @Qualifier( "EMR" ) DownloadPlan emrDownloadPlan,
+                             @Autowired @Qualifier( "HDI" ) DownloadPlan hdiDownloadPlan ) {
     downloadPlanMap = new HashMap<>();
     downloadPlanMap.put( ClusterType.HDP, hdpDownloadPlan );
     downloadPlanMap.put( ClusterType.CDH, cdhDownloadPlan );
     downloadPlanMap.put( ClusterType.MAPR, maprDownloadPlan );
     downloadPlanMap.put( ClusterType.EMR, emrDownloadPlan );
+    downloadPlanMap.put( ClusterType.HDI, hdiDownloadPlan );
   }
 
   public enum ClusterType {
-    CDH, HDP, MAPR, EMR
+    CDH, HDP, MAPR, EMR, HDI
   }
 
   public DownloadConfigsCondition downloadClientConfigs( ClusterType clusterType, LoadConfigs loadConfigs,

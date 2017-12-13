@@ -18,10 +18,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class ProfileBuilder {
+  public static String PROFILE_EXTENSION = ".properties";
+
   public List<String> loadProfileNames() {
     try {
       return getAllProfilePaths( CopyDriversUtil.getRootUtilityFolder() + File.separator + "profile" ).stream()
-        .map( Path::getFileName ).map( name -> name.toString() ).collect( Collectors.toList() );
+        .map( Path::getFileName ).map( Path::toString )
+        .map( fileName -> fileName.replaceAll( PROFILE_EXTENSION, StringUtils.EMPTY ) ).collect( Collectors.toList() );
     } catch ( IOException e ) {
       throw new RuntimeException( e );
     }
@@ -37,7 +40,8 @@ public class ProfileBuilder {
       extractHosts( profilePath.toAbsolutePath().toString() ),
       extractProfileName( profilePath.toAbsolutePath().toString() ),
       extractEmrCredentials( profilePath.toAbsolutePath().toString() ),
-      extractPathToTestProperties( profilePath.toAbsolutePath().toString() ) );
+      extractPathToTestProperties( profilePath.toAbsolutePath().toString() ),
+      extractNamedClusterName( profilePath.toAbsolutePath().toString() ) );
   }
 
   public Path getProfilePath( String profileName ) throws IOException {
@@ -58,6 +62,7 @@ public class ProfileBuilder {
     saveClusterName( profilePath, profile.getClusterType().toString() );
     saveEmrCredentials( profilePath, profile.getEmrCredentials() );
     savePathToTestProperties( profilePath, profile.getPathToTestProperties() );
+    saveNamedClusterName( profilePath, profile.getNamedClusterName() );
   }
 
   private void savePathToTestProperties( String profilePath, String pathToTestProperties ) {
@@ -105,17 +110,21 @@ public class ProfileBuilder {
     PropertyHandler.setProperty( profilePath, "clusterType", clusterName );
   }
 
+  private void saveNamedClusterName( String profilePath, String namedClusterName ) {
+    PropertyHandler.setProperty( profilePath, "namedClusterName", namedClusterName );
+  }
+
   private String createNewProfilePath( String profileName ) throws IOException {
     if ( !Files.exists( Paths.get(
       CopyDriversUtil.getRootUtilityFolder() + File.separator + "profile" + File.separator + profileName
-        + ".properties" ) ) ) {
+        + PROFILE_EXTENSION ) ) ) {
       Files.createFile( Paths.get(
         CopyDriversUtil.getRootUtilityFolder() + File.separator + "profile" + File.separator + profileName
-          + ".properties" ) );
+          + PROFILE_EXTENSION ) );
     }
 
     return Paths.get( CopyDriversUtil.getRootUtilityFolder() + File.separator + "profile" ).toAbsolutePath().toString()
-      + File.separator + profileName + ".properties";
+      + File.separator + profileName + PROFILE_EXTENSION;
   }
 
   private List<Path> getAllProfilePaths( String profilesFolder ) throws IOException {
@@ -124,7 +133,7 @@ public class ProfileBuilder {
     }
 
     return ( Files.find( Paths.get( profilesFolder ), 1, ( p, bfa ) -> bfa.isRegularFile()
-      && p.getFileName().toString().matches( ".*\\.properties" ) ).collect( Collectors.toList() ) );
+      && p.getFileName().toString().matches( ".*" + PROFILE_EXTENSION ) ).collect( Collectors.toList() ) );
   }
 
   private String extractPathToTestProperties( String pathtoFile ) {
@@ -176,5 +185,9 @@ public class ProfileBuilder {
 
   private String extractProfileName( String pathToFile ) {
     return PropertyHandler.getPropertyFromFile( pathToFile, "name" );
+  }
+
+  private String extractNamedClusterName( String pathToFile ) {
+    return PropertyHandler.getPropertyFromFile( pathToFile, "namedClusterName" );
   }
 }

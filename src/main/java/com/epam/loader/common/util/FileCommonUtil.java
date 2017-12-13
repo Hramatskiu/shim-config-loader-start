@@ -33,6 +33,7 @@ public class FileCommonUtil {
   public static void writeStringToFile( String dest, String input ) throws CommonUtilException {
     try {
       FileUtils.writeStringToFile( new File( dest ), input );
+
       logger.info( "Save - " + dest );
     } catch ( IOException e ) {
       throw new CommonUtilException( e );
