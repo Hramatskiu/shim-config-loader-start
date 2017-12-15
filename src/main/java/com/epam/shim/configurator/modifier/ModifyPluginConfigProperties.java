@@ -34,7 +34,7 @@ public class ModifyPluginConfigProperties {
     String configPropertiesFile = modifierConfiguration.getPathToShim() + File.separator + "config.properties";
 
     if ( modifierConfiguration.getDfsInstallDir() != null && !"".equals( modifierConfiguration.getDfsInstallDir() ) ) {
-      PropertyHandler.setProperty( configPropertiesFile, "pmr.kettle.dfs.install.dir",
+      PropertyHandler.setProperty( pluginPropertiesFile, "pmr.kettle.dfs.install.dir",
         "/opt/pentaho/mapreduce_" + modifierConfiguration.getDfsInstallDir() );
     }
 
