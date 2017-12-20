@@ -1,6 +1,7 @@
 package com.epam.main;
 
 import com.epam.loader.ClusterConfigLoader;
+import com.epam.loader.common.util.CheckingParamsUtil;
 import com.epam.loader.config.credentials.EmrCredentials;
 import com.epam.loader.config.credentials.HttpCredentials;
 import com.epam.loader.config.credentials.Krb5Credentials;
@@ -225,7 +226,7 @@ public class MainPage {
         break;
       case "MAPR":
         setVisibilityForPemFileInput( false );
-        setVisibilityForAuth( true );
+        setVisibilityForAuth( false );
         setUpMAPRFields();
         break;
       case "CDH":
@@ -251,6 +252,8 @@ public class MainPage {
   private void setUpMAPRFields() {
     sshUser.setText( "mapr" );
     sshPassword.setText( "password" );
+    restUser.setText( "mapr" );
+    restPassword.setText( "password" );
   }
 
   private void setVisibilityForAuth( boolean isSshOnly ) {
@@ -284,8 +287,7 @@ public class MainPage {
       runningThread = new Thread( () -> {
         additionalPane();
         boolean isDownloaded = clusterConfigLoader
-          .loadConfigs( new LoadConfigs( new HttpCredentials( restUser.getText(), restPassword.getText() ),
-            createKrb5Configs(),
+          .loadConfigs( new LoadConfigs( createHttpConfigs(), createKrb5Configs(),
             new SshCredentials( sshUser.getText(), sshPassword.getText(), pathToPemFile.getText() ),
             modifyHosts( cluster_node_FQDN.getText().trim() ), pathToSave.getText(),
             LoadConfigsManager.ClusterType.valueOf( clusterType.getValue() ) ) );
@@ -337,6 +339,13 @@ public class MainPage {
     return cluster_node_FQDN.getText().contains( "sn" ) || cluster_node_FQDN.getText().contains( "secn" )
       ? new Krb5Credentials( kerberosUser.getText(), kerberosPassword.getText() )
       : new Krb5Credentials();
+  }
+
+  //Fix for mapr local configure client
+  private HttpCredentials createHttpConfigs() {
+    return CheckingParamsUtil.checkParamsWithNullAndEmpty( restUser.getText(), restPassword.getText() )
+      ? new HttpCredentials( restUser.getText(), restPassword.getText() )
+      : new HttpCredentials( sshUser.getText(), sshPassword.getText() );
   }
 
   private void buttonOpenShimAction() {

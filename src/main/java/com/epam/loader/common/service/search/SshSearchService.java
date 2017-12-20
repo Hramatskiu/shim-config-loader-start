@@ -64,9 +64,9 @@ public class SshSearchService {
                                                                            ExecutorService executorService ) {
     return CompletableFuture.supplyAsync( () -> {
       try {
-        logger.info( "Start search for " + command );
+        logger.info( "Start search for " + command + " on host - " + host );
         String result = askForClientsConfigLocation( host, command );
-        logger.info( "Finish search for " + command );
+        logger.info( "Finish search for " + command + " on host - " + host );
 
         return result;
       } catch ( CommonUtilException e ) {

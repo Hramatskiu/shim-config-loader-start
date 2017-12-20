@@ -5,9 +5,13 @@ import com.epam.loader.common.util.CommonUtilHolder;
 import com.epam.loader.config.credentials.SshCredentials;
 import com.epam.shim.configurator.util.LocalProccessCommandExecutor;
 import com.epam.shim.configurator.xml.XmlPropertyHandler;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.json.JSONException;
+import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
@@ -17,7 +21,7 @@ public class MaprConfigurator {
   public void configureMaprClient( boolean isSecure, String hosts, String pathToMapredFile ) {
     logger.info( "Configure local mapr client!" );
     String[] hostsArray = hosts.split( "," );
-    String configureCommand = getCliCommand() + getConfigureCommand() + hostsArray[ 0 ]
+    String configureCommand = getCliCommand() + getConfigureCommand() + getClusterName( hostsArray[0] )
       + getNodeSetupCommand( isSecure )
       + Arrays.stream( hostsArray ).map( this::createCLDBString ).collect( Collectors.joining( ", " ) )
       + " -RM " + getMaprRMNode( hosts ) + " -HS " + extractMaprHSNode( pathToMapredFile );
@@ -61,5 +65,23 @@ public class MaprConfigurator {
     }
 
     return StringUtils.EMPTY;
+  }
+
+  private String getClusterName( String host ) {
+    try {
+      String dashboardInfo = new String( IOUtils.toByteArray( CommonUtilHolder.httpCommonUtilInstance().createHttpClient()
+        .execute( CommonUtilHolder.httpCommonUtilInstance()
+          .createHttpUriRequest( createMaprRestUriDashboardInfo( host ) ) )
+        .getEntity().getContent() ) );
+      JSONObject obj = new JSONObject( dashboardInfo );
+      return obj.getJSONArray( "data" ).getJSONObject( 0 ).getJSONObject( "cluster" ).getString( "name" );
+    } catch ( IOException | CommonUtilException | JSONException e ) {
+      logger.warn( "Can't connect to mapr rest api to get cluster name. Verify rest api credentials. As name will use - " + host );
+      return host;
+    }
+  }
+
+  private String createMaprRestUriDashboardInfo( String host ) {
+    return "https://" + host + ":8443/rest/dashboard/info";
   }
 }

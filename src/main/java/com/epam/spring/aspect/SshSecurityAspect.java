@@ -18,11 +18,11 @@ public class SshSecurityAspect extends BaseSecurityContextHandler {
   }
 
   @Around( "addSshSecurity()" )
-  public String setHttpSecurityToClientBuilder( ProceedingJoinPoint joinPoint ) throws Throwable {
+  public Object setHttpSecurityToClientBuilder( ProceedingJoinPoint joinPoint ) throws Throwable {
     Object[] args = joinPoint.getArgs();
     setupSecurityArgs( args );
 
-    return (String) joinPoint.proceed( args );
+    return joinPoint.proceed( args );
   }
 
   //Change to dto wrapping

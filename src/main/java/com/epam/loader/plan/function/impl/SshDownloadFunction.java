@@ -33,7 +33,7 @@ public class SshDownloadFunction extends DownloadFunction {
         searchService.searchForConfigsLocation( loadPathConfig.getCompositeHost(),
           downloadConfigsCondition.getUnloadedConfigsList(), searchStrategy ).stream()
           .map( file -> {
-            logger.info( "Start download for - " + file.getServiceName() + " from: " + file.getDownloadPath() );
+            logger.info( "Start download for - " + file.getServiceName() + " from: " + loadPathConfig.getCompositeHost() + "/" + file.getDownloadPath() );
             DownloadPlan.LoadPathConfig copiedLoadPathConfig = copyLoadPathConfig( loadPathConfig );
             copiedLoadPathConfig.setLoadedFiles( file.getFiles() );
 

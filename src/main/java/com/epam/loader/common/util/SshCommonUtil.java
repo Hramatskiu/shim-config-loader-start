@@ -1,6 +1,7 @@
 package com.epam.loader.common.util;
 
 import com.epam.loader.common.delegating.ssh.DelegatingSshSession;
+import com.epam.loader.common.holder.DownloadedFileWrapper;
 import com.epam.loader.config.credentials.SshCredentials;
 import org.springframework.stereotype.Component;
 
@@ -21,6 +22,15 @@ public class SshCommonUtil {
     CommonUtilException {
     try ( DelegatingSshSession sshSession = createDelegationSshSession( sshCredentials, host, port ) ) {
       return sshSession.downloadFile( source );
+    } catch ( IOException ex ) {
+      throw new CommonUtilException( ex );
+    }
+  }
+
+  public DownloadedFileWrapper downloadViaSftpAsFileWrapper( SshCredentials sshCredentials, String host, int port,
+                                                             String source ) throws CommonUtilException {
+    try ( DelegatingSshSession sshSession = createDelegationSshSession( sshCredentials, host, port ) ) {
+      return new DownloadedFileWrapper( sshSession.downloadFileAsByteArray( source ) );
     } catch ( IOException ex ) {
       throw new CommonUtilException( ex );
     }

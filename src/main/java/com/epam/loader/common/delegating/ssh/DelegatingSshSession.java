@@ -1,11 +1,13 @@
 package com.epam.loader.common.delegating.ssh;
 
+import com.epam.loader.common.util.ByteCopierUtil;
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
+import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
 import org.apache.commons.lang.StringUtils;
 
@@ -29,10 +31,12 @@ public class DelegatingSshSession implements Closeable {
       channel = session.openChannel( "sftp" );
       channel.connect();
 
+      SftpATTRS sftpATTRS = ( (ChannelSftp) channel ).stat( sourcePath );
       InputStream in = ( (ChannelSftp) channel ).get( sourcePath );
-      byte[] tmp = new byte[ 10024 ];
+      int size = sftpATTRS.getSize() > 1024 ? 256 : (int) sftpATTRS.getSize();
+      byte[] tmp = new byte[ size ];
       int i;
-      while ( ( i = in.read( tmp, 0, 10024 ) ) > 0 ) {
+      while ( ( i = in.read( tmp, 0, size ) ) > 0 ) {
         commandResult.append( new String( tmp, 0, i ) );
       }
     } catch ( JSchException | IOException | SftpException ex ) {
@@ -44,6 +48,33 @@ public class DelegatingSshSession implements Closeable {
     }
 
     return commandResult.toString();
+  }
+
+  public byte[] downloadFileAsByteArray( String sourcePath ) {
+    byte[] commandResult = null;
+    Channel channel = null;
+
+    try {
+      channel = session.openChannel( "sftp" );
+      channel.connect();
+
+      SftpATTRS sftpATTRS = ( (ChannelSftp) channel ).stat( sourcePath );
+      InputStream in = ( (ChannelSftp) channel ).get( sourcePath );
+      int size = sftpATTRS.getSize() > 1024 ? 256 : (int) sftpATTRS.getSize();
+      byte[] tmp = new byte[ size ];
+      int i;
+      while ( ( i = in.read( tmp, 0, size ) ) > 0 ) {
+        commandResult = ByteCopierUtil.addBytesToArray( commandResult, tmp, i );
+      }
+    } catch ( JSchException | IOException | SftpException ex ) {
+      ex.printStackTrace();
+    } finally {
+      if ( channel != null ) {
+        channel.disconnect();
+      }
+    }
+
+    return commandResult;
   }
 
   public String executeCommand( String command ) {

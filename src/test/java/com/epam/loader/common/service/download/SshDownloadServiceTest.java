@@ -1,5 +1,6 @@
 package com.epam.loader.common.service.download;
 
+import com.epam.loader.common.holder.DownloadedFileWrapper;
 import com.epam.loader.config.credentials.SshCredentials;
 import com.epam.loader.common.util.CommonUtilException;
 import com.epam.loader.common.delegating.executor.DelegatingExecutorService;
@@ -62,9 +63,9 @@ public class SshDownloadServiceTest {
     Mockito.when( CommonUtilHolder.sshCommonUtilInstance() ).thenReturn( sshCommonUtil );
     PowerMockito.doNothing()
       .when( FileCommonUtil.class, "writeStringToFile", Mockito.anyString(), Mockito.anyString() );
-    Mockito.when( sshCommonUtil.downloadViaSftp( Mockito.any( SshCredentials.class ), Mockito.anyString(),
+    Mockito.when( sshCommonUtil.downloadViaSftpAsFileWrapper( Mockito.any( SshCredentials.class ), Mockito.anyString(),
       Mockito.anyInt(), Mockito.anyString() ) )
-      .thenReturn( "some" );
+      .thenReturn( new DownloadedFileWrapper( "some" ) );
     Mockito.when( loadPathConfig.getLoadedFiles() ).thenReturn( Collections.singletonList( "some" ) );
     Mockito.when( loadPathConfig.getCompositeHost() ).thenReturn( "some" );
 

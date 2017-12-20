@@ -3,6 +3,7 @@ package com.epam.shim.configurator.cluster;
 import com.epam.loader.plan.manager.LoadConfigsManager;
 import com.epam.shim.configurator.config.ModifierConfiguration;
 import com.epam.shim.configurator.util.NamedClusterPropertyExtractingUtil;
+import com.epam.spring.security.BaseSecurityContextHandler;
 import org.apache.log4j.Logger;
 import org.pentaho.di.core.namedcluster.NamedClusterManager;
 import org.pentaho.di.core.namedcluster.model.NamedCluster;
@@ -11,7 +12,7 @@ import org.pentaho.metastore.stores.xml.XmlMetaStore;
 
 import java.io.File;
 
-public class NamedClusterCreator {
+public class NamedClusterCreator extends BaseSecurityContextHandler {
   private static final Logger logger = Logger.getLogger( NamedClusterCreator.class );
 
   public static void createNamedCluster( ModifierConfiguration modifierConfiguration, String namedClusterName ) {
@@ -49,8 +50,8 @@ public class NamedClusterCreator {
   }
 
   private static void setSecureParams( NamedCluster namedCluster ) {
-    namedCluster.setHdfsUsername( "devuser" );
-    namedCluster.setHdfsPassword( "password" );
+    namedCluster.setHdfsUsername( getCredentialsFromSecurityContext().getSshCredentials().getUsername() );
+    namedCluster.setHdfsPassword( getCredentialsFromSecurityContext().getSshCredentials().getPassword() );
 
     logger.info( "Set security params - " + namedCluster.getHdfsUsername() + ":" + namedCluster.getHdfsPassword() );
   }

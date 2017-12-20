@@ -11,19 +11,19 @@
   c. Named cluster name - name for creating named cluster, if unset will use first nide as name  
 3. _Security properties_:  
   a. Kerberos - username/password for kerberos auth, if you don't want kerberos wrapping just leave this fields empty  
-  b. REST - username/password for REST auth, use for HDP/CDH/HDI clusters  
+  b. REST - username/password for REST auth, use for HDP/CDH/HDI clusters, use for MAPR only if you want to configure local MAPR client  
   c. SSH - username/password for ssh auth, necessary for all clusters  
   d. EMR keys - public/private keays for EMR, added to core-site.xml
 
 **Profile setup**
 1. _Profile drop box_ - show all saved profiles, put profile file ( ex: chd513.properties ) to /profiles  
 2. _Profile name_ - set profile name, existing profile will be overwritten
-3. Only setup properties are saved to profile
+3. Only setup properties are saved to profile ( checkboxes are not saved )
 
 **Additional setup**
 1. _Download krb5.conf_ - download krb5.conf in 3 places: root tool directory, PENTAHO_JAVA_HOME, JAVA_HOME/ /etc for Linux . If environment variable is absent or user hasn't enough permissions to copy file in this directories file will not be copied  
 For kerberos wrapping will search krb5.conf file in the same sequence
-2. _Configure mapr client_ - will configure local mapr client. Exactly:  
+2. _Configure mapr client_ - will configure local mapr client. You should have local MAPR client installed. Exactly:  
   a. copy ssl_truestore and -site.xml files to mapr client hadoop configs folder  
   b. execute configure.bat with necessary params  
 3. _Copy drivers_ - copy drivers jars mysql to /lib folder others to shim/lib folder
