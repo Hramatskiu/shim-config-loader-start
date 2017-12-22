@@ -331,7 +331,7 @@ public class MainPage {
   }
 
   private String modifyHosts( String host ) {
-    return host.contains( "svqxbdcn6" ) ? host + "," + host.replace( "n1", "n2" )
+    return host.contains( "svqxbdcn" ) ? host + "," + host.replace( "n1", "n2" )
       + "," + host.replace( "n1", "n3" ) : host;
   }
 

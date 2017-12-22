@@ -43,21 +43,22 @@ public class ModifyPluginConfigProperties {
     if ( !modifierConfiguration.getClusterType().equals( LoadConfigsManager.ClusterType.EMR ) ) {
       if ( modifierConfiguration.getClusterType().equals( LoadConfigsManager.ClusterType.MAPR ) ) {
         addMaprClasspath( configPropertiesFile, modifierConfiguration.getPathToShim() );
+        addMaprSecureIdToCoreSiteFile( modifierConfiguration.getHosts().split( "," )[ 0 ].trim(),
+          modifierConfiguration.getPathToShim() + File.separator + "core-site.xml" );
+        setMapRMapreduceMemoryLimits( modifierConfiguration.getPathToShim() );
         if ( modifierConfiguration.isSecure() || modifierConfiguration.getHosts().split( "," )[ 0 ].trim()
           .contains( "sn" )
           || modifierConfiguration.getHosts().split( "," )[ 0 ].trim().contains( "secn" ) ) {
           setMaprSecureConfig( configPropertiesFile );
-          addMaprSecureIdToCoreSiteFile( modifierConfiguration.getHosts().split( "," )[ 0 ].trim(),
-            modifierConfiguration.getPathToShim() + File.separator + "core-site.xml" );
         }
 
         if ( modifierConfiguration.isConfigureMapr() ) {
+          copyMaprConfigFilesToMaprClient( modifierConfiguration.getPathToShim() );
           configureMaprClient(
             modifierConfiguration.isSecure() || modifierConfiguration.getHosts().split( "," )[ 0 ].trim()
               .contains( "sn" ) || modifierConfiguration.getHosts().split( "," )[ 0 ].trim().contains( "secn" ),
             modifierConfiguration.getHosts(),
             modifierConfiguration.getPathToShim() + File.separator + "mapred-site.xml" );
-          copyMaprConfigFilesToMaprClient( modifierConfiguration.getPathToShim() );
         }
 
       } else {
@@ -87,6 +88,12 @@ public class ModifyPluginConfigProperties {
           StandardCopyOption.REPLACE_EXISTING );
         Files.copy( Paths.get( pathToShim + File.separator + "hdfs-site.xml" ),
           Paths.get( getMaprHadoopConfHome( maprHome ) + File.separator + "hdfs-site.xml" ),
+          StandardCopyOption.REPLACE_EXISTING );
+        Files.copy( Paths.get( pathToShim + File.separator + "hbase-site.xml" ),
+          Paths.get( getMaprHadoopConfHome( maprHome ) + File.separator + "hbase-site.xml" ),
+          StandardCopyOption.REPLACE_EXISTING );
+        Files.copy( Paths.get( pathToShim + File.separator + "hive-site.xml" ),
+          Paths.get( getMaprHadoopConfHome( maprHome ) + File.separator + "hive-site.xml" ),
           StandardCopyOption.REPLACE_EXISTING );
         Files.copy( Paths.get( pathToShim + File.separator + "ssl_truststore" ),
           Paths.get( maprHome + File.separator + "conf" + File.separator + "ssl_truststore" ),
@@ -248,6 +255,27 @@ public class ModifyPluginConfigProperties {
           "pentaho.authentication.default.kerberos.password", "" );
       }
     }
+  }
+
+  private void setMapRMapreduceMemoryLimits( String pathToShim ) {
+    if ( XmlPropertyHandler.readXmlPropertyValue( pathToShim + File.separator + "mapred-site.xml", "mapreduce.map.memory.mb" )
+      != null ) {
+      XmlPropertyHandler
+        .modifyPropertyInFile( pathToShim + File.separator + "mapred-site.xml", "mapreduce.map.memory.mb", "4096" );
+    } else {
+      XmlPropertyHandler
+        .addPropertyToFile( pathToShim + File.separator + "mapred-site.xml", "mapreduce.map.memory.mb", "4096" );
+    }
+    if ( XmlPropertyHandler.readXmlPropertyValue( pathToShim + File.separator + "mapred-site.xml", "mapreduce.reduce.memory.mb" )
+      != null ) {
+      XmlPropertyHandler
+        .modifyPropertyInFile( pathToShim + File.separator + "mapred-site.xml", "mapreduce.reduce.memory.mb", "4096" );
+    } else {
+      XmlPropertyHandler
+        .addPropertyToFile( pathToShim + File.separator + "mapred-site.xml", "mapreduce.reduce.memory.mb", "4096" );
+    }
+
+
   }
 
   private void setEmrSecureProperties( String pathToShim, String secretKey, String accessKey ) {

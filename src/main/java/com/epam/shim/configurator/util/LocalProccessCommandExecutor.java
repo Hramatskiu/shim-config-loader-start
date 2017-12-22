@@ -26,7 +26,7 @@ public class LocalProccessCommandExecutor {
       }
 
     } catch ( IOException | InterruptedException e1 ) {
-      e1.printStackTrace();
+      logger.error( e1.getMessage() );
     }
 
     logger.info( "Done" );

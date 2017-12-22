@@ -7,6 +7,7 @@ import com.epam.loader.config.credentials.SshCredentials;
 import com.epam.shim.configurator.cluster.NamedClusterProperty;
 import com.epam.shim.configurator.xml.XmlPropertyHandler;
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,6 +16,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 public class NamedClusterPropertyExtractingUtil {
+  private static final Logger logger = Logger.getLogger( NamedClusterPropertyExtractingUtil.class );
+
   public static NamedClusterProperty extractZookeeper( String pathToShim ) {
     String zkQuorum = "";
     String zkQuorumRes = "";
@@ -70,9 +73,8 @@ public class NamedClusterPropertyExtractingUtil {
         "yarn.resourcemanager.address" + "." + rmAlias[ 0 ] ).split( ":" );
     }
 
-    return rmAddress != null && rmAddress.length > 1 ? new NamedClusterProperty( rmAddress[ 0 ], rmAddress[ 1 ] ) :
-      new NamedClusterProperty(
-        StringUtils.EMPTY, StringUtils.EMPTY );
+    return rmAddress != null && rmAddress.length > 1 ? new NamedClusterProperty( rmAddress[ 0 ], rmAddress[ 1 ] )
+      : new NamedClusterProperty( StringUtils.EMPTY, StringUtils.EMPTY );
   }
 
   public static NamedClusterProperty extractHdfsServerProtoPortUrl( String pathToShim ) {
@@ -118,7 +120,7 @@ public class NamedClusterPropertyExtractingUtil {
           return "http://" + oozieHost + ":" + ooziePort + "/oozie";
         }
       } catch ( CommonUtilException e ) {
-        e.printStackTrace();
+        logger.warn( e.getMessage() );
       }
       return StringUtils.EMPTY;
     } ) ).map( CompletableFuture::join ).filter( result -> !result.isEmpty() ).findFirst().orElse( StringUtils.EMPTY );

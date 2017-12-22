@@ -61,7 +61,7 @@ public class XmlPropertyHandler {
       transformer.transform( source, result );
       logger.info( "Add property - " + name + " value -  " + value + " . To file - " + pathToFile );
     } catch ( ParserConfigurationException | TransformerException | IOException | SAXException pce ) {
-      pce.printStackTrace();
+      logger.error( pce.getMessage() );
     }
   }
 

@@ -4,20 +4,23 @@ import com.epam.loader.common.util.CheckingParamsUtil;
 import com.epam.loader.config.credentials.EmrCredentials;
 import com.epam.shim.configurator.cluster.NamedClusterCreator;
 import com.epam.shim.configurator.config.ModifierConfiguration;
-import com.epam.shim.configurator.modifier.AddCrossPlatform;
 import com.epam.shim.configurator.modifier.ModifyPluginConfigProperties;
 import com.epam.shim.configurator.modifier.ModifyTestProperties;
 import com.epam.shim.configurator.xml.XmlPropertyHandler;
+import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
 
 public class ShimDependentConfigurator {
+  private final static Logger logger = Logger.getLogger( ShimDependentConfigurator.class );
+
   public static void configureShimProperties( ModifierConfiguration modifierConfiguration,
                                               EmrCredentials emrCredentials, String namedClusterName ) {
     if ( System.getProperty( "os.name" ).startsWith( "Windows" ) ) {
-      AddCrossPlatform addCrossPlatform = new AddCrossPlatform();
-      addCrossPlatform.addCrossPlatform( modifierConfiguration.getPathToShim() + File.separator + "mapred-site.xml" );
+      XmlPropertyHandler.addPropertyToFile( modifierConfiguration.getPathToShim() + File.separator + "mapred-site.xml",
+        "mapreduce.app-submission.cross-platform", "true" );
+      logger.info( "cross-platform added" );
     }
 
     String secured =
@@ -36,7 +39,7 @@ public class ShimDependentConfigurator {
       try {
         ModifyTestProperties.modifyAllTestProperties( modifierConfiguration );
       } catch ( IOException e ) {
-        e.printStackTrace();
+        logger.error( e.getMessage() );
       }
     }
 

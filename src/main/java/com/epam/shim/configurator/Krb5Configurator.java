@@ -26,10 +26,6 @@ public class Krb5Configurator {
     copyFile( "US_export_policy.jar" );
   }
 
-  public static void copyKrb5ConfToJavaSecurity( String host ) {
-
-  }
-
   public static String getKrb5LocalPath() {
     return
       Files.exists( Paths.get( getRootUtilityFolder() + File.separator + "kerberos" + File.separator + "krb5.conf" ) )
@@ -100,10 +96,10 @@ public class Krb5Configurator {
     String pentahoJavaHome = findPentahoJavaPath();
     if ( pentahoJavaHome != null && Files.exists( Paths.get( source ) ) ) {
       try {
-        logger.info( "Start copy krb5 to PENTAHO_JAVA_HOME!" );
         FileCommonUtil
           .writeStringToFile( pentahoJavaHome + File.separator + "krb5.conf", Files.lines( Paths.get( source ) )
             .collect( Collectors.joining( "\n" ) ) );
+        logger.info( "Successfully copied to + " + pentahoJavaHome + File.separator + "krb5.conf" );
       } catch ( CommonUtilException | IOException e ) {
         logger.error( e.getMessage() );
       }
@@ -120,10 +116,10 @@ public class Krb5Configurator {
 
     if ( Files.exists( Paths.get( source ) ) ) {
       try {
-        logger.info( "Start copy krb5 to JAVA_HOME!" );
         FileCommonUtil
           .writeStringToFile( javaSecurityLibraryPath, Files.lines( Paths.get( source ) )
             .collect( Collectors.joining( "\n" ) ) );
+        logger.info( "Successfully copied to + " + javaSecurityLibraryPath );
       } catch ( CommonUtilException | IOException e ) {
         logger.error( e.getMessage() );
       }
@@ -134,9 +130,9 @@ public class Krb5Configurator {
     String pentahoJavaHome = findPentahoJavaPath();
     if ( pentahoJavaHome != null ) {
       try {
-        logger.info( "Start load krb5 to PENTAHO_JAVA_HOME!" );
-        FileCommonUtil.writeStringToFile( findPentahoJavaPath() + File.separator + "krb5.conf",
+        FileCommonUtil.writeStringToFile( pentahoJavaHome + File.separator + "krb5.conf",
           CommonUtilHolder.sshCommonUtilInstance().downloadViaSftp( sshCredentials, host, 22, "/etc/krb5.conf" ) );
+        logger.info( "Successfully copied to + " + pentahoJavaHome + File.separator + "krb5.conf" );
       } catch ( CommonUtilException e ) {
         logger.error( e.getMessage() );
       }
@@ -148,9 +144,9 @@ public class Krb5Configurator {
 
     if ( javaSecurityLibraryPath != null ) {
       try {
-        logger.info( "Start load krb5 to JAVA_HOME!" );
         FileCommonUtil.writeStringToFile( javaSecurityLibraryPath,
           CommonUtilHolder.sshCommonUtilInstance().downloadViaSftp( sshCredentials, host, 22, "/etc/krb5.conf" ) );
+        logger.info( "Successfully copied to + " + javaSecurityLibraryPath );
       } catch ( CommonUtilException e ) {
         logger.error( e.getMessage() );
       }

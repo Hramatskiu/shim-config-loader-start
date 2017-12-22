@@ -24,13 +24,18 @@ public class MaprConfigurator {
     String configureCommand = getCliCommand() + getConfigureCommand() + getClusterName( hostsArray[0] )
       + getNodeSetupCommand( isSecure )
       + Arrays.stream( hostsArray ).map( this::createCLDBString ).collect( Collectors.joining( ", " ) )
-      + " -RM " + getMaprRMNode( hosts ) + " -HS " + extractMaprHSNode( pathToMapredFile );
+      + " -RM " + getMaprRMNode( hosts ) + " -HS " + extractMaprHSNode( hosts, pathToMapredFile );
 
     LocalProccessCommandExecutor.executeCommand( configureCommand );
   }
 
   public String createCLDBString( String host ) {
     return host + ":7222";
+  }
+
+  private String extractMaprHSNode( String hosts, String pathToMapredFile ) {
+    String hsNode = getMaprHSNode( hosts );
+    return hsNode.isEmpty() ? extractMaprHSNode( pathToMapredFile ) : hsNode;
   }
 
   private String extractMaprHSNode( String pathToMapredFile ) {
@@ -49,6 +54,22 @@ public class MaprConfigurator {
   private String getConfigureCommand() {
     return System.getProperty( "os.name" ).startsWith( "Windows" ) ? "%MAPR_HOME%\\server\\configure.bat -N "
       : "/opt/mapr/server/configure.sh -N ";
+  }
+
+  private String getMaprHSNode( String hosts ) {
+    for ( String node : hosts.split( "," ) ) {
+      try {
+        if ( CommonUtilHolder.sshCommonUtilInstance().executeCommand( new SshCredentials(), node, 22,
+          "ps aux | grep HistoryServer" )
+          .contains( "org.apache.hadoop.mapreduce.v2.hs.JobHistoryServer" ) ) {
+          return node;
+        }
+      } catch ( CommonUtilException e ) {
+        logger.error( e.getMessage() );
+      }
+    }
+
+    return StringUtils.EMPTY;
   }
 
   private String getMaprRMNode( String hosts ) {

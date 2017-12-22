@@ -24,7 +24,7 @@ public class NamedClusterCreator extends BaseSecurityContextHandler {
       namedClusterManager
         .create( namedCluster, new XmlMetaStore( System.getProperty( "user.home" ) + File.separator + ".pentaho" ) );
     } catch ( MetaStoreException e ) {
-      e.printStackTrace();
+      logger.error( e.getMessage() );
     }
   }
 
