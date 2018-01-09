@@ -98,6 +98,11 @@ public class ModifyPluginConfigProperties {
         Files.copy( Paths.get( pathToShim + File.separator + "ssl_truststore" ),
           Paths.get( maprHome + File.separator + "conf" + File.separator + "ssl_truststore" ),
           StandardCopyOption.REPLACE_EXISTING );
+
+        Files.deleteIfExists( Paths.get( pathToShim + File.separator + "mapred-site.xml" ) );
+        Files.deleteIfExists( Paths.get( pathToShim + File.separator + "yarn-site.xml" ) );
+        Files.deleteIfExists( Paths.get( pathToShim + File.separator + "hdfs-site.xml" ) );
+        Files.deleteIfExists( Paths.get( pathToShim + File.separator + "ssl_truststore" ) );
       } catch ( IOException e ) {
         logger.error( e );
       }
@@ -135,7 +140,7 @@ public class ModifyPluginConfigProperties {
           .executeCommand( "/opt/mapr/hadoop/" + findMaprHadoopHome( maprHome ) + "/bin/hadoop classpath" );
         hadoopClasspath += "," + maprHome + "/lib" + "," + pathToShim;
         String modifiedHadoopClasspath =
-          Arrays.stream( hadoopClasspath.split( "," ) ).filter( line -> !line.isEmpty() )
+          Arrays.stream( hadoopClasspath.replaceAll( ":", "," ).split( "," ) ).filter( line -> !line.isEmpty() )
             .map( line -> line.replace( "*", "" ) ).collect( Collectors.joining( "," ) );
         PropertyHandler.setProperty( configPropertiesFile, "linux.classpath", modifiedHadoopClasspath );
       }
@@ -274,8 +279,6 @@ public class ModifyPluginConfigProperties {
       XmlPropertyHandler
         .addPropertyToFile( pathToShim + File.separator + "mapred-site.xml", "mapreduce.reduce.memory.mb", "4096" );
     }
-
-
   }
 
   private void setEmrSecureProperties( String pathToShim, String secretKey, String accessKey ) {
