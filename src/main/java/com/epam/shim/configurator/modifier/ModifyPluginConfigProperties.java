@@ -46,6 +46,7 @@ public class ModifyPluginConfigProperties {
         addMaprSecureIdToCoreSiteFile( modifierConfiguration.getHosts().split( "," )[ 0 ].trim(),
           modifierConfiguration.getPathToShim() + File.separator + "core-site.xml" );
         setMapRMapreduceMemoryLimits( modifierConfiguration.getPathToShim() );
+        addHBaseMappingsPropertyToCoreSiteFile( modifierConfiguration.getPathToShim(), "*:/hbase" );
         if ( modifierConfiguration.isSecure() || modifierConfiguration.getHosts().split( "," )[ 0 ].trim()
           .contains( "sn" )
           || modifierConfiguration.getHosts().split( "," )[ 0 ].trim().contains( "secn" ) ) {
@@ -59,6 +60,7 @@ public class ModifyPluginConfigProperties {
               .contains( "sn" ) || modifierConfiguration.getHosts().split( "," )[ 0 ].trim().contains( "secn" ),
             modifierConfiguration.getHosts(),
             modifierConfiguration.getPathToShim() + File.separator + "mapred-site.xml" );
+          copyMaprConfigFilesToMaprClientSecFiles( modifierConfiguration.getPathToShim() );
         }
 
       } else {
@@ -80,9 +82,6 @@ public class ModifyPluginConfigProperties {
         Files.copy( Paths.get( pathToShim + File.separator + "mapred-site.xml" ),
           Paths.get( getMaprHadoopConfHome( maprHome ) + File.separator + "mapred-site.xml" ),
           StandardCopyOption.REPLACE_EXISTING );
-        Files.copy( Paths.get( pathToShim + File.separator + "yarn-site.xml" ),
-          Paths.get( getMaprHadoopConfHome( maprHome ) + File.separator + "yarn-site.xml" ),
-          StandardCopyOption.REPLACE_EXISTING );
         Files.copy( Paths.get( pathToShim + File.separator + "core-site.xml" ),
           Paths.get( getMaprHadoopConfHome( maprHome ) + File.separator + "core-site.xml" ),
           StandardCopyOption.REPLACE_EXISTING );
@@ -99,8 +98,7 @@ public class ModifyPluginConfigProperties {
           Paths.get( maprHome + File.separator + "conf" + File.separator + "ssl_truststore" ),
           StandardCopyOption.REPLACE_EXISTING );
 
-        Files.deleteIfExists( Paths.get( pathToShim + File.separator + "mapred-site.xml" ) );
-        Files.deleteIfExists( Paths.get( pathToShim + File.separator + "yarn-site.xml" ) );
+
         Files.deleteIfExists( Paths.get( pathToShim + File.separator + "hdfs-site.xml" ) );
         Files.deleteIfExists( Paths.get( pathToShim + File.separator + "ssl_truststore" ) );
       } catch ( IOException e ) {
@@ -109,6 +107,46 @@ public class ModifyPluginConfigProperties {
     } else {
       logger.warn( "MAPR_HOME not set. See - http://doc.mapr.com/display/MapR/Setting+Up+the+Client ." );
     }
+  }
+
+  private void copyMaprConfigFilesToMaprClientSecFiles( String pathToShim ) {
+    String maprHome = getMaprHome();
+    if ( CheckingParamsUtil.checkParamsWithNullAndEmpty( maprHome ) ) {
+      try {
+        Files.copy( Paths.get( pathToShim + File.separator + "yarn-site.xml" ),
+          Paths.get( getMaprHadoopConfHome( maprHome ) + File.separator + "yarn-site.xml" ),
+          StandardCopyOption.REPLACE_EXISTING );
+
+        Files.deleteIfExists( Paths.get( pathToShim + File.separator + "mapred-site.xml" ) );
+        Files.deleteIfExists( Paths.get( pathToShim + File.separator + "yarn-site.xml" ) );
+      } catch ( IOException e ) {
+        logger.error( e );
+      }
+    } else {
+      logger.warn( "MAPR_HOME not set. See - http://doc.mapr.com/display/MapR/Setting+Up+the+Client ." );
+    }
+  }
+
+  private void addHBaseMappingsPropertyToCoreSiteFile( String pathToShim, String value ) {
+    if ( isHBaseMappingsPropertyNecessary( pathToShim ) ) {
+      XmlPropertyHandler.addPropertyToFile( pathToShim + File.separator + "core-site.xml", "hbase.table.namespace.mappings", value );
+    }
+  }
+
+  private boolean isHBaseMappingsPropertyNecessary( String pathToShim ) {
+    String shimName = extractShimNameFromPath( pathToShim );
+
+    return shimName.contains( "mapr" ) && isMajorVersionEqualOrAbove( shimName, 6 );
+  }
+
+  private String extractShimNameFromPath( String pathToShim ) {
+    String[] shimFoldersTree = pathToShim.replace( File.separator, ":" ).split( ":" );
+
+    return shimFoldersTree[ shimFoldersTree.length - 1 ];
+  }
+
+  private boolean isMajorVersionEqualOrAbove( String shimName, int version ) {
+    return shimName.replaceAll( "\\D", "" ).charAt( 0 ) > version - 1;
   }
 
   private void addMaprClasspath( String configPropertiesFile, String pathToShim ) {
