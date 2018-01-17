@@ -12,6 +12,7 @@ import com.epam.logger.TextAreaAppender;
 import com.epam.shim.configurator.Krb5Configurator;
 import com.epam.shim.configurator.ShimDependentConfigurator;
 import com.epam.shim.configurator.config.ModifierConfiguration;
+import com.epam.shim.configurator.plugin.BIServerPlugin;
 import com.epam.shim.configurator.profile.Profile;
 import com.epam.shim.configurator.profile.ProfileBuilder;
 import com.epam.shim.configurator.util.CopyDriversUtil;
@@ -105,6 +106,9 @@ public class MainPage {
   @FXML CheckBox configureMapr;
   @FXML CheckBox downloadKrb5;
   @FXML CheckBox copyDrivers;
+  @FXML CheckBox useBIServer;
+  @FXML
+  ComboBox<String> shimName;
 
   private static ClusterConfigLoader clusterConfigLoader;
   private ProfileBuilder profileBuilder;
@@ -137,6 +141,17 @@ public class MainPage {
     clusterConfigLoader.init();
     initClusterComboBox();
     runningThread = null;
+  }
+
+  @FXML
+  void useBIServerClick( ActionEvent event ) {
+    if ( useBIServer.isSelected() ) {
+      BIServerPlugin biServerPlugin = new BIServerPlugin( pathToSave.getText() );
+      shimName.getItems().setAll( biServerPlugin.getAvailableShims() );
+    }
+    else {
+      shimName.getItems().clear();
+    }
   }
 
   private void initClusterComboBox() {
@@ -198,22 +213,6 @@ public class MainPage {
 
     } catch ( IOException e ) {
       e.printStackTrace();
-    }
-  }
-
-  @FXML
-  void compoBoxOnShowing( Event event ) {
-    if ( event.getTarget() instanceof ComboBox ) {
-      if ( event.getTarget() == clusterType ) {
-        //        List<String> clusterTypes = new ArrayList<>();
-        //        clusterTypes.add( LoadConfigsManager.ClusterType.HDP.toString() );
-        //        clusterTypes.add( LoadConfigsManager.ClusterType.CDH.toString() );
-        //        clusterTypes.add( LoadConfigsManager.ClusterType.MAPR.toString() );
-        //        clusterTypes.add( LoadConfigsManager.ClusterType.EMR.toString() );
-        //
-        //        clusterType.getItems().setAll( clusterTypes );
-        //        //clusterType.setValue( LoadConfigsManager.ClusterType.HDP.toString() );
-      }
     }
   }
 
@@ -283,21 +282,23 @@ public class MainPage {
     } else {
       //output.setText( "" );
       buttonStart.setDisable( true );
+      String pathToShim = getPathToSave();
 
       runningThread = new Thread( () -> {
         additionalPane();
         boolean isDownloaded = clusterConfigLoader
           .loadConfigs( new LoadConfigs( createHttpConfigs(), createKrb5Configs(),
             new SshCredentials( sshUser.getText(), sshPassword.getText(), pathToPemFile.getText() ),
-            modifyHosts( cluster_node_FQDN.getText().trim() ), pathToSave.getText(),
+            modifyHosts( cluster_node_FQDN.getText().trim() ), pathToShim,
             LoadConfigsManager.ClusterType.valueOf( clusterType.getValue() ) ) );
 
         if ( isDownloaded ) {
-          ShimDependentConfigurator.configureShimProperties( new ModifierConfiguration( pathToSave.getText(),
+          ShimDependentConfigurator.configureShimProperties( new ModifierConfiguration( pathToShim,
               dfsInstallDir.getText(), pathToTestProperties.getText(), false,
               LoadConfigsManager.ClusterType.valueOf( clusterType.getValue() ),
               modifyHosts( cluster_node_FQDN.getText().trim() ), configureMapr.isSelected() ),
             new EmrCredentials( emrAccessKey.getText(), emrSecretKey.getText() ), getNamedClusterName() );
+          executeBiServerPluginIfAvailable();
         }
         logger.info( "All done!" );
         buttonStart.setDisable( false );
@@ -309,7 +310,24 @@ public class MainPage {
         logger.fatal( ex );
         buttonStart.setDisable( false );
       }
+    }
+  }
 
+  private String getPathToSave() {
+    String pathToShim = pathToSave.getText();
+
+    if ( useBIServer.isSelected() ) {
+      BIServerPlugin biServerPlugin = new BIServerPlugin( pathToSave.getText() );
+      pathToShim = biServerPlugin.createDownloadPath( shimName.getValue() );
+    }
+
+    return pathToShim;
+  }
+
+  private void executeBiServerPluginIfAvailable(  ) {
+    if ( useBIServer.isSelected() ) {
+      BIServerPlugin biServerPlugin = new BIServerPlugin( pathToSave.getText() );
+      biServerPlugin.copyFilesToOtherProducts( shimName.getValue() );
     }
   }
 

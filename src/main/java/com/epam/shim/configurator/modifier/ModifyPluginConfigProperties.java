@@ -47,6 +47,7 @@ public class ModifyPluginConfigProperties {
           modifierConfiguration.getPathToShim() + File.separator + "core-site.xml" );
         setMapRMapreduceMemoryLimits( modifierConfiguration.getPathToShim() );
         addHBaseMappingsPropertyToCoreSiteFile( modifierConfiguration.getPathToShim(), "*:/hbase" );
+        addFsDefaultName( modifierConfiguration.getPathToShim() + File.separator + "core-site.xml" );
         if ( modifierConfiguration.isSecure() || modifierConfiguration.getHosts().split( "," )[ 0 ].trim()
           .contains( "sn" )
           || modifierConfiguration.getHosts().split( "," )[ 0 ].trim().contains( "secn" ) ) {
@@ -88,12 +89,12 @@ public class ModifyPluginConfigProperties {
         Files.copy( Paths.get( pathToShim + File.separator + "hdfs-site.xml" ),
           Paths.get( getMaprHadoopConfHome( maprHome ) + File.separator + "hdfs-site.xml" ),
           StandardCopyOption.REPLACE_EXISTING );
-        Files.copy( Paths.get( pathToShim + File.separator + "hbase-site.xml" ),
-          Paths.get( getMaprHadoopConfHome( maprHome ) + File.separator + "hbase-site.xml" ),
-          StandardCopyOption.REPLACE_EXISTING );
-        Files.copy( Paths.get( pathToShim + File.separator + "hive-site.xml" ),
-          Paths.get( getMaprHadoopConfHome( maprHome ) + File.separator + "hive-site.xml" ),
-          StandardCopyOption.REPLACE_EXISTING );
+//        Files.copy( Paths.get( pathToShim + File.separator + "hbase-site.xml" ),
+//          Paths.get( getMaprHadoopConfHome( maprHome ) + File.separator + "hbase-site.xml" ),
+//          StandardCopyOption.REPLACE_EXISTING );
+//        Files.copy( Paths.get( pathToShim + File.separator + "hive-site.xml" ),
+//          Paths.get( getMaprHadoopConfHome( maprHome ) + File.separator + "hive-site.xml" ),
+//          StandardCopyOption.REPLACE_EXISTING );
         Files.copy( Paths.get( pathToShim + File.separator + "ssl_truststore" ),
           Paths.get( maprHome + File.separator + "conf" + File.separator + "ssl_truststore" ),
           StandardCopyOption.REPLACE_EXISTING );
@@ -119,11 +120,29 @@ public class ModifyPluginConfigProperties {
 
         Files.deleteIfExists( Paths.get( pathToShim + File.separator + "mapred-site.xml" ) );
         Files.deleteIfExists( Paths.get( pathToShim + File.separator + "yarn-site.xml" ) );
+
+        setMapRMapreduceMemoryLimits( getMaprHadoopConfHome( maprHome ) );
+        if ( System.getProperty( "os.name" ).startsWith( "Windows" ) ) {
+          XmlPropertyHandler.addPropertyToFile( getMaprHadoopConfHome( maprHome ) + File.separator + "mapred-site.xml",
+            "mapreduce.app-submission.cross-platform", "true" );
+          logger.info( "cross-platform added" );
+        }
       } catch ( IOException e ) {
         logger.error( e );
       }
     } else {
       logger.warn( "MAPR_HOME not set. See - http://doc.mapr.com/display/MapR/Setting+Up+the+Client ." );
+    }
+  }
+
+  private void addFsDefaultName( String pathToCoreSite ) {
+    if ( XmlPropertyHandler.readXmlPropertyValue( pathToCoreSite, "fs.default.name" )
+      != null ) {
+      XmlPropertyHandler
+        .modifyPropertyInFile( pathToCoreSite, "fs.default.name", "maprfs:///" );
+    } else {
+      XmlPropertyHandler
+        .addPropertyToFile( pathToCoreSite, "fs.default.name", "maprfs:///" );
     }
   }
 

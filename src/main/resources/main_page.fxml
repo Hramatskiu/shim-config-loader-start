@@ -23,7 +23,7 @@
           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="238.0" prefWidth="222.0">
                <children>
                 <Label layoutX="113.0" layoutY="2.0" text="Profile" />
-                <ComboBox id="profiles" fx:id="profiles" layoutX="16.0" layoutY="25.0" onShowing="#compoBoxOnShowing" prefHeight="25.0" prefWidth="232.0">
+                <ComboBox id="profiles" fx:id="profiles" layoutX="16.0" layoutY="25.0" prefHeight="25.0" prefWidth="232.0">
                      <cursor>
                         <Cursor fx:constant="HAND" />
                      </cursor></ComboBox>
@@ -44,9 +44,9 @@
             </AnchorPane>
         </content>
       </TitledPane>
-      <TitledPane animated="false" layoutX="851.0" layoutY="281.0" prefHeight="187.0" prefWidth="264.0" text="Additional setup">
+      <TitledPane animated="false" layoutX="851.0" layoutY="293.0" prefHeight="233.0" prefWidth="264.0" text="Additional setup">
         <content>
-          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="150.0" prefWidth="262.0">
+          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="155.0" prefWidth="262.0">
                <children>
                   <CheckBox fx:id="downloadKrb5" layoutX="24.0" layoutY="14.0" mnemonicParsing="false" prefHeight="17.0" prefWidth="211.0" text="Download krb5.conf">
                      <cursor>
@@ -60,6 +60,16 @@
                      <cursor>
                         <Cursor fx:constant="HAND" />
                      </cursor></CheckBox>
+                  <CheckBox fx:id="useBIServer" layoutX="24.0" layoutY="103.0" mnemonicParsing="false" onAction="#useBIServerClick" prefHeight="17.0" prefWidth="211.0" text="I use BIServer setup(experimental)">
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
+                  </CheckBox>
+                  <ComboBox id="shimName" fx:id="shimName" layoutX="24.0" layoutY="126.0" prefHeight="31.0" prefWidth="217.0">
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
+                  </ComboBox>
                </children>
             </AnchorPane>
         </content>
@@ -76,7 +86,7 @@
          <cursor>
             <Cursor fx:constant="TEXT" />
          </cursor></TextField>
-    <ComboBox id="clusterType" fx:id="clusterType" layoutX="674.0" layoutY="60.0" onShowing="#compoBoxOnShowing" prefHeight="31.0" prefWidth="156.0">
+    <ComboBox id="clusterType" fx:id="clusterType" layoutX="674.0" layoutY="60.0" prefHeight="31.0" prefWidth="156.0">
          <cursor>
             <Cursor fx:constant="HAND" />
          </cursor></ComboBox>
