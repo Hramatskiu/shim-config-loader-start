@@ -27,4 +27,8 @@ public interface SearchStrategy {
       throw new StrategyException( "Invalid command result." );
     }
   }
+
+  default boolean useSsh() {
+    return false;
+  }
 }

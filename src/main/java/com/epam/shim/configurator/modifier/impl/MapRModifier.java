@@ -50,13 +50,11 @@ public class MapRModifier implements IShimModifier {
   private void copyMaprConfigFilesToMaprClient( String pathToShim ) {
     String maprHome = getMaprHome();
     if ( CheckingParamsUtil.checkParamsWithNullAndEmpty( maprHome ) ) {
-      copyFileToMapRClient( pathToShim, "mapred-site.xml", maprHome, true );
-      copyFileToMapRClient( pathToShim, "yarn-site.xml", maprHome, true );
-      copyFileToMapRClient( pathToShim, "hdfs-site.xml", maprHome, true );
-      copyFileToMapRClient( pathToShim, "core-site.xml", maprHome, false );
-      copyFileToMapRClient( pathToShim, "hbase-site.xml", maprHome, false );
-      copyFileToMapRClient( pathToShim, "hive-site.xml", maprHome, false );
-      copyFileToMapRClient( pathToShim, "ssl_truststore", maprHome, true );
+      copyFile( pathToShim, "mapred-site.xml", getMaprHadoopConfHome( maprHome ), false );
+      copyFile( pathToShim, "yarn-site.xml", getMaprHadoopConfHome( maprHome ), false );
+      copyFile( pathToShim, "hdfs-site.xml", getMaprHadoopConfHome( maprHome ), true );
+      copyFile( pathToShim, "core-site.xml", getMaprHadoopConfHome( maprHome ), false );
+      copyFile( pathToShim, "ssl_truststore", maprHome + File.separator + "conf", true );
     } else {
       logger.warn( "MAPR_HOME not set. See - http://doc.mapr.com/display/MapR/Setting+Up+the+Client ." );
     }
@@ -66,9 +64,7 @@ public class MapRModifier implements IShimModifier {
     String maprHome = getMaprHome();
     if ( CheckingParamsUtil.checkParamsWithNullAndEmpty( maprHome ) ) {
       try {
-        Files.copy( Paths.get( pathToShim + File.separator + "yarn-site.xml" ),
-          Paths.get( getMaprHadoopConfHome( maprHome ) + File.separator + "yarn-site.xml" ),
-          StandardCopyOption.REPLACE_EXISTING );
+        copyFile( pathToShim, "yarn-site.xml", getMaprHadoopConfHome( maprHome ), true );
 
         Files.deleteIfExists( Paths.get( pathToShim + File.separator + "mapred-site.xml" ) );
         Files.deleteIfExists( Paths.get( pathToShim + File.separator + "yarn-site.xml" ) );
@@ -80,13 +76,13 @@ public class MapRModifier implements IShimModifier {
     }
   }
 
-  private void copyFileToMapRClient( String pathToShim, String fileName, String maprHome, boolean deleteFromSource ) {
+  private void copyFile( String sourceDirectory, String fileName, String destDirectory, boolean deleteFromSource ) {
     try {
-      Files.copy( Paths.get( pathToShim + File.separator + fileName ),
-        Paths.get( getMaprHadoopConfHome( maprHome ) + File.separator + fileName ),
+      Files.copy( Paths.get( sourceDirectory + File.separator + fileName ),
+        Paths.get( destDirectory + File.separator + fileName ),
         StandardCopyOption.REPLACE_EXISTING );
       if ( deleteFromSource ) {
-        Files.deleteIfExists( Paths.get( pathToShim + File.separator + fileName ) );
+        Files.deleteIfExists( Paths.get( sourceDirectory + File.separator + fileName ) );
       }
     } catch ( IOException e ) {
       logger.error( e );

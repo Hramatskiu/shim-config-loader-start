@@ -8,4 +8,8 @@ public abstract class DownloadFunction {
   public abstract void downloadConfigs( DownloadConfigsCondition downloadConfigsCondition,
                                         SearchStrategy searchStrategy,
                                         DownloadPlan.LoadPathConfig loadPathConfig );
+
+  public boolean isSsh() {
+    return false;
+  }
 }

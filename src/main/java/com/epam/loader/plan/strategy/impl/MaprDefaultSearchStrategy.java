@@ -46,6 +46,10 @@ public class MaprDefaultSearchStrategy implements SearchStrategy {
     return searchableServiceNames;
   }
 
+  @Override public boolean useSsh() {
+    return true;
+  }
+
   String extractHadoopVersionFromCommandResult( String commandResult ) {
     return Arrays.stream( Stream.of( commandResult.split( " " ) )
       .filter( splitCommand -> splitCommand.contains( "mapr" ) ).findFirst().orElse( StringUtils.EMPTY ).split( "-" ) )

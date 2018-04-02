@@ -23,6 +23,14 @@ public class XmlPropertyHandler {
 
   private final static Logger logger = Logger.getLogger( XmlPropertyHandler.class );
 
+  public static void addOrModifyIfExistsProperty( String pathToFile, String property, String newValue ) {
+    if ( XmlPropertyHandler.readXmlPropertyValue( pathToFile, property ) != null ) {
+      XmlPropertyHandler.modifyPropertyInFile( pathToFile, property, newValue );
+    } else {
+      XmlPropertyHandler.addPropertyToFile( pathToFile, property, newValue );
+    }
+  }
+
   public static String readXmlPropertyValue( String pathToFile, String property ) {
     // Read *-site.xml file and return property value, return null if property was not found
     try {

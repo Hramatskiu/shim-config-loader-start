@@ -47,6 +47,7 @@ public class NamedClusterCreator extends BaseSecurityContextHandler {
 
     setOozie( namedCluster, modifierConfiguration.getHosts() );
     setZookeeper( namedCluster, modifierConfiguration.getPathToShim() + File.separator );
+//    setKafkaServers( namedCluster, modifierConfiguration.getHosts() );
   }
 
   private static void setSecureParams( NamedCluster namedCluster ) {
@@ -99,7 +100,18 @@ public class NamedClusterCreator extends BaseSecurityContextHandler {
       namedCluster.setOozieUrl( oozieUrl );
       logger.info( "Set oozie - " + namedCluster.getOozieUrl() );
     } else {
-      logger.error( "Can't find oozie url!" );
+      logger.warn( "Can't find oozie url!" );
+    }
+  }
+
+  private static void setKafkaServers( NamedCluster namedCluster, String hosts ) {
+    String kafkaBootstrapServers = NamedClusterPropertyExtractingUtil.extractKafkaBootstrapServers( hosts );
+
+    if ( !kafkaBootstrapServers.isEmpty() ) {
+      namedCluster.setKafkaBootstrapServers( kafkaBootstrapServers );
+      logger.info( "Set kafka bootstrap servers - " + namedCluster.getKafkaBootstrapServers() );
+    } else {
+      logger.warn( "Can't find kafka bootstrap servers!" );
     }
   }
 }

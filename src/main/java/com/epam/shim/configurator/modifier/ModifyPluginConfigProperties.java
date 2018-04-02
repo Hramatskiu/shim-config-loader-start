@@ -52,6 +52,8 @@ public class ModifyPluginConfigProperties {
           .contains( "sn" )
           || modifierConfiguration.getHosts().split( "," )[ 0 ].trim().contains( "secn" ) ) {
           setMaprSecureConfig( configPropertiesFile );
+        } else {
+          disableSecureConfig( configPropertiesFile );
         }
 
         if ( modifierConfiguration.isConfigureMapr() ) {
@@ -69,10 +71,25 @@ public class ModifyPluginConfigProperties {
         setCdhAndHdpSecurity( configPropertiesFile, modifierConfiguration.isSecure() );
       }
     } else {
+      //emr511 security same as cdh && hdp
+      setCdhAndHdpSecurity( configPropertiesFile, modifierConfiguration.isSecure() );
       setEmrSecureProperties( modifierConfiguration.getPathToShim(),
         emrCredentials.getSecretKey(), emrCredentials.getAccessKey() );
       setEmrFsImpl( modifierConfiguration.getPathToShim() );
       removeEmrCodecs( modifierConfiguration.getPathToShim() );
+      if ( !modifierConfiguration.isSecure() ) {
+        disableSecureConfig( configPropertiesFile );
+      }
+    }
+  }
+
+  private void disableSecureConfig( String configPropertiesFile ) {
+    if ( PropertyHandler.getPropertyFromFile( configPropertiesFile, "authentication.superuser.provider" ) != null ) {
+      PropertyHandler.setProperty( configPropertiesFile, "authentication.superuser.provider", "NO_AUTH" );
+    }
+
+    if ( PropertyHandler.getPropertyFromFile( configPropertiesFile, "pentaho.authentication.default.mapping.impersonation.type" ) != null ) {
+      PropertyHandler.setProperty( configPropertiesFile, "pentaho.authentication.default.mapping.impersonation.type", "disabled" );
     }
   }
 
@@ -89,12 +106,6 @@ public class ModifyPluginConfigProperties {
         Files.copy( Paths.get( pathToShim + File.separator + "hdfs-site.xml" ),
           Paths.get( getMaprHadoopConfHome( maprHome ) + File.separator + "hdfs-site.xml" ),
           StandardCopyOption.REPLACE_EXISTING );
-//        Files.copy( Paths.get( pathToShim + File.separator + "hbase-site.xml" ),
-//          Paths.get( getMaprHadoopConfHome( maprHome ) + File.separator + "hbase-site.xml" ),
-//          StandardCopyOption.REPLACE_EXISTING );
-//        Files.copy( Paths.get( pathToShim + File.separator + "hive-site.xml" ),
-//          Paths.get( getMaprHadoopConfHome( maprHome ) + File.separator + "hive-site.xml" ),
-//          StandardCopyOption.REPLACE_EXISTING );
         Files.copy( Paths.get( pathToShim + File.separator + "ssl_truststore" ),
           Paths.get( maprHome + File.separator + "conf" + File.separator + "ssl_truststore" ),
           StandardCopyOption.REPLACE_EXISTING );
@@ -123,8 +134,7 @@ public class ModifyPluginConfigProperties {
 
         setMapRMapreduceMemoryLimits( getMaprHadoopConfHome( maprHome ) );
         if ( System.getProperty( "os.name" ).startsWith( "Windows" ) ) {
-          XmlPropertyHandler.addPropertyToFile( getMaprHadoopConfHome( maprHome ) + File.separator + "mapred-site.xml",
-            "mapreduce.app-submission.cross-platform", "true" );
+          addCrossPlatform( getMaprHadoopConfHome( maprHome ) + File.separator + "mapred-site.xml" );
           logger.info( "cross-platform added" );
         }
       } catch ( IOException e ) {
@@ -135,24 +145,21 @@ public class ModifyPluginConfigProperties {
     }
   }
 
+  private void addCrossPlatform( String pathToMapredSite ) {
+    XmlPropertyHandler.addOrModifyIfExistsProperty( pathToMapredSite, "mapreduce.app-submission.cross-platform", "true" );
+  }
+
   private void addFsDefaultName( String pathToCoreSite ) {
-    if ( XmlPropertyHandler.readXmlPropertyValue( pathToCoreSite, "fs.default.name" )
-      != null ) {
-      XmlPropertyHandler
-        .modifyPropertyInFile( pathToCoreSite, "fs.default.name", "maprfs:///" );
-    } else {
-      XmlPropertyHandler
-        .addPropertyToFile( pathToCoreSite, "fs.default.name", "maprfs:///" );
-    }
+    XmlPropertyHandler.addOrModifyIfExistsProperty( pathToCoreSite, "fs.default.name", "maprfs:///" );
   }
 
   private void addHBaseMappingsPropertyToCoreSiteFile( String pathToShim, String value ) {
-    if ( isHBaseMappingsPropertyNecessary( pathToShim ) ) {
+    if ( isMapR60OrAbove( pathToShim ) ) {
       XmlPropertyHandler.addPropertyToFile( pathToShim + File.separator + "core-site.xml", "hbase.table.namespace.mappings", value );
     }
   }
 
-  private boolean isHBaseMappingsPropertyNecessary( String pathToShim ) {
+  private boolean isMapR60OrAbove( String pathToShim ) {
     String shimName = extractShimNameFromPath( pathToShim );
 
     return shimName.contains( "mapr" ) && isMajorVersionEqualOrAbove( shimName, 6 );
@@ -165,7 +172,7 @@ public class ModifyPluginConfigProperties {
   }
 
   private boolean isMajorVersionEqualOrAbove( String shimName, int version ) {
-    return shimName.replaceAll( "\\D", "" ).charAt( 0 ) > version - 1;
+    return new Integer( shimName.replaceAll( "\\D", "" ).substring( 0, 1 ) ) > version - 1;
   }
 
   private void addMaprClasspath( String configPropertiesFile, String pathToShim ) {
@@ -179,7 +186,11 @@ public class ModifyPluginConfigProperties {
           .executeCommand(
             "cmd /c %MAPR_HOME%\\hadoop\\" + findMaprHadoopHome( maprHome ) + "\\bin\\hadoop.cmd classpath" );
 
-        hadoopClasspath += ";" + maprHome + "\\lib" + ";" + pathToShim;
+        if ( isMapR60OrAbove( pathToShim ) ) {
+          hadoopClasspath = pathToShim + ";" + hadoopClasspath + ";" + maprHome + "\\lib";
+        } else {
+          hadoopClasspath += ";" + maprHome + "\\lib" + ";" + pathToShim;
+        }
         String modifiedHadoopClasspath =
           Arrays.stream( hadoopClasspath.split( ";" ) )
             .map( line -> "file:///" + line )
@@ -195,13 +206,22 @@ public class ModifyPluginConfigProperties {
       if ( Files.exists( Paths.get( "/opt/mapr/hadoop/" + findMaprHadoopHome( maprHome ) + "/bin/hadoop" ) ) ) {
         String hadoopClasspath = LocalProccessCommandExecutor
           .executeCommand( "/opt/mapr/hadoop/" + findMaprHadoopHome( maprHome ) + "/bin/hadoop classpath" );
-        hadoopClasspath += "," + maprHome + "/lib" + "," + pathToShim;
+        if ( isMapR60OrAbove( pathToShim ) ) {
+          hadoopClasspath = pathToShim + "," + hadoopClasspath + "," + maprHome + "/lib";
+        } else {
+          hadoopClasspath += "," + maprHome + "/lib" + "," + pathToShim;
+        }
         String modifiedHadoopClasspath =
           Arrays.stream( hadoopClasspath.replaceAll( ":", "," ).split( "," ) ).filter( line -> !line.isEmpty() )
-            .map( line -> line.replace( "*", "" ) ).collect( Collectors.joining( "," ) );
+            .map( this::removeWildCardsFromPath ).distinct().collect( Collectors.joining( "," ) );
         PropertyHandler.setProperty( configPropertiesFile, "linux.classpath", modifiedHadoopClasspath );
       }
     }
+  }
+
+  private String removeWildCardsFromPath( String path ) {
+    return Arrays.stream( path.replaceAll( File.separator, ":" ).split( ":" ) )
+      .map( line -> line.contains( "*" ) ? StringUtils.EMPTY : line ).collect( Collectors.joining( File.separator ) );
   }
 
   private String getMaprHome() {
@@ -246,13 +266,18 @@ public class ModifyPluginConfigProperties {
 
   private void addMaprSecureIdToCoreSiteFile( String host, String pathToCoreSiteFile ) {
     MaprSecureIdConfiguration maprSecureIdConfiguration = findMaprSecureConfiguration( host );
-    XmlPropertyHandler
-      .addPropertyToFile( pathToCoreSiteFile, "hadoop.spoofed.user.uid", maprSecureIdConfiguration.getUid() );
-    XmlPropertyHandler
-      .addPropertyToFile( pathToCoreSiteFile, "hadoop.spoofed.user.gid", maprSecureIdConfiguration.getGid() );
-    XmlPropertyHandler
-      .addPropertyToFile( pathToCoreSiteFile, "hadoop.spoofed.user.username", maprSecureIdConfiguration.getName() );
-    logger.info( "Set mapr secure uid to core-site.xml" );
+    if ( System.getProperty( "os.name" ).startsWith( "Windows" ) ) {
+      XmlPropertyHandler
+        .addPropertyToFile( pathToCoreSiteFile, "hadoop.spoofed.user.uid", maprSecureIdConfiguration.getUid() );
+      XmlPropertyHandler
+        .addPropertyToFile( pathToCoreSiteFile, "hadoop.spoofed.user.gid", maprSecureIdConfiguration.getGid() );
+      XmlPropertyHandler
+        .addPropertyToFile( pathToCoreSiteFile, "hadoop.spoofed.user.username", maprSecureIdConfiguration.getName() );
+      logger.info( "Set mapr secure uid to core-site.xml" );
+    } else {
+      logger.info( "Mapr secure uid not necessary for Linux. See - https://github.com/Hramatskiu/shim-config-loader-start/issues/13" );
+    }
+
   }
 
   private MaprSecureIdConfiguration findMaprSecureConfiguration( String host ) {
@@ -320,64 +345,34 @@ public class ModifyPluginConfigProperties {
   }
 
   private void setMapRMapreduceMemoryLimits( String pathToShim ) {
-    if ( XmlPropertyHandler.readXmlPropertyValue( pathToShim + File.separator + "mapred-site.xml", "mapreduce.map.memory.mb" )
-      != null ) {
-      XmlPropertyHandler
-        .modifyPropertyInFile( pathToShim + File.separator + "mapred-site.xml", "mapreduce.map.memory.mb", "4096" );
-    } else {
-      XmlPropertyHandler
-        .addPropertyToFile( pathToShim + File.separator + "mapred-site.xml", "mapreduce.map.memory.mb", "4096" );
-    }
-    if ( XmlPropertyHandler.readXmlPropertyValue( pathToShim + File.separator + "mapred-site.xml", "mapreduce.reduce.memory.mb" )
-      != null ) {
-      XmlPropertyHandler
-        .modifyPropertyInFile( pathToShim + File.separator + "mapred-site.xml", "mapreduce.reduce.memory.mb", "4096" );
-    } else {
-      XmlPropertyHandler
-        .addPropertyToFile( pathToShim + File.separator + "mapred-site.xml", "mapreduce.reduce.memory.mb", "4096" );
-    }
+    XmlPropertyHandler.addOrModifyIfExistsProperty( pathToShim + File.separator + "mapred-site.xml",
+      "mapreduce.map.memory.mb", "4096" );
+    XmlPropertyHandler.addOrModifyIfExistsProperty( pathToShim + File.separator + "mapred-site.xml",
+      "mapreduce.reduce.memory.mb", "4096" );
   }
 
   private void setEmrSecureProperties( String pathToShim, String secretKey, String accessKey ) {
     XmlPropertyHandler
-      .addPropertyToFile( pathToShim + File.separator + "core-site.xml", "fs.s3.awsAccessKeyId", accessKey );
+      .addOrModifyIfExistsProperty( pathToShim + File.separator + "core-site.xml", "fs.s3.awsAccessKeyId", accessKey );
     XmlPropertyHandler
-      .addPropertyToFile( pathToShim + File.separator + "core-site.xml", "fs.s3.awsSecretAccessKey", secretKey );
+      .addOrModifyIfExistsProperty( pathToShim + File.separator + "core-site.xml", "fs.s3.awsSecretAccessKey", secretKey );
     XmlPropertyHandler
-      .addPropertyToFile( pathToShim + File.separator + "core-site.xml", "fs.s3n.awsAccessKeyId", accessKey );
+      .addOrModifyIfExistsProperty( pathToShim + File.separator + "core-site.xml", "fs.s3n.awsAccessKeyId", accessKey );
     XmlPropertyHandler
-      .addPropertyToFile( pathToShim + File.separator + "core-site.xml", "fs.s3n.awsSecretAccessKey", secretKey );
-    if ( XmlPropertyHandler.readXmlPropertyValue( pathToShim + File.separator + "core-site.xml", "fs.s3a.access.key" )
-      != null ) {
-      XmlPropertyHandler
-        .modifyPropertyInFile( pathToShim + File.separator + "core-site.xml", "fs.s3a.access.key", accessKey );
-    } else {
-      XmlPropertyHandler
-        .addPropertyToFile( pathToShim + File.separator + "core-site.xml", "fs.s3a.access.key", accessKey );
-    }
-    if ( XmlPropertyHandler.readXmlPropertyValue( pathToShim + File.separator + "core-site.xml", "fs.s3a.secret.key" )
-      != null ) {
-      XmlPropertyHandler
-        .modifyPropertyInFile( pathToShim + File.separator + "core-site.xml", "fs.s3a.secret.key", secretKey );
-    } else {
-      XmlPropertyHandler
-        .addPropertyToFile( pathToShim + File.separator + "core-site.xml", "fs.s3a.secret.key", secretKey );
-    }
+      .addOrModifyIfExistsProperty( pathToShim + File.separator + "core-site.xml", "fs.s3n.awsSecretAccessKey", secretKey );
+    XmlPropertyHandler
+      .addOrModifyIfExistsProperty( pathToShim + File.separator + "core-site.xml", "fs.s3a.access.key", accessKey );
+    XmlPropertyHandler
+      .addOrModifyIfExistsProperty( pathToShim + File.separator + "core-site.xml", "fs.s3a.secret.key", secretKey );
   }
 
   private void setEmrFsImpl( String pathToShim ) {
-    XmlPropertyHandler.modifyPropertyInFile( pathToShim + File.separator + "core-site.xml",
+    XmlPropertyHandler.addOrModifyIfExistsProperty( pathToShim + File.separator + "core-site.xml",
       "fs.s3.impl", "org.apache.hadoop.fs.s3.S3FileSystem" );
-    XmlPropertyHandler.modifyPropertyInFile( pathToShim + File.separator + "core-site.xml",
+    XmlPropertyHandler.addOrModifyIfExistsProperty( pathToShim + File.separator + "core-site.xml",
       "fs.s3n.impl", "org.apache.hadoop.fs.s3native.NativeS3FileSystem" );
-    if ( XmlPropertyHandler.readXmlPropertyValue( pathToShim + File.separator + "core-site.xml", "fs.s3a.impl" )
-      != null ) {
-      XmlPropertyHandler.modifyPropertyInFile( pathToShim + File.separator + "core-site.xml",
-        "fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem" );
-    } else {
-      XmlPropertyHandler.addPropertyToFile( pathToShim + File.separator + "core-site.xml",
-        "fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem" );
-    }
+    XmlPropertyHandler.addOrModifyIfExistsProperty( pathToShim + File.separator + "core-site.xml",
+      "fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem" );
   }
 
   private void removeEmrCodecs( String pathToShim ) {

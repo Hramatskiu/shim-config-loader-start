@@ -50,6 +50,10 @@ public class SshDownloadFunction extends DownloadFunction {
     }
   }
 
+  @Override public boolean isSsh() {
+    return true;
+  }
+
   private DownloadPlan.LoadPathConfig copyLoadPathConfig( DownloadPlan.LoadPathConfig loadPathConfig ) {
     return new DownloadPlan.LoadPathConfig( loadPathConfig.getCompositeHost(),
       loadPathConfig.getDestPrefix(), loadPathConfig.getExtractFormat() );

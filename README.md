@@ -1,5 +1,5 @@
 **ShimConfigurator** - find latest version in _releases_ section  
-**Last update** - _17.01.2018_  
+**Last update** - _02.04.2018_  
 **Your version** - file _version\_%date%_
 
 **Properties setup** 
@@ -29,6 +29,7 @@ For kerberos wrapping will search krb5.conf file in the same sequence
   a. copy ssl_truestore and -site.xml files to mapr client hadoop configs folder  
   b. execute configure.bat with necessary params  
 3. _Copy drivers_ - copy drivers jars mysql to /lib folder others to shim/lib folder
+4. _Use BiServer setup_ - will show installed shims and download and configure choosing shim in Spoon, PRD, PME and Server, also can be used with separate installed Spoon 
 
 **Using tool**:
 

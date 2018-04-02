@@ -51,7 +51,7 @@ public class DelegatingSshSession implements Closeable {
   }
 
   public byte[] downloadFileAsByteArray( String sourcePath ) {
-    byte[] commandResult = null;
+    byte[] commandResult = new byte[0];
     Channel channel = null;
 
     try {

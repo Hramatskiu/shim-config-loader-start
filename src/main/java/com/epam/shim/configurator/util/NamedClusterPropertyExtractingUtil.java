@@ -1,5 +1,8 @@
 package com.epam.shim.configurator.util;
 
+import com.epam.loader.common.delegating.executor.DelegatingExecutorService;
+import com.epam.loader.common.holder.DownloadedFileWrapper;
+import com.epam.loader.common.service.ServiceException;
 import com.epam.loader.common.util.CheckingParamsUtil;
 import com.epam.loader.common.util.CommonUtilException;
 import com.epam.loader.common.util.CommonUtilHolder;
@@ -9,6 +12,7 @@ import com.epam.shim.configurator.xml.XmlPropertyHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -128,21 +132,64 @@ public class NamedClusterPropertyExtractingUtil {
 
   @SuppressWarnings( "unchecked" )
   public static String extractOozieHost( String hosts ) {
-    return Arrays.stream( hosts.split( "," ) ).map( host -> CompletableFuture.supplyAsync( () -> {
-      try {
-        String oozieResult =
-          CommonUtilHolder.sshCommonUtilInstance().executeCommand( new SshCredentials(), host.trim(), 22,
-            "ps aux | grep oozie" );
-        String oozieBaseUrl;
-        if ( oozieResult != null && !( oozieBaseUrl =
-          Arrays.stream( oozieResult.split( " " ) ).filter( splitted -> splitted.contains( "-Doozie.http.hostname=" ) )
-            .collect( Collectors.joining( "" ) ) ).isEmpty() ) {
-          return host;
+    try ( DelegatingExecutorService delegatingExecutorService = new DelegatingExecutorService( hosts.split( "," ).length ) ) {
+      return Arrays.stream( hosts.split( "," ) ).map( host -> CompletableFuture.supplyAsync( () -> {
+        try {
+          String oozieResult =
+            CommonUtilHolder.sshCommonUtilInstance().executeCommand( new SshCredentials(), host.trim(), 22,
+              "ps aux | grep oozie" );
+          String oozieBaseUrl;
+          if ( oozieResult != null && !( oozieBaseUrl =
+            Arrays.stream( oozieResult.split( " " ) ).filter( splitted -> splitted.contains( "-Doozie.http.hostname=" ) )
+              .collect( Collectors.joining( "" ) ) ).isEmpty() ) {
+            return host;
+          }
+        } catch ( CommonUtilException e ) {
+          e.printStackTrace();
         }
-      } catch ( CommonUtilException e ) {
-        e.printStackTrace();
-      }
+        return StringUtils.EMPTY;
+        }, delegatingExecutorService.getExecutorService() ) )
+        .map( CompletableFuture::join ).filter( result -> !result.isEmpty() ).findFirst().orElse( StringUtils.EMPTY );
+    } catch ( IOException ex ) {
+      logger.warn( ex.getMessage(), ex );
+
       return StringUtils.EMPTY;
-    } ) ).map( CompletableFuture::join ).filter( result -> !result.isEmpty() ).findFirst().orElse( StringUtils.EMPTY );
+    }
+  }
+
+  public static String extractKafkaBootstrapServers( String hosts ) {
+    try ( DelegatingExecutorService delegatingExecutorService = new DelegatingExecutorService( hosts.split( "," ).length ) ) {
+      String uglyKafkaBootstrap = Arrays.stream( hosts.split( "," ) ).map( host -> CompletableFuture.supplyAsync( () -> {
+        try {
+          String kafkaResult =
+            CommonUtilHolder.sshCommonUtilInstance().executeCommand( new SshCredentials(), host.trim(), 22,
+              "ps aux | grep kafka" );
+          List<String> splitedKafkaResult = Arrays.asList( kafkaResult.split( "\\s" ) );
+          String kafkaDistributedConfigPath = splitedKafkaResult.get( splitedKafkaResult.indexOf( "org.apache.kafka.connect.cli.ConnectDistributed" ) + 1 );
+          if ( !kafkaDistributedConfigPath.isEmpty() && kafkaDistributedConfigPath.contains( "/" ) ) {
+            DownloadedFileWrapper downloadedFileWrapper
+              = CommonUtilHolder.sshCommonUtilInstance().downloadViaSftpAsFileWrapper( new SshCredentials(  ), host.trim(), 22, kafkaDistributedConfigPath.trim() );
+
+            return PropertyHandler.getPropertyFromByteSource( downloadedFileWrapper.getByteFileContent(), "bootstrap.servers" );
+          }
+          else {
+            return "null";
+          }
+
+        } catch ( CommonUtilException e ) {
+          e.printStackTrace();
+        }
+        return StringUtils.EMPTY;
+        }, delegatingExecutorService.getExecutorService() ) )
+        .map( CompletableFuture::join ).collect( Collectors.joining( "!" ) );
+
+      uglyKafkaBootstrap = uglyKafkaBootstrap.replaceAll( "null!", StringUtils.EMPTY ).replaceAll( "null", "" );
+
+      return uglyKafkaBootstrap.length() > 1 ? uglyKafkaBootstrap.split( "!" )[0] : StringUtils.EMPTY;
+    } catch ( IOException ex ) {
+      logger.warn( ex.getMessage(), ex );
+
+      return StringUtils.EMPTY;
+    }
   }
 }

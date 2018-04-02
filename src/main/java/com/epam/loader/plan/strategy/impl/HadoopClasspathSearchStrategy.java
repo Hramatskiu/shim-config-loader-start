@@ -29,6 +29,10 @@ public class HadoopClasspathSearchStrategy implements SearchStrategy {
     return searchableServiceNames;
   }
 
+  @Override public boolean useSsh() {
+    return true;
+  }
+
   private List<String> extractConfDirs( String commandResult ) {
     return Arrays.stream( commandResult.split( "\n" ) ).filter( singleCommandResult -> !singleCommandResult.isEmpty() )
       .map( this::extractConfDir ).collect( Collectors.toList() );

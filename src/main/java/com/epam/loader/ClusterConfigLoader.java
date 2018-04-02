@@ -38,7 +38,7 @@ public class ClusterConfigLoader {
         downloadResult =
           downloadConfigsCondition != null && downloadConfigsCondition.getUnloadedConfigsList().isEmpty();
       } catch ( CompletionException | ServiceException | AuthenticationException ex ) {
-        logger.error( ex );
+        logger.error( ex.getMessage(), ex );
       }
     }
 

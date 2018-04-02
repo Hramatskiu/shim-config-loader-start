@@ -23,44 +23,26 @@ public class EMRModifier implements IShimModifier {
 
   private void setEmrSecureProperties( String pathToShim, String secretKey, String accessKey ) {
     XmlPropertyHandler
-      .addPropertyToFile( pathToShim + File.separator + "core-site.xml", "fs.s3.awsAccessKeyId", accessKey );
+      .addOrModifyIfExistsProperty( pathToShim + File.separator + "core-site.xml", "fs.s3.awsAccessKeyId", accessKey );
     XmlPropertyHandler
-      .addPropertyToFile( pathToShim + File.separator + "core-site.xml", "fs.s3.awsSecretAccessKey", secretKey );
+      .addOrModifyIfExistsProperty( pathToShim + File.separator + "core-site.xml", "fs.s3.awsSecretAccessKey", secretKey );
     XmlPropertyHandler
-      .addPropertyToFile( pathToShim + File.separator + "core-site.xml", "fs.s3n.awsAccessKeyId", accessKey );
+      .addOrModifyIfExistsProperty( pathToShim + File.separator + "core-site.xml", "fs.s3n.awsAccessKeyId", accessKey );
     XmlPropertyHandler
-      .addPropertyToFile( pathToShim + File.separator + "core-site.xml", "fs.s3n.awsSecretAccessKey", secretKey );
-    if ( XmlPropertyHandler.readXmlPropertyValue( pathToShim + File.separator + "core-site.xml", "fs.s3a.access.key" )
-      != null ) {
-      XmlPropertyHandler
-        .modifyPropertyInFile( pathToShim + File.separator + "core-site.xml", "fs.s3a.access.key", accessKey );
-    } else {
-      XmlPropertyHandler
-        .addPropertyToFile( pathToShim + File.separator + "core-site.xml", "fs.s3a.access.key", accessKey );
-    }
-    if ( XmlPropertyHandler.readXmlPropertyValue( pathToShim + File.separator + "core-site.xml", "fs.s3a.secret.key" )
-      != null ) {
-      XmlPropertyHandler
-        .modifyPropertyInFile( pathToShim + File.separator + "core-site.xml", "fs.s3a.secret.key", secretKey );
-    } else {
-      XmlPropertyHandler
-        .addPropertyToFile( pathToShim + File.separator + "core-site.xml", "fs.s3a.secret.key", secretKey );
-    }
+      .addOrModifyIfExistsProperty( pathToShim + File.separator + "core-site.xml", "fs.s3n.awsSecretAccessKey", secretKey );
+    XmlPropertyHandler
+      .addOrModifyIfExistsProperty( pathToShim + File.separator + "core-site.xml", "fs.s3a.access.key", accessKey );
+    XmlPropertyHandler
+      .addOrModifyIfExistsProperty( pathToShim + File.separator + "core-site.xml", "fs.s3a.secret.key", secretKey );
   }
 
   private void setEmrFsImpl( String pathToShim ) {
-    XmlPropertyHandler.modifyPropertyInFile( pathToShim + File.separator + "core-site.xml",
+    XmlPropertyHandler.addOrModifyIfExistsProperty( pathToShim + File.separator + "core-site.xml",
       "fs.s3.impl", "org.apache.hadoop.fs.s3.S3FileSystem" );
-    XmlPropertyHandler.modifyPropertyInFile( pathToShim + File.separator + "core-site.xml",
+    XmlPropertyHandler.addOrModifyIfExistsProperty( pathToShim + File.separator + "core-site.xml",
       "fs.s3n.impl", "org.apache.hadoop.fs.s3native.NativeS3FileSystem" );
-    if ( XmlPropertyHandler.readXmlPropertyValue( pathToShim + File.separator + "core-site.xml", "fs.s3a.impl" )
-      != null ) {
-      XmlPropertyHandler.modifyPropertyInFile( pathToShim + File.separator + "core-site.xml",
-        "fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem" );
-    } else {
-      XmlPropertyHandler.addPropertyToFile( pathToShim + File.separator + "core-site.xml",
-        "fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem" );
-    }
+    XmlPropertyHandler.addOrModifyIfExistsProperty( pathToShim + File.separator + "core-site.xml",
+      "fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem" );
   }
 
   private void removeEmrCodecs( String pathToShim ) {

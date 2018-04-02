@@ -34,6 +34,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class MainPage {
 
@@ -318,10 +319,36 @@ public class MainPage {
 
     if ( useBIServer.isSelected() ) {
       BIServerPlugin biServerPlugin = new BIServerPlugin( pathToSave.getText() );
-      pathToShim = biServerPlugin.createDownloadPath( shimName.getValue() );
+      if ( biServerPlugin.canUseBiServerPlugin( shimName.getValue() ) ) {
+        pathToShim = biServerPlugin.createDownloadPath( shimName.getValue() );
+      }
+      else {
+        useBIServer.setSelected( false );
+        logger.warn( "Can't use BiServerPlugin! Invalid path. Will be used - " + pathToShim );
+      }
     }
 
     return pathToShim;
+  }
+
+  private List<String> getPathsToSave() {
+    List<String> pathsToShim = new ArrayList<>(  );
+    pathsToShim.add( pathToSave.getText() );
+
+    if ( useBIServer.isSelected() ) {
+      BIServerPlugin biServerPlugin = new BIServerPlugin( pathToSave.getText() );
+      if ( biServerPlugin.canUseBiServerPlugin( shimName.getValue() ) ) {
+        pathsToShim = biServerPlugin.createListOfOutputDirs().stream()
+          .map( path -> path + File.separator + shimName.getValue() ).collect( Collectors.toList() );
+        pathsToShim.add( biServerPlugin.createDownloadPath( shimName.getValue() ) );
+      }
+      else {
+        useBIServer.setSelected( false );
+        logger.warn( "Can't use BiServerPlugin! Invalid path. Will be used - " + pathToSave.getText() );
+      }
+    }
+
+    return pathsToShim;
   }
 
   private void executeBiServerPluginIfAvailable(  ) {
@@ -343,14 +370,25 @@ public class MainPage {
     }
 
     if ( copyDrivers.isSelected() ) {
-      CopyDriversUtil
-        .copyAllDrivers( pathToSave.getText(), LoadConfigsManager.ClusterType.valueOf( clusterType.getValue() ) );
+      getPathsToSave().forEach( path -> CopyDriversUtil
+        .copyAllDrivers( path, LoadConfigsManager.ClusterType.valueOf( clusterType.getValue() ) ) );
     }
   }
 
   private String modifyHosts( String host ) {
+    return host.contains( "un1" ) ? modifyHostsWithNewNames( host ) : modifyHostsWithOldNames( host );
+  }
+
+  private String modifyHostsWithOldNames( String host ) {
     return host.contains( "svqxbdcn" ) ? host + "," + host.replace( "n1", "n2" )
-      + "," + host.replace( "n1", "n3" ) : host;
+      + ","  + host.replace( "n1", "n3" ) + "," + host.replace( "n1", "n4" )
+      + "," + host.replace( "n1", "n5" ) : host;
+  }
+
+  private String modifyHostsWithNewNames( String host ) {
+    return host.contains( "svqxbdcn" ) ? host + "," + host.replace( "un1", "un2" )
+      + "," + host.replace( "un1", "un3" ) + "," + host.replace( "un1", "un4" )
+      + "," + host.replace( "un1", "un5" ) : host;
   }
 
   private Krb5Credentials createKrb5Configs() {

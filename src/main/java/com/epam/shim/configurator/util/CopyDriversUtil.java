@@ -181,21 +181,6 @@ public class CopyDriversUtil {
     return pathToSave.toAbsolutePath().toString();
   }
 
-  private static FileAttribute create777FileAttribute() {
-    Set<PosixFilePermission> filePermissions = new HashSet<>();
-    filePermissions.add( PosixFilePermission.OWNER_READ );
-    filePermissions.add( PosixFilePermission.OWNER_WRITE );
-    filePermissions.add( PosixFilePermission.OWNER_EXECUTE );
-    filePermissions.add( PosixFilePermission.GROUP_READ );
-    filePermissions.add( PosixFilePermission.GROUP_WRITE );
-    filePermissions.add( PosixFilePermission.GROUP_EXECUTE );
-    filePermissions.add( PosixFilePermission.OTHERS_READ );
-    filePermissions.add( PosixFilePermission.OTHERS_WRITE );
-    filePermissions.add( PosixFilePermission.OTHERS_EXECUTE );
-
-    return PosixFilePermissions.asFileAttribute( filePermissions );
-  }
-
   private static void copyDriverFileToShimLib( String driverFile, String pathToShim ) throws Exception {
     Path driverPath = findFileInThisUtilityFolder( driverFile );
     if ( Files.exists( driverPath ) ) {
